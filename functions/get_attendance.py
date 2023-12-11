@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 
-from .utils import fetch
-from .urls import ATTENDANCE_URL
-from .exceptions import ForbiddenException
-from .logger import getDefaultLogger
-from .types import Mark
+from ..utils.fetch import fetch
+from ..urls import ATTENDANCE_URL
+from ..exceptions import ForbiddenException
+from ..utils.logger import getDefaultLogger
+from ..types import Mark
 
 
 @dataclass
@@ -35,8 +35,6 @@ async def get_attendance(cookies, getLogger=getDefaultLogger):
     html = await fetch(ATTENDANCE_URL, cookies)
     soup = BeautifulSoup(html, "html.parser")
     attendance_table = soup.select("#tools + table + table > tr")
-    if len(attendance_table) < 1:
-        attendance_table = soup.select("#tools + table + table > tbody > tr")
     if len(attendance_table) < 1:
         raise ForbiddenException
     prev = None

@@ -1,8 +1,8 @@
 from .exceptions import ForbiddenException
-from .logger import createLogger
-from .login import login
-from .get_attendance import get_attendance
-from .get_attestation import get_attestation
+from .utils.logger import createLogger
+from .functions.login import login
+from .functions.get_attendance import get_attendance
+from .functions.get_attestation import get_attestation
 
 
 def auth(function):

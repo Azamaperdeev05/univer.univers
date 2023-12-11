@@ -4,11 +4,12 @@ import aiohttp
 import asyncio
 from bs4 import BeautifulSoup
 
-from .utils import fetch
-from .types import Mark
-from .urls import ATTESTATION_URL
-from .exceptions import ForbiddenException
-from .logger import getDefaultLogger
+from ..utils.fetch import fetch
+from ..types import Mark
+from ..urls import ATTESTATION_URL
+from ..exceptions import ForbiddenException
+from ..utils.logger import getDefaultLogger
+
 from .get_attendance import get_attendance
 
 

@@ -5,9 +5,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from asyncio import sleep
 
-from .exceptions import InvalidCredential
-from .urls import LANG_RU_URL, LOGIN_URL
-from .logger import getDefaultLogger
+from ..exceptions import InvalidCredential
+from ..urls import LANG_RU_URL, LOGIN_URL
+from ..utils.logger import getDefaultLogger
 
 
 async def login(username, password, getLogger=getDefaultLogger):
