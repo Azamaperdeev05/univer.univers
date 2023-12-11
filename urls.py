@@ -1,0 +1,4 @@
+ATTENDANCE_URL = "http://univer.kstu.kz/student/attendance/full/"
+LOGIN_URL = "http://univer.kstu.kz/user/login"
+LANG_RU_URL = "http://univer.kstu.kz/lang/change/ru/"
+ATTESTATION_URL = "http://univer.kstu.kz/student/attestation/"
