@@ -31,11 +31,18 @@ async def login(username, password, getLogger=getDefaultLogger):
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        while "Бакалавр" not in await page.title():
-            error = await page.query_selector(".ct.warning")
-            if error:
-                raise InvalidCredential
-            await sleep(0.5)
+        async def handler(route):
+            if "univer.kstu.kz" not in route.request.url:
+                await route.abort()
+                return
+            await route.continue_()
+
+        await page.route("**/*", handler)
+        await sleep(1)
+        title = await page.title()
+        if "Бакалавр" not in title:
+            raise IndentationError
+
         _cookies = await context.cookies()
         logger.info("got cookies")
         cookies = {}
