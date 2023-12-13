@@ -3,19 +3,20 @@ from .utils.logger import createLogger
 from .functions.login import login
 from .functions.get_attendance import get_attendance
 from .functions.get_attestation import get_attestation
+from .functions.get_schedule import get_schedule
 
 
 def auth(function):
     async def f(*args):
-        self: "Univer" = args[0]
-        if self.cookies is None:
-            await self.login()
+        univer: "Univer" = args[0]
+        if univer.cookies is None:
+            await univer.login()
         while 1:
             try:
                 return await function(*args)
             except ForbiddenException:
-                self.logger.info("relogin")
-                await self.login()
+                univer.logger.info("relogin")
+                await univer.login()
 
     return f
 
@@ -45,3 +46,7 @@ class Univer:
     @auth
     async def get_attestation(self):
         return await get_attestation(self.cookies, self.get_logger)
+
+    @auth
+    async def get_schedule(self):
+        return await get_schedule(self.cookies, self.get_logger)
