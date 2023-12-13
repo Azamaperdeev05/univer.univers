@@ -6,12 +6,15 @@ def createLogger(name, level=logging.INFO, *, format: str):
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    if len(logger.handlers) < 1:
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(format)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    if len(logger.handlers) > 0:
+        logger.handlers.clear()
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(format)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     return logger
 
 
