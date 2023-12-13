@@ -5,7 +5,7 @@ import asyncio
 from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
-from ..types import Mark
+from ..type import Mark
 from ..urls import ATTESTATION_URL
 from ..exceptions import ForbiddenException
 from ..utils.logger import getDefaultLogger
