@@ -34,6 +34,14 @@ async def login(username, password, getLogger=getDefaultLogger):
     logger.info("sent form")
 
     while "Бакалавр" not in driver.title:
+        try:
+            error = driver.find_element(By.CSS_SELECTOR, ".ct.warning")
+            if error:
+                raise InvalidCredential
+        except InvalidCredential as e:
+            raise e
+        except:
+            pass
         await sleep(0.5)
 
     logger.info("got cookies")
