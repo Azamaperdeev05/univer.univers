@@ -26,22 +26,22 @@ class Univer:
         self.password = password
         self.cookies = cookies
 
-        self.logger = self.getLogger(__name__)
+        self.logger = self.get_logger(__name__)
 
-    def getLogger(self, name):
+    def get_logger(self, name):
         logger = createLogger(
             name, format=f"[%(asctime)s] %(name)s | {self.username} - %(message)s"
         )
         return logger
 
     async def login(self):
-        self.cookies = await login(self.username, self.password, self.getLogger)
+        self.cookies = await login(self.username, self.password, self.get_logger)
         return self.cookies
 
     @auth
     async def get_attendance(self):
-        return await get_attendance(self.cookies, self.getLogger)
+        return await get_attendance(self.cookies, self.get_logger)
 
     @auth
     async def get_attestation(self):
-        return await get_attestation(self.cookies, self.getLogger)
+        return await get_attestation(self.cookies, self.get_logger)
