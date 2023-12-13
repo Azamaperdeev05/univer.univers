@@ -13,10 +13,20 @@ def string_has_one_substring(string: str, substrings: list[str]):
     return False
 
 
+browser = None
+
+
+async def main():
+    global browser
+    apw = await async_playwright().start()
+    browser = await apw.firefox.launch(headless=True)
+
+
 async def login(username, password, getLogger=getDefaultLogger):
+    if browser is None:
+        await main()
     logger = getLogger(__name__)
     async with async_playwright() as p:
-        browser = await p.firefox.launch(headless=True)
         context = await browser.new_context()
         page = await context.new_page()
 
@@ -52,5 +62,7 @@ async def login(username, password, getLogger=getDefaultLogger):
             cookies[name] = value
 
         if ".ASPXAUTH" not in cookies:
+            logger.info("bad cookies")
             raise InvalidCredential
+        await context.close()
         return cookies
