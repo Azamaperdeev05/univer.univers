@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from pprint import pprint
-import aiohttp
 import asyncio
 from bs4 import BeautifulSoup
 
@@ -9,7 +7,6 @@ from ..type import Mark
 from ..urls import ATTESTATION_URL
 from ..exceptions import ForbiddenException
 from ..utils.logger import getDefaultLogger
-
 from .get_attendance import get_attendance
 
 
