@@ -33,6 +33,7 @@ async def get_attendance(cookies, getLogger=getDefaultLogger):
     logger = getLogger(__name__)
     logger.info("get ATTENDANCE_URL")
     html = await fetch(ATTENDANCE_URL, cookies)
+    logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
     attendance_table = soup.select("#tools + table + table > tr")
     if len(attendance_table) < 1:

@@ -23,6 +23,7 @@ async def _get_attestation(cookies, getLogger=getDefaultLogger):
     logger = getLogger(__name__)
     logger.info("get ATTESTATION_URL")
     html = await fetch(ATTESTATION_URL, cookies)
+    logger.info("got ATTESTATION_URL")
     soup = BeautifulSoup(html, "html.parser")
     attendance_table = soup.select("#tools + table + table .mid table.inner > tr")[:-1]
     if len(attendance_table) < 1:
@@ -36,7 +37,9 @@ async def _get_attestation(cookies, getLogger=getDefaultLogger):
         subject, _, *marks, _, _, _, _ = map(lambda td: td.text, row.select("td"))
         marks_list: list[Mark] = []
         for i, mark in enumerate(marks):
-            marks_list.append(Mark(title=header_marks[i], value=int(mark)))
+            marks_list.append(
+                Mark(title=header_marks[i].replace("*", ""), value=int(mark))
+            )
         attestation.append(Attestation(subject=subject.strip(), attestation=marks_list))
 
     return attestation
