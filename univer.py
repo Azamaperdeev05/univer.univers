@@ -4,6 +4,7 @@ from .functions.login import login
 from .functions.get_attendance import get_attendance
 from .functions.get_attestation import get_attestation
 from .functions.get_schedule import get_schedule
+from .functions.get_exams import get_exams
 
 
 def auth(function):
@@ -50,3 +51,7 @@ class Univer:
     @auth
     async def get_schedule(self):
         return await get_schedule(self.cookies, self.get_logger)
+
+    @auth
+    async def get_exams(self):
+        return await get_exams(self.cookies, self.get_logger)
