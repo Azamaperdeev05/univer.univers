@@ -16,7 +16,7 @@ def string_has_one_substring(string: str, substrings: list[str]):
 browser = None
 
 
-async def main():
+async def launch_browser():
     global browser
     apw = await async_playwright().start()
     browser = await apw.firefox.launch(headless=True)
@@ -24,45 +24,47 @@ async def main():
 
 async def login(username, password, getLogger=getDefaultLogger):
     if browser is None:
-        await main()
+        await launch_browser()
     logger = getLogger(__name__)
-    async with async_playwright() as p:
+    try:
         context = await browser.new_context()
-        page = await context.new_page()
+    except:
+        await launch_browser()
+    page = await context.new_page()
 
-        await page.goto(LANG_RU_URL)
+    await page.goto(LANG_RU_URL)
 
-        logger.info("get LOGIN_URL")
-        await page.goto(LOGIN_URL)
-        logger.info("got LOGIN_URL")
+    logger.info("get LOGIN_URL")
+    await page.goto(LOGIN_URL)
+    logger.info("got LOGIN_URL")
 
-        await page.fill("label[for='login'] + input", username)
-        await page.fill("[type='password']", password)
-        await page.keyboard.press("Enter")
-        logger.info("sent form")
+    await page.fill("label[for='login'] + input", username)
+    await page.fill("[type='password']", password)
+    await page.keyboard.press("Enter")
+    logger.info("sent form")
 
-        async def handler(route):
-            if "univer.kstu.kz" not in route.request.url:
-                await route.abort()
-                return
-            await route.continue_()
+    async def handler(route):
+        if "univer.kstu.kz" not in route.request.url:
+            await route.abort()
+            return
+        await route.continue_()
 
-        await page.route("**/*", handler)
-        await sleep(1)
-        title = await page.title()
-        if "Бакалавр" not in title:
-            raise IndentationError
+    await page.route("**/*", handler)
+    await sleep(1)
+    title = await page.title()
+    if "Бакалавр" not in title:
+        raise IndentationError
 
-        _cookies = await context.cookies()
-        logger.info("got cookies")
-        cookies = {}
-        for cookie in _cookies:
-            name = cookie["name"]
-            value = cookie["value"]
-            cookies[name] = value
+    _cookies = await context.cookies()
+    logger.info("got cookies")
+    cookies = {}
+    for cookie in _cookies:
+        name = cookie["name"]
+        value = cookie["value"]
+        cookies[name] = value
 
-        if ".ASPXAUTH" not in cookies:
-            logger.info("bad cookies")
-            raise InvalidCredential
-        await context.close()
-        return cookies
+    if ".ASPXAUTH" not in cookies:
+        logger.info("bad cookies")
+        raise InvalidCredential
+    await context.close()
+    return cookies
