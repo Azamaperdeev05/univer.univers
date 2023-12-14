@@ -36,7 +36,7 @@ async def get_exams(cookies, getLogger=getDefaultLogger):
         date, time = row["id"].split(" ")
         hour, minute, *_ = map(int, time.split(":"))
         day, month, year = map(int, date.split("."))
-        _date = datetime(year, month, day, hour, minute)
+        _date = datetime(year, month, day, hour - 6, minute)
 
         subject, teacher, _, audience, *_ = row.select("td")
 
