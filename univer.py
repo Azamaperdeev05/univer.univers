@@ -1,4 +1,4 @@
-from .exceptions import ForbiddenException, InvalidCredential
+from .exceptions import *
 from .utils.logger import createLogger
 from .functions.login import login
 from .functions.get_attendance import get_attendance

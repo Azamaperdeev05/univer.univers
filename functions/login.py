@@ -20,24 +20,27 @@ apw: Playwright = None
 logger = getDefaultLogger(__name__)
 
 
-async def enshure_browser():
+async def ensure_browser():
     global browser
     global apw
     if browser is not None:
         if browser.is_connected():
             return
+        logger.info("Stoping browser")
         await browser.close()
+        logger.info("Browser stopped")
 
     if apw is not None:
+        logger.info("Stoping apw")
         await apw.stop()
+        logger.info("apw stopped")
 
-    logger.info("Reopen browser")
     apw = await async_playwright().start()
     browser = await apw.firefox.launch(headless=True)
 
 
 async def login(username, password, getLogger=getDefaultLogger):
-    await enshure_browser()
+    await ensure_browser()
     logger = getLogger(__name__)
     context = await browser.new_context()
     page = await context.new_page()

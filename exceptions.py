@@ -1,3 +1,6 @@
+from asyncio import TimeoutError
+
+
 class ForbiddenException(Exception):
     pass
 
