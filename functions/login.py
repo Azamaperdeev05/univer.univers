@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, Playwright, Browser
 from asyncio import sleep
 
 from ..exceptions import InvalidCredential
@@ -13,23 +13,33 @@ def string_has_one_substring(string: str, substrings: list[str]):
     return False
 
 
-browser = None
+browser: Browser = None
+apw: Playwright = None
 
 
-async def launch_browser():
+logger = getDefaultLogger(__name__)
+
+
+async def enshure_browser():
     global browser
+    global apw
+    if browser is not None:
+        if browser.is_connected():
+            return
+        await browser.close()
+
+    if apw is not None:
+        await apw.stop()
+
+    logger.info("Reopen browser")
     apw = await async_playwright().start()
     browser = await apw.firefox.launch(headless=True)
 
 
 async def login(username, password, getLogger=getDefaultLogger):
-    if browser is None:
-        await launch_browser()
+    await enshure_browser()
     logger = getLogger(__name__)
-    try:
-        context = await browser.new_context()
-    except:
-        await launch_browser()
+    context = await browser.new_context()
     page = await context.new_page()
 
     await page.goto(LANG_RU_URL)
