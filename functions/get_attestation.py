@@ -50,9 +50,15 @@ def _find_element_by_key(elements: list, predicate):
 
 def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
     result: list[Mark] = []
+
+    is_active_setted = False
     for a_mark in a:
         b_mark = _find_element_by_key(b, lambda b_mark: a_mark.title == b_mark.title)
-        result.append(b_mark or a_mark)
+        result_mark = b_mark or a_mark
+        if not is_active_setted and a_mark.value == 0:
+            result_mark.active = True
+            is_active_setted = tuple
+        result.append(result_mark)
     return result
 
 
