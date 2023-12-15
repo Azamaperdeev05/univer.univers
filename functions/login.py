@@ -19,12 +19,22 @@ apw: Playwright = None
 
 logger = getDefaultLogger(__name__)
 
+__is_locked = False
+
 
 async def ensure_browser():
     global browser
     global apw
+    global __is_locked
+
+    while __is_locked:
+        logger.info("Waiting browser")
+        await sleep(1)
+
+    __is_locked = True
     if browser is not None:
         if browser.is_connected():
+            __is_locked = False
             return
         logger.info("Stoping browser")
         await browser.close()
@@ -37,6 +47,7 @@ async def ensure_browser():
 
     apw = await async_playwright().start()
     browser = await apw.firefox.launch(headless=True)
+    __is_locked = False
 
 
 async def login(username, password, getLogger=getDefaultLogger):
