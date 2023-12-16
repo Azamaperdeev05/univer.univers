@@ -77,7 +77,7 @@ async def login(username, password, getLogger=getDefaultLogger):
     await sleep(1)
     title = await page.title()
     if "Бакалавр" not in title:
-        raise IndentationError
+        raise InvalidCredential
 
     _cookies = await context.cookies()
     logger.info("got cookies")
