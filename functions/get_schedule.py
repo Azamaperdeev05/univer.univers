@@ -36,7 +36,8 @@ class Schedule:
 
 
 def text(element):
-    return element.text.strip()
+    if element:
+        return element.text.strip()
 
 
 async def get_schedule(cookies, getLogger=getDefaultLogger):
@@ -50,12 +51,11 @@ async def get_schedule(cookies, getLogger=getDefaultLogger):
 
     lessons_list: list[Lesson] = []
     for row in schedule_table:
-        time = row.select_one(".time").text.strip()
+        time = text(row.select_one(".time"))
         days = row.select("td.field")
         for day, field in enumerate(days):
             lessons = field.select("div[style]")
-            length = len(lessons)
-            if length < 1:
+            if len(lessons) == 0:
                 continue
 
             for index, lesson in enumerate(lessons):
@@ -75,11 +75,14 @@ async def get_schedule(cookies, getLogger=getDefaultLogger):
                         period=text(lesson.select_one(".dateStartLbl")),
                     )
 
-                if length == 1:
+                denominator = lesson.select_one(".denominator")
+                if denominator is None:
                     lessons_list.append(get_lesson(True))
                     lessons_list.append(get_lesson(False))
                     continue
-                lessons_list.append(get_lesson(index == 0))
+
+                factor = text(denominator).lower() != "числитель"
+                lessons_list.append(get_lesson(factor))
 
     if len(lessons_list) < 1:
         raise ForbiddenException
