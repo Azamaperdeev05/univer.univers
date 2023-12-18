@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from ..utils.logger import getDefaultLogger
 from ..utils.fetch import fetch
 from ..urls import SCHEDULE_URL
-from ..exceptions import ForbiddenException
+from ..utils.auth import check_auth
 
 from dataclasses import dataclass
 from datetime import date
@@ -47,6 +47,7 @@ async def get_schedule(cookies, getLogger=getDefaultLogger):
     logger.info("got SCHEDULE_URL")
 
     soup = BeautifulSoup(html, "html.parser")
+    check_auth(soup)
     schedule_table = soup.select(".schedule tr")[1:]
 
     lessons_list: list[Lesson] = []
@@ -58,7 +59,7 @@ async def get_schedule(cookies, getLogger=getDefaultLogger):
             if len(lessons) == 0:
                 continue
 
-            for index, lesson in enumerate(lessons):
+            for lesson in lessons:
                 subject_element = lesson.select_one("p")
 
                 def get_lesson(factor: bool):
@@ -84,6 +85,4 @@ async def get_schedule(cookies, getLogger=getDefaultLogger):
                 factor = text(denominator).lower() != "числитель"
                 lessons_list.append(get_lesson(factor))
 
-    if len(lessons_list) < 1:
-        raise ForbiddenException
     return Schedule(lessons=lessons_list, factor=__get_factor())

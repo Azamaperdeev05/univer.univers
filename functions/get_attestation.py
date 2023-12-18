@@ -3,6 +3,7 @@ import asyncio
 from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
+from ..utils.auth import check_auth
 from ..type import Mark
 from ..urls import ATTESTATION_URL
 from ..exceptions import ForbiddenException
@@ -11,9 +12,17 @@ from .get_attendance import get_attendance
 
 
 @dataclass
+class Attendance:
+    part: str
+    type: str
+    marks: list[Mark]
+
+
+@dataclass
 class Attestation:
     subject: str
     attestation: list[Mark]
+    attendance: list[Attendance]
 
 
 async def _get_attestation(cookies, getLogger=getDefaultLogger):
@@ -22,14 +31,16 @@ async def _get_attestation(cookies, getLogger=getDefaultLogger):
     html = await fetch(ATTESTATION_URL, cookies)
     logger.info("got ATTESTATION_URL")
     soup = BeautifulSoup(html, "html.parser")
+    check_auth(soup)
+
     attendance_table = soup.select("#tools + table + table .mid table.inner > tr")[:-1]
+    attestation: list[Attestation] = []
     if len(attendance_table) < 1:
-        raise ForbiddenException
+        return attestation
 
     _, _, *header_marks, _, _, _, _ = map(
         lambda td: td.text, attendance_table[0].select("th")
     )
-    attestation: list[Attestation] = []
     for row in attendance_table[1:]:
         subject, _, *marks, _, _, _, _ = map(lambda td: td.text, row.select("td"))
         marks_list: list[Mark] = []
@@ -37,8 +48,9 @@ async def _get_attestation(cookies, getLogger=getDefaultLogger):
             marks_list.append(
                 Mark(title=header_marks[i].replace("*", ""), value=int(mark))
             )
-        attestation.append(Attestation(subject=subject.strip(), attestation=marks_list))
-
+        attestation.append(
+            Attestation(subject=subject.strip(), attestation=marks_list, attendance=[])
+        )
     return attestation
 
 
@@ -75,5 +87,6 @@ async def get_attestation(cookies, getLogger=getDefaultLogger):
         attestation.attestation = _join_marks(
             attestation.attestation, attendance.summary
         )
+        attestation.attendance = attendance.attendance
 
     return attestations

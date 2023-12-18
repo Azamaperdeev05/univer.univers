@@ -1,7 +1,10 @@
 from pprint import pprint
 from bs4 import BeautifulSoup
+
+from ..utils.auth import check_auth
 from ..utils.logger import getDefaultLogger
 from ..utils.fetch import fetch
+from ..utils.text import text
 from ..urls import EXAMS_URL
 from ..exceptions import ForbiddenException
 
@@ -17,10 +20,6 @@ class Exam:
     date: int
 
 
-def text(element):
-    return element.text.strip()
-
-
 async def get_exams(cookies, getLogger=getDefaultLogger):
     logger = getLogger(__name__)
     logger.info("get EXAMS_URL")
@@ -28,9 +27,11 @@ async def get_exams(cookies, getLogger=getDefaultLogger):
     logger.info("got EXAMS_URL")
 
     soup = BeautifulSoup(html, "html.parser")
+    check_auth(soup)
     exams_table = soup.select("#scheduleList tr[id]")
-
     exams: list[Exam] = []
+    if len(exams_table) < 1:
+        return exams
 
     for row in exams_table:
         date, time = row["id"].split(" ")
@@ -50,6 +51,4 @@ async def get_exams(cookies, getLogger=getDefaultLogger):
         )
 
     exams.sort(key=lambda e: e.date)
-    if len(exams) < 1:
-        raise ForbiddenException
     return exams
