@@ -1,22 +1,47 @@
 from dataclasses import dataclass
-from bs4 import BeautifulSoup
+from pprint import pprint
+from bs4 import BeautifulSoup, Tag
+import re
 
 from ..utils.fetch import fetch
+from ..utils.auth import check_auth
 from ..urls import ATTENDANCE_URL
 from ..exceptions import ForbiddenException
 from ..utils.logger import getDefaultLogger
+from ..utils.text import text
 from ..type import Mark
+
+
+@dataclass
+class Part:
+    part: str
+    type: str
+    marks: list[Mark]
 
 
 @dataclass
 class Attendance:
     subject: str
     summary: list[Mark]
+    attendance: list[Part]
 
 
 def get_subject(line: str):
     index = line.index("(")
-    return line[:index].strip()
+    return re.sub(" +", " ", line[:index].strip())
+
+
+def parse_table(table: Tag):
+    headings = table.select("th")
+    values = table.select("td")
+    marks: list[Mark] = []
+    for heading, value in zip(headings[1:], values[:-1]):
+        v = text(value)
+        if v:
+            marks.append(
+                Mark(title=text(heading), value=int(v) if not v.isalpha() else v)
+            )
+    return text(headings[0]), marks
 
 
 def get_summary(line: str):
@@ -35,21 +60,45 @@ async def get_attendance(cookies, getLogger=getDefaultLogger):
     html = await fetch(ATTENDANCE_URL, cookies)
     logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
-    attendance_table = soup.select("#tools + table + table > tr")
-    if len(attendance_table) < 1:
-        raise ForbiddenException
-    prev = None
+    check_auth(soup)
+    attendance_table = soup.select("#tools + table + table > tr")[1:]
     attendances: list[Attendance] = []
-    for tr in attendance_table:
-        c, *_ = tr.attrs.get("class")
-        if prev is None:
-            prev = tr
-            continue
-        if c in ["top", "bot"]:
-            if len(attendances) > 0:
-                attendances[-1].summary = get_summary(prev.text)
+    if len(attendance_table) < 1:
+        return attendances
+
+    ignore = True
+
+    attendance = Attendance(None, None, [])
+    part = Part(None, None, [])
+    for index, row in enumerate(attendance_table):
+        c, *_ = row.attrs.get("class")
         if c == "top":
-            subject = get_subject(tr.text)
-            attendances.append(Attendance(subject, []))
-        prev = tr
+            ignore = False
+        if ignore:
+            continue
+
+        if c == "top":
+            attendance.subject = get_subject(row.text)
+            continue
+
+        button = row.select_one("a")
+        if button is not None:
+            part.type = get_subject(button.text)
+            continue
+        table = row.select_one("table")
+        if table is not None:
+            part.part, part.marks = parse_table(table)
+            if part.type is None:
+                part.type = attendance.attendance[-1].type
+            attendance.attendance.append(part)
+            part = Part(None, None, [])
+            continue
+
+        next = attendance_table[(index + 1) % len(attendance_table)]
+        if next.attrs.get("class")[0] in ["top", "bot"]:
+            summary = get_summary(text(row))
+            attendance.summary = summary
+            attendances.append(attendance)
+            part = Part(None, None, [])
+            attendance = Attendance(None, None, [])
     return attendances
