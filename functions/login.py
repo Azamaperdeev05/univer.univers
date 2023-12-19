@@ -57,7 +57,6 @@ async def login(
     username,
     password,
     getLogger=getDefaultLogger,
-    lang_url=LANG_RU_URL,
     login_url=LOGIN_URL,
 ):
     logger = getLogger(__name__)
@@ -69,8 +68,6 @@ async def login(
     await ensure_browser()
     context = await browser.new_context()
     page = await context.new_page()
-
-    await page.goto(lang_url)
 
     logger.info("get LOGIN_URL")
     await page.goto(login_url)
@@ -89,8 +86,7 @@ async def login(
 
     await page.route("**/*", handler)
     await sleep(1)
-    title = await page.title()
-    if "Бакалавр" not in title:
+    if await page.query_selector("#tools") is None:
         __logining_user = None
         raise InvalidCredential
 
@@ -102,8 +98,8 @@ async def login(
         value = cookie["value"]
         cookies[name] = value
     __logining_user = None
+    await context.close()
     if ".ASPXAUTH" not in cookies:
         logger.info("bad cookies")
         raise InvalidCredential
-    await context.close()
     return cookies
