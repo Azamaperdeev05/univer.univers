@@ -60,10 +60,8 @@ async def get_attendance(
     lang_url=LANG_RU_URL,
 ):
     logger = getLogger(__name__)
-    if lang_url is not None:
-        await fetch(lang_url, cookies)
     logger.info("get ATTENDANCE_URL")
-    html = await fetch(attendance_url, cookies)
+    html = await fetch(lang_url, cookies, {"referer": attendance_url})
     logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)

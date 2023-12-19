@@ -32,8 +32,7 @@ async def get_exams(
 ):
     logger = getLogger(__name__)
     logger.info("get EXAMS_URL")
-    await fetch(lang_url, cookies)
-    html = await fetch(exams_url, cookies)
+    html = await fetch(lang_url, cookies, {"referer": exams_url})
     logger.info("got EXAMS_URL")
 
     soup = BeautifulSoup(html, "html.parser")

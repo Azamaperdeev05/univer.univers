@@ -45,8 +45,7 @@ async def get_schedule(
 ):
     logger = getLogger(__name__)
     logger.info("get SCHEDULE_URL")
-    await fetch(lang_url, cookies)
-    html = await fetch(schedule_url, cookies)
+    html = await fetch(lang_url, cookies, {"referer": schedule_url})
     logger.info("got SCHEDULE_URL")
 
     soup = BeautifulSoup(html, "html.parser")

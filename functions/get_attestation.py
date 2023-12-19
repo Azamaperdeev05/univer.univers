@@ -32,9 +32,7 @@ async def _get_attestation(
 ):
     logger = getLogger(__name__)
     logger.info("get ATTESTATION_URL")
-    if lang_url is not None:
-        await fetch(lang_url, cookies)
-    html = await fetch(attestation_url, cookies)
+    html = await fetch(lang_url, cookies, {"referer": attestation_url})
     logger.info("got ATTESTATION_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
@@ -87,17 +85,12 @@ async def get_attestation(
     attendance_url=ATTENDANCE_URL,
     lang_url=LANG_RU_URL,
 ):
-    await fetch(lang_url, cookies)
     attestations, attendances = await asyncio.gather(
-        _get_attestation(cookies, getLogger, attestation_url, lang_url=None),
-        get_attendance(cookies, getLogger, attendance_url, lang_url=None),
+        _get_attestation(cookies, getLogger, attestation_url, lang_url=lang_url),
+        get_attendance(cookies, getLogger, attendance_url, lang_url=lang_url),
     )
-    for attendance in attendances:
-        attestation: Attestation = _find_element_by_key(
-            attestations, lambda a: a.subject == attendance.subject
-        )
-        if attestation is None:
-            continue
+    for index, attendance in enumerate(attendances):
+        attestation: Attestation = attestations[index]
         attestation.attestation = _join_marks(
             attestation.attestation, attendance.summary
         )

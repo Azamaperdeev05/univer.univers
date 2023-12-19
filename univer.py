@@ -51,7 +51,6 @@ class Univer:
             self.username,
             self.password,
             self.get_logger,
-            lang_url=self.lang_url,
             login_url=self.urls.LOGIN_URL,
         )
         return self.cookies
