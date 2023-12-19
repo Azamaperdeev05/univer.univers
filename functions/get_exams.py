@@ -6,7 +6,6 @@ from ..utils.logger import getDefaultLogger
 from ..utils.fetch import fetch
 from ..utils.text import text
 from ..urls import EXAMS_URL
-from ..exceptions import ForbiddenException
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -20,10 +19,10 @@ class Exam:
     date: int
 
 
-async def get_exams(cookies, getLogger=getDefaultLogger):
+async def get_exams(cookies, getLogger=getDefaultLogger, exams_url=EXAMS_URL):
     logger = getLogger(__name__)
     logger.info("get EXAMS_URL")
-    html = await fetch(EXAMS_URL, cookies)
+    html = await fetch(exams_url, cookies)
     logger.info("got EXAMS_URL")
 
     soup = BeautifulSoup(html, "html.parser")

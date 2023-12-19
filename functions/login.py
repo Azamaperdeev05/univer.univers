@@ -19,22 +19,22 @@ apw: Playwright = None
 
 logger = getDefaultLogger(__name__)
 
-__is_locked = False
+__is_browser_locked = False
 
 
 async def ensure_browser():
     global browser
     global apw
-    global __is_locked
+    global __is_browser_locked
 
-    while __is_locked:
+    while __is_browser_locked:
         logger.info("Waiting browser")
         await sleep(1)
 
-    __is_locked = True
+    __is_browser_locked = True
     if browser is not None:
         if browser.is_connected():
-            __is_locked = False
+            __is_browser_locked = False
             return
         logger.info("Stoping browser")
         await browser.close()
@@ -47,19 +47,33 @@ async def ensure_browser():
 
     apw = await async_playwright().start()
     browser = await apw.firefox.launch(headless=True)
-    __is_locked = False
+    __is_browser_locked = False
 
 
-async def login(username, password, getLogger=getDefaultLogger):
-    await ensure_browser()
+__logining_user = None
+
+
+async def login(
+    username,
+    password,
+    getLogger=getDefaultLogger,
+    lang_ru_url=LANG_RU_URL,
+    login_url=LOGIN_URL,
+):
     logger = getLogger(__name__)
+    global __logining_user
+    while __logining_user is not None:
+        logger.info(f"{__logining_user} is logging")
+        await sleep(1)
+    __logining_user = username
+    await ensure_browser()
     context = await browser.new_context()
     page = await context.new_page()
 
-    await page.goto(LANG_RU_URL)
+    await page.goto(lang_ru_url)
 
     logger.info("get LOGIN_URL")
-    await page.goto(LOGIN_URL)
+    await page.goto(login_url)
     logger.info("got LOGIN_URL")
 
     await page.fill("label[for='login'] + input", username)
@@ -86,7 +100,7 @@ async def login(username, password, getLogger=getDefaultLogger):
         name = cookie["name"]
         value = cookie["value"]
         cookies[name] = value
-
+    __logining_user = None
     if ".ASPXAUTH" not in cookies:
         logger.info("bad cookies")
         raise InvalidCredential

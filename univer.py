@@ -6,6 +6,8 @@ from .functions.get_attestation import get_attestation
 from .functions.get_schedule import get_schedule
 from .functions.get_exams import get_exams
 
+from .urls import kstu
+
 
 def auth(function):
     async def f(*args):
@@ -23,10 +25,12 @@ def auth(function):
 
 
 class Univer:
-    def __init__(self, username, password, cookies=None) -> None:
+    def __init__(self, username, password, cookies=None, urls=kstu) -> None:
         self.username = username
         self.password = password
         self.cookies = cookies
+
+        self.urls = urls
 
         self.logger = self.get_logger(__name__)
 
@@ -37,21 +41,34 @@ class Univer:
         return logger
 
     async def login(self):
-        self.cookies = await login(self.username, self.password, self.get_logger)
+        self.cookies = await login(
+            self.username,
+            self.password,
+            self.get_logger,
+            lang_ru_url=self.urls.LANG_RU_URL,
+            login_url=self.urls.LOGIN_URL,
+        )
         return self.cookies
 
     @auth
     async def get_attendance(self):
-        return await get_attendance(self.cookies, self.get_logger)
+        return await get_attendance(
+            self.cookies, self.get_logger, self.urls.ATTENDANCE_URL
+        )
 
     @auth
     async def get_attestation(self):
-        return await get_attestation(self.cookies, self.get_logger)
+        return await get_attestation(
+            self.cookies,
+            self.get_logger,
+            attendance_url=self.urls.ATTENDANCE_URL,
+            attestation_url=self.urls.ATTESTATION_URL,
+        )
 
     @auth
     async def get_schedule(self):
-        return await get_schedule(self.cookies, self.get_logger)
+        return await get_schedule(self.cookies, self.get_logger, self.urls.SCHEDULE_URL)
 
     @auth
     async def get_exams(self):
-        return await get_exams(self.cookies, self.get_logger)
+        return await get_exams(self.cookies, self.get_logger, self.urls.EXAMS_URL)

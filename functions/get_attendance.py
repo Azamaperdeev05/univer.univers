@@ -6,7 +6,6 @@ import re
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 from ..urls import ATTENDANCE_URL
-from ..exceptions import ForbiddenException
 from ..utils.logger import getDefaultLogger
 from ..utils.text import text
 from ..type import Mark
@@ -54,10 +53,12 @@ def get_summary(line: str):
     return [summary(s) for s in filter(lambda l: l.strip(), lines)]
 
 
-async def get_attendance(cookies, getLogger=getDefaultLogger):
+async def get_attendance(
+    cookies, getLogger=getDefaultLogger, attendance_url=ATTENDANCE_URL
+):
     logger = getLogger(__name__)
     logger.info("get ATTENDANCE_URL")
-    html = await fetch(ATTENDANCE_URL, cookies)
+    html = await fetch(attendance_url, cookies)
     logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)

@@ -40,10 +40,10 @@ def text(element):
         return element.text.strip()
 
 
-async def get_schedule(cookies, getLogger=getDefaultLogger):
+async def get_schedule(cookies, getLogger=getDefaultLogger, schedule_url=SCHEDULE_URL):
     logger = getLogger(__name__)
     logger.info("get SCHEDULE_URL")
-    html = await fetch(SCHEDULE_URL, cookies)
+    html = await fetch(schedule_url, cookies)
     logger.info("got SCHEDULE_URL")
 
     soup = BeautifulSoup(html, "html.parser")
