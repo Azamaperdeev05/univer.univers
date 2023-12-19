@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from ..utils.logger import getDefaultLogger
 from ..utils.fetch import fetch
-from ..urls import SCHEDULE_URL
+from ..urls import SCHEDULE_URL, LANG_RU_URL
 from ..utils.auth import check_auth
 
 from dataclasses import dataclass
@@ -40,9 +40,12 @@ def text(element):
         return element.text.strip()
 
 
-async def get_schedule(cookies, getLogger=getDefaultLogger, schedule_url=SCHEDULE_URL):
+async def get_schedule(
+    cookies, getLogger=getDefaultLogger, schedule_url=SCHEDULE_URL, lang_url=LANG_RU_URL
+):
     logger = getLogger(__name__)
     logger.info("get SCHEDULE_URL")
+    await fetch(lang_url, cookies)
     html = await fetch(schedule_url, cookies)
     logger.info("got SCHEDULE_URL")
 

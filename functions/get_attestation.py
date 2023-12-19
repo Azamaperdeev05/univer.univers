@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 from ..type import Mark, ActiveMark
-from ..urls import ATTESTATION_URL, ATTENDANCE_URL
+from ..urls import ATTESTATION_URL, ATTENDANCE_URL, LANG_RU_URL
 from ..utils.logger import getDefaultLogger
 from .get_attendance import get_attendance
 
@@ -25,10 +25,15 @@ class Attestation:
 
 
 async def _get_attestation(
-    cookies, getLogger=getDefaultLogger, attestation_url=ATTESTATION_URL
+    cookies,
+    getLogger=getDefaultLogger,
+    attestation_url=ATTESTATION_URL,
+    lang_url=LANG_RU_URL,
 ):
     logger = getLogger(__name__)
     logger.info("get ATTESTATION_URL")
+    if lang_url is not None:
+        await fetch(lang_url, cookies)
     html = await fetch(attestation_url, cookies)
     logger.info("got ATTESTATION_URL")
     soup = BeautifulSoup(html, "html.parser")
@@ -80,10 +85,12 @@ async def get_attestation(
     getLogger=getDefaultLogger,
     attestation_url=ATTESTATION_URL,
     attendance_url=ATTENDANCE_URL,
+    lang_url=LANG_RU_URL,
 ):
+    await fetch(lang_url, cookies)
     attestations, attendances = await asyncio.gather(
-        _get_attestation(cookies, getLogger, attestation_url),
-        get_attendance(cookies, getLogger, attendance_url),
+        _get_attestation(cookies, getLogger, attestation_url, lang_url=None),
+        get_attendance(cookies, getLogger, attendance_url, lang_url=None),
     )
     for attendance in attendances:
         attestation: Attestation = _find_element_by_key(

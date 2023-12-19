@@ -1,11 +1,10 @@
-from pprint import pprint
 from bs4 import BeautifulSoup
 
 from ..utils.auth import check_auth
 from ..utils.logger import getDefaultLogger
 from ..utils.fetch import fetch
 from ..utils.text import text
-from ..urls import EXAMS_URL
+from ..urls import EXAMS_URL, LANG_RU_URL
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,25 +18,35 @@ class Exam:
     date: int
 
 
-async def get_exams(cookies, getLogger=getDefaultLogger, exams_url=EXAMS_URL):
+def __get_date(text: str):
+    datestring = text.strip().split("\n")[0].strip()
+    date, time = datestring.split(" ")
+    hour, minute, *_ = map(int, time.split(":"))
+    separator = "-" if "-" in date else "."
+    day, month, year = map(int, date.split(separator))
+    return int(datetime(year, month, day, hour - 6, minute).timestamp())
+
+
+async def get_exams(
+    cookies, getLogger=getDefaultLogger, exams_url=EXAMS_URL, lang_url=LANG_RU_URL
+):
     logger = getLogger(__name__)
     logger.info("get EXAMS_URL")
+    await fetch(lang_url, cookies)
     html = await fetch(exams_url, cookies)
     logger.info("got EXAMS_URL")
 
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
-    exams_table = soup.select("#scheduleList tr[id]")
+    exams_table = soup.select("#scheduleList tr")
     exams: list[Exam] = []
     if len(exams_table) < 1:
         return exams
 
-    for row in exams_table:
-        date, time = row["id"].split(" ")
-        hour, minute, *_ = map(int, time.split(":"))
-        day, month, year = map(int, date.split("."))
-        _date = datetime(year, month, day, hour - 6, minute)
-
+    for index, row in enumerate(exams_table):
+        if row.get("id") is None:
+            continue
+        prev = exams_table[max(index - 1, 0)]
         subject, teacher, _, audience, *_ = row.select("td")
 
         exams.append(
@@ -45,7 +54,7 @@ async def get_exams(cookies, getLogger=getDefaultLogger, exams_url=EXAMS_URL):
                 subject=text(subject),
                 teacher=text(teacher),
                 audience=text(audience).split(":")[-1].strip(),
-                date=int(_date.timestamp()),
+                date=__get_date(prev.text),
             )
         )
 

@@ -5,7 +5,7 @@ import re
 
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
-from ..urls import ATTENDANCE_URL
+from ..urls import ATTENDANCE_URL, LANG_RU_URL
 from ..utils.logger import getDefaultLogger
 from ..utils.text import text
 from ..type import Mark
@@ -54,9 +54,14 @@ def get_summary(line: str):
 
 
 async def get_attendance(
-    cookies, getLogger=getDefaultLogger, attendance_url=ATTENDANCE_URL
+    cookies,
+    getLogger=getDefaultLogger,
+    attendance_url=ATTENDANCE_URL,
+    lang_url=LANG_RU_URL,
 ):
     logger = getLogger(__name__)
+    if lang_url is not None:
+        await fetch(lang_url, cookies)
     logger.info("get ATTENDANCE_URL")
     html = await fetch(attendance_url, cookies)
     logger.info("got ATTENDANCE_URL")

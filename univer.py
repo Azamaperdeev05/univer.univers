@@ -24,12 +24,18 @@ def auth(function):
     return f
 
 
+def _get_lang_url(urls: kstu, lang: str):
+    return getattr(urls, f"LANG_{lang.upper()}_URL")
+
+
 class Univer:
-    def __init__(self, username, password, cookies=None, urls=kstu) -> None:
+    def __init__(
+        self, username, password, cookies=None, urls=kstu, language="ru"
+    ) -> None:
         self.username = username
         self.password = password
         self.cookies = cookies
-
+        self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
 
         self.logger = self.get_logger(__name__)
@@ -45,7 +51,7 @@ class Univer:
             self.username,
             self.password,
             self.get_logger,
-            lang_ru_url=self.urls.LANG_RU_URL,
+            lang_url=self.lang_url,
             login_url=self.urls.LOGIN_URL,
         )
         return self.cookies
@@ -53,7 +59,10 @@ class Univer:
     @auth
     async def get_attendance(self):
         return await get_attendance(
-            self.cookies, self.get_logger, self.urls.ATTENDANCE_URL
+            self.cookies,
+            self.get_logger,
+            self.urls.ATTENDANCE_URL,
+            lang_url=self.lang_url,
         )
 
     @auth
@@ -63,12 +72,20 @@ class Univer:
             self.get_logger,
             attendance_url=self.urls.ATTENDANCE_URL,
             attestation_url=self.urls.ATTESTATION_URL,
+            lang_url=self.lang_url,
         )
 
     @auth
     async def get_schedule(self):
-        return await get_schedule(self.cookies, self.get_logger, self.urls.SCHEDULE_URL)
+        return await get_schedule(
+            self.cookies,
+            self.get_logger,
+            self.urls.SCHEDULE_URL,
+            lang_url=self.lang_url,
+        )
 
     @auth
     async def get_exams(self):
-        return await get_exams(self.cookies, self.get_logger, self.urls.EXAMS_URL)
+        return await get_exams(
+            self.cookies, self.get_logger, self.urls.EXAMS_URL, lang_url=self.lang_url
+        )

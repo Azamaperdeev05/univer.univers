@@ -57,7 +57,7 @@ async def login(
     username,
     password,
     getLogger=getDefaultLogger,
-    lang_ru_url=LANG_RU_URL,
+    lang_url=LANG_RU_URL,
     login_url=LOGIN_URL,
 ):
     logger = getLogger(__name__)
@@ -70,7 +70,7 @@ async def login(
     context = await browser.new_context()
     page = await context.new_page()
 
-    await page.goto(lang_ru_url)
+    await page.goto(lang_url)
 
     logger.info("get LOGIN_URL")
     await page.goto(login_url)
@@ -91,6 +91,7 @@ async def login(
     await sleep(1)
     title = await page.title()
     if "Бакалавр" not in title:
+        __logining_user = None
         raise InvalidCredential
 
     _cookies = await context.cookies()
