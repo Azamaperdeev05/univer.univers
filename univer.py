@@ -72,6 +72,11 @@ class Univer:
             attendance_url=self.urls.ATTENDANCE_URL,
             attestation_url=self.urls.ATTESTATION_URL,
             lang_url=self.lang_url,
+            lang_urls=[
+                self.urls.LANG_RU_URL,
+                self.urls.LANG_EN_URL,
+                self.urls.LANG_KK_URL,
+            ],
         )
 
     @auth
