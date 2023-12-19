@@ -1,7 +1,7 @@
 import aiohttp
 from ..exceptions import TimeoutError
 
-timeout = aiohttp.ClientTimeout(total=5)
+timeout = aiohttp.ClientTimeout(total=10)
 
 
 async def fetch(url: str, cookies: dict[str, str]):
