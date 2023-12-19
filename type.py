@@ -1,8 +1,12 @@
-from dataclasses import dataclass, field
+from typing import NamedTuple
 
 
-@dataclass
-class Mark:
+class Mark(NamedTuple):
     title: str
     value: int
-    active: bool = field(default=False)
+
+
+class ActiveMark(NamedTuple):
+    title: str
+    value: int
+    active: int = 1

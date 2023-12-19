@@ -4,9 +4,7 @@ from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
-from ..type import Mark
-from ..urls import ATTESTATION_URL
-from ..exceptions import ForbiddenException
+from ..type import Mark, ActiveMark
 from ..utils.logger import getDefaultLogger
 from .get_attendance import get_attendance
 
@@ -68,7 +66,7 @@ def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
         b_mark = _find_element_by_key(b, lambda b_mark: a_mark.title == b_mark.title)
         result_mark = b_mark or a_mark
         if not is_active_setted and a_mark.value == 0:
-            result_mark.active = True
+            result_mark = ActiveMark(title=result_mark.title, value=result_mark.value)
             is_active_setted = tuple
         result.append(result_mark)
     return result
