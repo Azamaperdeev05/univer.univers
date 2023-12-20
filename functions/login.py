@@ -59,47 +59,51 @@ async def login(
     getLogger=getDefaultLogger,
     login_url=LOGIN_URL,
 ):
-    logger = getLogger(__name__)
-    global __logining_user
-    while __logining_user is not None:
-        logger.info(f"{__logining_user} is logging")
+    try:
+        logger = getLogger(__name__)
+        global __logining_user
+        while __logining_user is not None:
+            logger.info(f"{__logining_user} is logging")
+            await sleep(1)
+        __logining_user = username
+        await ensure_browser()
+        context = await browser.new_context()
+        page = await context.new_page()
+
+        logger.info("get LOGIN_URL")
+        await page.goto(login_url)
+        logger.info("got LOGIN_URL")
+
+        await page.fill("label[for='login'] + input", username)
+        await page.fill("[type='password']", password)
+        await page.keyboard.press("Enter")
+        logger.info("sent form")
+
+        async def handler(route):
+            if "univer.kstu.kz" not in route.request.url:
+                await route.abort()
+                return
+            await route.continue_()
+
+        await page.route("**/*", handler)
         await sleep(1)
-    __logining_user = username
-    await ensure_browser()
-    context = await browser.new_context()
-    page = await context.new_page()
+        if await page.query_selector("#tools") is None:
+            raise InvalidCredential
 
-    logger.info("get LOGIN_URL")
-    await page.goto(login_url)
-    logger.info("got LOGIN_URL")
-
-    await page.fill("label[for='login'] + input", username)
-    await page.fill("[type='password']", password)
-    await page.keyboard.press("Enter")
-    logger.info("sent form")
-
-    async def handler(route):
-        if "univer.kstu.kz" not in route.request.url:
-            await route.abort()
-            return
-        await route.continue_()
-
-    await page.route("**/*", handler)
-    await sleep(1)
-    if await page.query_selector("#tools") is None:
+        _cookies = await context.cookies()
+        logger.info("got cookies")
+        cookies = {}
+        for cookie in _cookies:
+            name = cookie["name"]
+            value = cookie["value"]
+            cookies[name] = value
+        if ".ASPXAUTH" not in cookies:
+            logger.info("bad cookies")
+            raise InvalidCredential
+        return cookies
+    except Exception as e:
+        print(e)
+        raise e
+    finally:
         __logining_user = None
-        raise InvalidCredential
-
-    _cookies = await context.cookies()
-    logger.info("got cookies")
-    cookies = {}
-    for cookie in _cookies:
-        name = cookie["name"]
-        value = cookie["value"]
-        cookies[name] = value
-    __logining_user = None
-    await context.close()
-    if ".ASPXAUTH" not in cookies:
-        logger.info("bad cookies")
-        raise InvalidCredential
-    return cookies
+        await context.close()
