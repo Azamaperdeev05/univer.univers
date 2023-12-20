@@ -22,7 +22,10 @@ def __get_date(text: str):
     datestring = text.strip().split("\n")[0].strip()
     date, time = datestring.split(" ")
     hour, minute, *_ = map(int, time.split(":"))
-    separator = "-" if "-" in date else "."
+    for symbol in "-/.":
+        if symbol in date:
+            separator = symbol
+            break
     day, month, year = map(int, date.split(separator))
     return int(datetime(year, month, day, hour - 6, minute).timestamp())
 
