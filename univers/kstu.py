@@ -1,7 +1,12 @@
 from datetime import date
-from pprint import pprint
+
+from ..functions.get_schedule import Lesson
 from .base import Univer, Urls
 from dataclasses import replace
+from ..utils.fetch import fetch
+from logging import Logger
+from bs4 import BeautifulSoup
+import asyncio
 
 
 def _get_factor():
@@ -26,6 +31,40 @@ KSTUUrls = Urls(
     ),
     EXAMS_URL="http://univer.kstu.kz/student/myexam/schedule/",
 )
+PERSON_URL = "https://person.kstu.kz/?s={}"
+
+
+def to_initials(fullname: str):
+    firstname, *lostnames = fullname.split(" ")
+
+    return " ".join([firstname] + [f"{name[0]}." for name in lostnames])
+
+
+def compare_str_without_spaces(a: str, b: str):
+    return a.lower().replace(" ", "") != b.lower().replace(" ", "")
+
+
+async def get_teacher(name: str, logger: Logger):
+    firstname, *_ = name.split(" ")
+    logger.info(f"get PERSON_URL {firstname}")
+    html = await fetch(PERSON_URL.format(firstname))
+    logger.info(f"got PERSON_URL {firstname}")
+
+    soup = BeautifulSoup(html, "html.parser")
+    for article in soup.select("article[id]"):
+        anchor = article.select_one("h1 a")
+        if anchor is None:
+            continue
+        fullname = anchor.text.strip()
+        href = anchor["href"]
+        if not compare_str_without_spaces(firstname, to_initials(fullname)):
+            continue
+        return fullname, href
+
+    return name, None
+
+
+teachers = {}
 
 
 class KSTU(Univer):
@@ -54,5 +93,19 @@ class KSTU(Univer):
                 lessons.append(replace(lesson, factor=False))
                 continue
             lessons.append(lesson)
-        schedule.lessons = lessons
+
+        async def set_teacher(lesson: Lesson):
+            teacher = lesson.teacher
+            if teacher not in teachers:
+                teachers[teacher] = None, None
+                link = await get_teacher(teacher, self.logger)
+                teachers[teacher] = link
+            while teachers[teacher][0] is None:
+                await asyncio.sleep(1)
+            fullname, href = teachers[teacher]
+            lesson.teacher = fullname
+            lesson.teacher_link = href
+
+        await asyncio.gather(*[set_teacher(lesson) for lesson in lessons])
+
         return schedule

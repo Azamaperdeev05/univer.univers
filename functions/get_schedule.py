@@ -1,10 +1,10 @@
 from bs4 import BeautifulSoup, Tag
-from typing import Iterable
+
 from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -16,6 +16,7 @@ class Lesson:
     day: int
     time: str
     factor: bool
+    teacher_link: str = field(default=None)
 
 
 @dataclass
