@@ -1,12 +1,13 @@
+import asyncio
+from bs4 import BeautifulSoup
+from dataclasses import replace
 from datetime import date
+from logging import Logger
 
 from ..functions.get_schedule import Lesson
 from .base import Univer, Urls
-from dataclasses import replace
 from ..utils.fetch import fetch
-from logging import Logger
-from bs4 import BeautifulSoup
-import asyncio
+from ..utils import compare_str_without_spaces, to_initials
 
 
 def _get_factor():
@@ -32,16 +33,6 @@ KSTUUrls = Urls(
     EXAMS_URL="http://univer.kstu.kz/student/myexam/schedule/",
 )
 PERSON_URL = "https://person.kstu.kz/?s={}"
-
-
-def to_initials(fullname: str):
-    firstname, *lostnames = fullname.split(" ")
-
-    return " ".join([firstname] + [f"{name[0]}." for name in lostnames])
-
-
-def compare_str_without_spaces(a: str, b: str):
-    return a.lower().replace(" ", "") != b.lower().replace(" ", "")
 
 
 async def get_teacher(name: str, logger: Logger):
