@@ -52,7 +52,7 @@ async def get_teacher(name: str, logger: Logger):
             continue
         fullname = anchor.text.strip()
         href = anchor["href"]
-        if not compare_str_without_spaces(firstname, to_initials(fullname)):
+        if not compare_str_without_spaces(name, to_initials(fullname)):
             continue
         return fullname, href
 
