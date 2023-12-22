@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from ..exceptions import ForbiddenException
 from ..utils.logger import create_logger
@@ -37,6 +38,10 @@ def auth(function):
 
 def _get_lang_url(urls: Urls, lang: str):
     return getattr(urls, f"LANG_{lang.upper()}_URL")
+
+
+_teachers = {}
+_working_teachers = set()
 
 
 class Univer:
@@ -102,13 +107,24 @@ class Univer:
 
     @auth
     async def get_schedule(self, factor=None):
-        return await get_schedule(
+        schedule = await get_schedule(
             self.cookies,
             self.urls.SCHEDULE_URL,
             get_logger=self.get_logger,
             lang_url=self.lang_url,
             factor=factor,
         )
+        if await self.get_teacher("") is NotImplemented:
+            return schedule
+
+        async def set_teacher(lesson):
+            teacher = await self.__get_teacher(lesson.teacher)
+            fullname, href = teacher
+            lesson.teacher = fullname
+            lesson.teacher_link = href
+
+        await asyncio.gather(*(set_teacher(lesson) for lesson in schedule.lessons))
+        return schedule
 
     @auth
     async def get_exams(self):
@@ -118,3 +134,27 @@ class Univer:
             lang_url=self.lang_url,
             get_logger=self.get_logger,
         )
+
+    async def __get_teacher(self, name: str):
+        teacher_id = f"{self.univer}-{name}"
+        while teacher_id in _working_teachers:
+            await asyncio.sleep(1)
+
+        if teacher_id in _teachers:
+            return _teachers[teacher_id]
+
+        _working_teachers.add(teacher_id)
+        self.logger.info(f"get PERSON_URL {name}")
+        try:
+            teacher = await self.get_teacher(name)
+            self.logger.info(f"got PERSON_URL {name}")
+            _teachers[teacher_id] = teacher
+            return teacher
+        except:
+            self.logger.info(f"error PERSON_URL {name}")
+            return name, None
+        finally:
+            _working_teachers.remove(teacher_id)
+
+    async def get_teacher(self, name: str) -> tuple[str, str]:
+        return NotImplemented

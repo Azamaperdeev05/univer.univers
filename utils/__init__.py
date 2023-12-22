@@ -1,6 +1,11 @@
-def to_initials(fullname: str):
-    firstname, *lostnames = fullname.split(" ")
+import re
 
+
+def to_initials(fullname: str):
+    fullname = re.sub("\s+", " ", fullname).strip()
+    if " " not in fullname:
+        return fullname
+    firstname, *lostnames = fullname.split(" ")
     return " ".join([firstname] + [f"{name[0]}." for name in lostnames])
 
 

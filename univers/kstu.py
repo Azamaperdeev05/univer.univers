@@ -35,33 +35,6 @@ KSTUUrls = Urls(
 PERSON_URL = "https://person.kstu.kz/?s={}"
 
 
-async def get_teacher(name: str, logger: Logger):
-    firstname, *_ = name.split(" ")
-    logger.info(f"get PERSON_URL {firstname}")
-    try:
-        html = await fetch(PERSON_URL.format(firstname))
-    except:
-        logger.info(f"error PERSON_URL {firstname}")
-        return name, None
-    logger.info(f"got PERSON_URL {firstname}")
-
-    soup = BeautifulSoup(html, "html.parser")
-    for article in soup.select("article[id]"):
-        anchor = article.select_one("h1 a")
-        if anchor is None:
-            continue
-        fullname = anchor.text.strip()
-        href = anchor["href"]
-        if not compare_str_without_spaces(name, to_initials(fullname)):
-            continue
-        return fullname, href
-
-    return name, None
-
-
-teachers = {}
-
-
 class KSTU(Univer):
     def __init__(
         self,
@@ -89,19 +62,20 @@ class KSTU(Univer):
                 continue
             lessons.append(lesson)
 
-        async def set_teacher(lesson: Lesson):
-            teacher = lesson.teacher
-            if teacher not in teachers:
-                teachers[teacher] = None, None
-                link = await get_teacher(teacher, self.logger)
-                teachers[teacher] = link
-            while teachers[teacher][0] is None:
-                await asyncio.sleep(1)
-            fullname, href = teachers[teacher]
-            lesson.teacher = fullname
-            lesson.teacher_link = href
-
-        await asyncio.gather(*[set_teacher(lesson) for lesson in lessons])
-
         schedule.lessons = lessons
         return schedule
+
+    async def get_teacher(self, name: str):
+        firstname, *_ = name.split(" ")
+        html = await fetch(PERSON_URL.format(firstname))
+        soup = BeautifulSoup(html, "html.parser")
+        for article in soup.select("article[id]"):
+            anchor = article.select_one("h1 a")
+            if anchor is None:
+                continue
+            fullname = anchor.text.strip()
+            href = anchor["href"]
+            if not compare_str_without_spaces(name, to_initials(fullname)):
+                continue
+            return fullname, href
+        return name, None

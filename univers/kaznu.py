@@ -28,35 +28,6 @@ def remove_spaces(text: str):
     return re.sub("\s+", " ", text).strip()
 
 
-async def get_teacher(name: str, logger: Logger):
-    firstname, *_ = name.split(" ")
-    logger.info(f"get PERSON_URL {firstname}")
-    try:
-        data = urlencode({"searchname": firstname, "searchtype": "personal_sname"})
-        html = await fetch(
-            PERSON_URL,
-            method="post",
-            data=data.encode(),
-            headers={
-                "content-type": "application/x-www-form-urlencoded",
-            },
-        )
-    except:
-        logger.info(f"error PERSON_URL {firstname}")
-        return name, None
-    logger.info(f"got PERSON_URL {firstname}")
-
-    soup = BeautifulSoup(html, "html.parser")
-    for anchor in soup.select(".admin .item-bg a"):
-        fullname = remove_spaces(anchor.select_one("h6").text)
-        href = anchor["href"]
-        if not compare_str_without_spaces(name, to_initials(fullname)):
-            continue
-        return fullname, f"https://pps.kaznu.kz{href}"
-
-    return name, None
-
-
 class KazNU(Univer):
     def __init__(
         self,
@@ -74,20 +45,23 @@ class KazNU(Univer):
             univer="kaznu",
         )
 
-    async def get_schedule(self):
-        schedule = await super().get_schedule()
+    async def get_teacher(self, name: str):
+        firstname, *_ = name.split(" ")
+        data = urlencode({"searchname": firstname, "searchtype": "personal_sname"})
+        html = await fetch(
+            PERSON_URL,
+            method="post",
+            data=data.encode(),
+            headers={
+                "content-type": "application/x-www-form-urlencoded",
+            },
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        for anchor in soup.select(".admin .item-bg a"):
+            fullname = remove_spaces(anchor.select_one("h6").text)
+            href = anchor["href"]
+            if not compare_str_without_spaces(name, to_initials(fullname)):
+                continue
+            return fullname, f"https://pps.kaznu.kz{href}"
 
-        async def set_teacher(lesson: Lesson):
-            teacher = lesson.teacher
-            if teacher not in teachers:
-                teachers[teacher] = None, None
-                link = await get_teacher(teacher, self.logger)
-                teachers[teacher] = link
-            while teachers[teacher][0] is None:
-                await asyncio.sleep(1)
-            fullname, href = teachers[teacher]
-            lesson.teacher = fullname
-            lesson.teacher_link = href
-
-        await asyncio.gather(*[set_teacher(lesson) for lesson in schedule.lessons])
-        return schedule
+        return name, None
