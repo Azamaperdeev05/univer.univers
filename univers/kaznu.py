@@ -1,6 +1,5 @@
 import asyncio
 from logging import Logger
-from pprint import pprint
 from bs4 import BeautifulSoup
 from ..utils.fetch import fetch
 from ..utils import compare_str_without_spaces, to_initials
@@ -39,7 +38,6 @@ async def get_teacher(name: str, logger: Logger):
             method="post",
             data=data.encode(),
             headers={
-                "referer": "https://pps.kaznu.kz/ru/Main/Search/",
                 "content-type": "application/x-www-form-urlencoded",
             },
         )
@@ -92,5 +90,4 @@ class KazNU(Univer):
             lesson.teacher_link = href
 
         await asyncio.gather(*[set_teacher(lesson) for lesson in schedule.lessons])
-        pprint(schedule)
         return schedule

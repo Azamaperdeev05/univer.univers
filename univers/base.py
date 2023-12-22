@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ..exceptions import *
+from ..exceptions import ForbiddenException
 from ..utils.logger import create_logger
 from ..functions.login import login
 from ..functions.get_attendance import get_attendance
@@ -52,6 +52,7 @@ class Univer:
         self.username = username
         self.password = password
         self.cookies = cookies
+        self.language = language
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
         self.univer = univer
@@ -61,7 +62,7 @@ class Univer:
     def get_logger(self, name):
         logger = create_logger(
             name,
-            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} - %(message)s",
+            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} - %(message)s ({self.language})",
         )
         return logger
 
