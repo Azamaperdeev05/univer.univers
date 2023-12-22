@@ -1,4 +1,6 @@
+from pprint import pprint
 from bs4 import BeautifulSoup
+from typing import Literal
 
 from ..utils.auth import check_auth
 from ..utils.logger import get_default_logger
@@ -6,7 +8,7 @@ from ..utils.fetch import fetch
 from ..utils.text import text
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 @dataclass
@@ -15,6 +17,10 @@ class Exam:
     teacher: str
     audience: str
     date: int
+    type: Literal["consultation", "exam"]
+
+
+tz = timezone(timedelta(hours=6))
 
 
 def __get_date(text: str):
@@ -26,7 +32,8 @@ def __get_date(text: str):
             separator = symbol
             break
     day, month, year = map(int, date.split(separator))
-    return int(datetime(year, month, day, hour - 6, minute).timestamp())
+
+    return int(datetime(year, month, day, hour, minute, tzinfo=tz).timestamp())
 
 
 async def get_exams(
@@ -56,8 +63,20 @@ async def get_exams(
                 teacher=text(teacher),
                 audience=text(audience).split(":")[-1].strip(),
                 date=__get_date(prev.text),
+                type="exam",
             )
         )
+
+    groups: dict[str, list[Exam]] = {}
+    for exam in exams:
+        if exam.subject not in groups:
+            groups[exam.subject] = []
+        groups[exam.subject].append(exam)
+
+    for group in groups.values():
+        if len(group) < 2:
+            continue
+        group[0].type = "consultation"
 
     exams.sort(key=lambda e: e.date)
     return exams
