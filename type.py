@@ -1,8 +1,6 @@
 from typing import NamedTuple
 from .functions.get_schedule import Lesson, Schedule
 from .functions.get_exams import Exam
-from .functions.get_attendance import Attendance
-from .univers.base import Univer
 
 
 class Mark(NamedTuple):

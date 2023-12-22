@@ -140,8 +140,12 @@ async def get_attestation(
     get_logger=get_default_logger,
 ):
     attestations, attendances = await asyncio.gather(
-        _get_attestation(cookies, get_logger, attestation_url, lang_url=lang_url),
-        get_attendance(cookies, get_logger, attendance_url, lang_url=lang_url),
+        _get_attestation(
+            cookies, attestation_url, lang_url=lang_url, get_logger=get_logger
+        ),
+        get_attendance(
+            cookies, attendance_url, lang_url=lang_url, get_logger=get_logger
+        ),
     )
     subjects = await _get_attestation_subjects(cookies, attestation_url, lang_urls)
     return _join(attestations, attendances, subjects)
