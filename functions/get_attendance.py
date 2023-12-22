@@ -30,6 +30,8 @@ def get_subject(line: str):
 
 def parse_table(table: Tag):
     headings = table.select("th")
+    if len(headings) == 0:
+        return None
     values = table.select("td")
     marks: list[Mark] = []
     for heading, value in zip(headings[1:], values[:-1]):
@@ -38,7 +40,7 @@ def parse_table(table: Tag):
             marks.append(
                 Mark(title=text(heading), value=int(v) if not v.isalpha() else v)
             )
-    return text(headings[0]), marks
+    return text(headings[0]).capitalize(), marks
 
 
 def get_summary(line: str):
@@ -63,7 +65,7 @@ async def get_attendance(
     logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
-    attendance_table = soup.select("#tools + table + table > tr")[1:]
+    attendance_table = soup.select("#tools + table + table tr")[1:]
     attendances: list[Attendance] = []
     if len(attendance_table) < 1:
         return attendances
@@ -73,7 +75,7 @@ async def get_attendance(
     attendance = Attendance(None, None, [])
     part = Part(None, None, [])
     for index, row in enumerate(attendance_table):
-        c, *_ = row.attrs.get("class")
+        c, *_ = row.attrs.get("class", ["mid"])
         if c == "top":
             ignore = False
         if ignore:
@@ -89,7 +91,10 @@ async def get_attendance(
             continue
         table = row.select_one("table")
         if table is not None:
-            part.part, part.marks = parse_table(table)
+            marks = parse_table(table)
+            if marks is None:
+                continue
+            part.part, part.marks = marks
             if part.type is None:
                 part.type = attendance.attendance[-1].type
             attendance.attendance.append(part)
@@ -97,7 +102,7 @@ async def get_attendance(
             continue
 
         next = attendance_table[(index + 1) % len(attendance_table)]
-        if next.attrs.get("class")[0] in ["top", "bot"]:
+        if next.attrs.get("class", ["mid"])[0] in ["top", "bot"]:
             summary = get_summary(text(row))
             attendance.summary = summary
             attendances.append(attendance)
