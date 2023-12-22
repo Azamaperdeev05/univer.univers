@@ -1,8 +1,0 @@
-ATTENDANCE_URL = "http://univer.kstu.kz/student/attendance/full/"
-LOGIN_URL = "http://univer.kstu.kz/user/login"
-LANG_RU_URL = "http://univer.kstu.kz/lang/change/ru/"
-LANG_KK_URL = "http://univer.kstu.kz/lang/change/kz/"
-LANG_EN_URL = "http://univer.kstu.kz/lang/change/en/"
-ATTESTATION_URL = "http://univer.kstu.kz/student/attestation/"
-SCHEDULE_URL = "http://univer.kstu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
-EXAMS_URL = "http://univer.kstu.kz/student/myexam/schedule/"

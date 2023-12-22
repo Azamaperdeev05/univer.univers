@@ -2,7 +2,7 @@ import logging
 import sys
 
 
-def createLogger(name, level=logging.INFO, *, format: str):
+def create_logger(name, level=logging.INFO, *, format: str):
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
@@ -18,7 +18,7 @@ def createLogger(name, level=logging.INFO, *, format: str):
     return logger
 
 
-def getDefaultLogger(name, level=logging.INFO):
-    return createLogger(
+def get_default_logger(name, level=logging.INFO):
+    return create_logger(
         name, level, format="[%(asctime)s] %(name)s | %(levelname)s | %(message)s"
     )

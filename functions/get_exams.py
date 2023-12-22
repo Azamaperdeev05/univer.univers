@@ -1,10 +1,9 @@
 from bs4 import BeautifulSoup
 
 from ..utils.auth import check_auth
-from ..utils.logger import getDefaultLogger
+from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
 from ..utils.text import text
-from ..urls import EXAMS_URL, LANG_RU_URL
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -31,9 +30,9 @@ def __get_date(text: str):
 
 
 async def get_exams(
-    cookies, getLogger=getDefaultLogger, exams_url=EXAMS_URL, lang_url=LANG_RU_URL
+    cookies, exams_url: str, lang_url: str, get_logger=get_default_logger
 ):
-    logger = getLogger(__name__)
+    logger = get_logger(__name__)
     logger.info("get EXAMS_URL")
     html = await fetch(lang_url, cookies, {"referer": exams_url})
     logger.info("got EXAMS_URL")

@@ -1,12 +1,23 @@
-from .exceptions import *
-from .utils.logger import createLogger
-from .functions.login import login
-from .functions.get_attendance import get_attendance
-from .functions.get_attestation import get_attestation
-from .functions.get_schedule import get_schedule
-from .functions.get_exams import get_exams
+from dataclasses import dataclass
+from ..exceptions import *
+from ..utils.logger import create_logger
+from ..functions.login import login
+from ..functions.get_attendance import get_attendance
+from ..functions.get_attestation import get_attestation
+from ..functions.get_schedule import get_schedule
+from ..functions.get_exams import get_exams
 
-from .urls import kstu
+
+@dataclass
+class Urls:
+    ATTENDANCE_URL: str
+    LOGIN_URL: str
+    LANG_RU_URL: str
+    LANG_KK_URL: str
+    LANG_EN_URL: str
+    ATTESTATION_URL: str
+    SCHEDULE_URL: str
+    EXAMS_URL: str
 
 
 def auth(function):
@@ -24,13 +35,18 @@ def auth(function):
     return f
 
 
-def _get_lang_url(urls: kstu, lang: str):
+def _get_lang_url(urls: Urls, lang: str):
     return getattr(urls, f"LANG_{lang.upper()}_URL")
 
 
 class Univer:
     def __init__(
-        self, username, password, cookies=None, urls=kstu, language="ru"
+        self,
+        username: str,
+        password: str,
+        urls: Urls,
+        cookies: dict[str, str] = None,
+        language="ru",
     ) -> None:
         self.username = username
         self.password = password
@@ -41,7 +57,7 @@ class Univer:
         self.logger = self.get_logger(__name__)
 
     def get_logger(self, name):
-        logger = createLogger(
+        logger = create_logger(
             name, format=f"[%(asctime)s] %(name)s | {self.username} - %(message)s"
         )
         return logger
@@ -50,8 +66,8 @@ class Univer:
         self.cookies = await login(
             self.username,
             self.password,
-            self.get_logger,
             login_url=self.urls.LOGIN_URL,
+            get_logger=self.get_logger,
         )
         return self.cookies
 
@@ -59,37 +75,42 @@ class Univer:
     async def get_attendance(self):
         return await get_attendance(
             self.cookies,
-            self.get_logger,
-            self.urls.ATTENDANCE_URL,
+            attendance_url=self.urls.ATTENDANCE_URL,
             lang_url=self.lang_url,
+            get_logger=self.get_logger,
         )
 
     @auth
     async def get_attestation(self):
+        lang_urls = [
+            self.urls.LANG_RU_URL,
+            self.urls.LANG_EN_URL,
+            self.urls.LANG_KK_URL,
+        ]
         return await get_attestation(
             self.cookies,
-            self.get_logger,
+            get_logger=self.get_logger,
             attendance_url=self.urls.ATTENDANCE_URL,
             attestation_url=self.urls.ATTESTATION_URL,
             lang_url=self.lang_url,
-            lang_urls=[
-                self.urls.LANG_RU_URL,
-                self.urls.LANG_EN_URL,
-                self.urls.LANG_KK_URL,
-            ],
+            lang_urls=lang_urls,
         )
 
     @auth
-    async def get_schedule(self):
+    async def get_schedule(self, factor=None):
         return await get_schedule(
             self.cookies,
-            self.get_logger,
             self.urls.SCHEDULE_URL,
+            get_logger=self.get_logger,
             lang_url=self.lang_url,
+            factor=factor,
         )
 
     @auth
     async def get_exams(self):
         return await get_exams(
-            self.cookies, self.get_logger, self.urls.EXAMS_URL, lang_url=self.lang_url
+            self.cookies,
+            self.urls.EXAMS_URL,
+            lang_url=self.lang_url,
+            get_logger=self.get_logger,
         )

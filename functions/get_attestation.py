@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 import asyncio
-from pprint import pprint
+from typing import Iterable
 from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 from ..utils.text import text
 from ..type import Mark, ActiveMark
-from ..urls import ATTESTATION_URL, ATTENDANCE_URL, LANG_RU_URL
-from ..utils.logger import getDefaultLogger
+from ..utils.logger import get_default_logger
 from .get_attendance import get_attendance, Attendance as _Attendance
 
 
@@ -28,11 +27,11 @@ class Attestation:
 
 async def _get_attestation(
     cookies,
-    getLogger=getDefaultLogger,
-    attestation_url=ATTESTATION_URL,
-    lang_url=LANG_RU_URL,
+    attestation_url: str,
+    lang_url: str,
+    get_logger=get_default_logger,
 ):
-    logger = getLogger(__name__)
+    logger = get_logger(__name__)
     logger.info("get ATTESTATION_URL")
     html = await fetch(lang_url, cookies, {"referer": attestation_url})
     logger.info("got ATTESTATION_URL")
@@ -77,9 +76,7 @@ def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
     return result
 
 
-async def _get_attestation_subject(
-    cookies, attestation_url=ATTESTATION_URL, lang_url=ATTESTATION_URL
-):
+async def _get_attestation_subject(cookies, attestation_url: str, lang_url: str):
     html = await fetch(lang_url, cookies, {"referer": attestation_url})
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
@@ -90,8 +87,8 @@ async def _get_attestation_subject(
 
 async def _get_attestation_subjects(
     cookies,
-    attestation_url=ATTESTATION_URL,
-    lang_urls=[LANG_RU_URL],
+    attestation_url: str,
+    lang_urls: Iterable[str],
 ):
     result = []
     for lang_url in lang_urls:
@@ -136,15 +133,15 @@ def _join(
 
 async def get_attestation(
     cookies,
-    getLogger=getDefaultLogger,
-    attestation_url=ATTESTATION_URL,
-    attendance_url=ATTENDANCE_URL,
-    lang_url=LANG_RU_URL,
-    lang_urls=[LANG_RU_URL],
+    attestation_url: str,
+    attendance_url: str,
+    lang_url: str,
+    lang_urls: Iterable[str],
+    get_logger=get_default_logger,
 ):
     attestations, attendances = await asyncio.gather(
-        _get_attestation(cookies, getLogger, attestation_url, lang_url=lang_url),
-        get_attendance(cookies, getLogger, attendance_url, lang_url=lang_url),
+        _get_attestation(cookies, get_logger, attestation_url, lang_url=lang_url),
+        get_attendance(cookies, get_logger, attendance_url, lang_url=lang_url),
     )
     subjects = await _get_attestation_subjects(cookies, attestation_url, lang_urls)
     return _join(attestations, attendances, subjects)

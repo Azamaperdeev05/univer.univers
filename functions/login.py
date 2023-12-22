@@ -2,6 +2,7 @@ from playwright.async_api import async_playwright, Playwright, Browser
 from asyncio import sleep
 
 from ..exceptions import InvalidCredential, AuthorisationError
+from ..utils.logger import get_default_logger
 
 
 def string_has_one_substring(string: str, substrings: list[str]):
@@ -15,7 +16,7 @@ browser: Browser = None
 apw: Playwright = None
 
 
-logger = getDefaultLogger(__name__)
+logger = get_default_logger(__name__)
 
 __is_browser_locked = False
 
@@ -52,13 +53,13 @@ __logining_user = None
 
 
 async def login(
-    username,
-    password,
-    getLogger=getDefaultLogger,
-    login_url=LOGIN_URL,
+    username: str,
+    password: str,
+    login_url: str,
+    get_logger=get_default_logger,
 ):
     try:
-        logger = getLogger(__name__)
+        logger = get_logger(__name__)
         global __logining_user
         tries = 0
         while __logining_user is not None:

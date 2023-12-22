@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from pprint import pprint
 from bs4 import BeautifulSoup, Tag
 import re
 
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
-from ..urls import ATTENDANCE_URL, LANG_RU_URL
-from ..utils.logger import getDefaultLogger
+from ..utils.logger import get_default_logger
 from ..utils.text import text
 from ..type import Mark
 
@@ -55,11 +53,11 @@ def get_summary(line: str):
 
 async def get_attendance(
     cookies,
-    getLogger=getDefaultLogger,
-    attendance_url=ATTENDANCE_URL,
-    lang_url=LANG_RU_URL,
+    attendance_url: str,
+    lang_url: str,
+    get_logger=get_default_logger,
 ):
-    logger = getLogger(__name__)
+    logger = get_logger(__name__)
     logger.info("get ATTENDANCE_URL")
     html = await fetch(lang_url, cookies, {"referer": attendance_url})
     logger.info("got ATTENDANCE_URL")
