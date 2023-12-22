@@ -8,3 +8,7 @@ class TimeoutError(Exception):
 
 class InvalidCredential(Exception):
     pass
+
+
+class AuthorisationError(Exception):
+    pass

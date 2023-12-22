@@ -1,9 +1,7 @@
 from playwright.async_api import async_playwright, Playwright, Browser
 from asyncio import sleep
 
-from ..exceptions import InvalidCredential
-from ..urls import LANG_RU_URL, LOGIN_URL
-from ..utils.logger import getDefaultLogger
+from ..exceptions import InvalidCredential, AuthorisationError
 
 
 def string_has_one_substring(string: str, substrings: list[str]):
@@ -62,8 +60,12 @@ async def login(
     try:
         logger = getLogger(__name__)
         global __logining_user
+        tries = 0
         while __logining_user is not None:
             logger.info(f"{__logining_user} is logging")
+            if tries > 10:
+                raise AuthorisationError
+            tries += 1
             await sleep(1)
         __logining_user = username
         await ensure_browser()
