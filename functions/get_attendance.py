@@ -40,7 +40,7 @@ def parse_table(table: Tag):
             marks.append(
                 Mark(title=text(heading), value=int(v) if not v.isalpha() else v)
             )
-    return text(headings[0]).capitalize(), marks
+    return text(headings[0]), marks
 
 
 def get_summary(line: str):
@@ -51,6 +51,10 @@ def get_summary(line: str):
 
     lines = line.split("\n")
     return [summary(s) for s in filter(lambda l: l.strip(), lines)]
+
+
+def capitalize(text: str):
+    return text[0].upper() + text[1:]
 
 
 async def get_attendance(
@@ -87,7 +91,7 @@ async def get_attendance(
 
         button = row.select_one("a")
         if button is not None:
-            part.type = get_subject(button.text)
+            part.type = capitalize(get_subject(button.text))
             continue
         table = row.select_one("table")
         if table is not None:
