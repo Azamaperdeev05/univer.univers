@@ -47,18 +47,21 @@ class Univer:
         urls: Urls,
         cookies: dict[str, str] = None,
         language="ru",
+        univer="",
     ) -> None:
         self.username = username
         self.password = password
         self.cookies = cookies
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
+        self.univer = univer
 
         self.logger = self.get_logger(__name__)
 
     def get_logger(self, name):
         logger = create_logger(
-            name, format=f"[%(asctime)s] %(name)s | {self.username} - %(message)s"
+            name,
+            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} - %(message)s",
         )
         return logger
 

@@ -37,7 +37,12 @@ class KSTU(Univer):
         language="ru",
     ) -> None:
         super().__init__(
-            username, password, urls=KSTUUrls, cookies=cookies, language=language
+            username,
+            password,
+            urls=KSTUUrls,
+            cookies=cookies,
+            language=language,
+            univer="kstu",
         )
 
     async def get_schedule(self):

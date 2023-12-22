@@ -24,5 +24,10 @@ class KazNU(Univer):
         language="ru",
     ) -> None:
         super().__init__(
-            username, password, cookies=cookies, urls=KazNUUrls, language=language
+            username,
+            password,
+            cookies=cookies,
+            urls=KazNUUrls,
+            language=language,
+            univer="kaznu",
         )
