@@ -96,23 +96,19 @@ async def login(
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        t = 10 * 1000
-        news_url = f"{url.scheme}://{url.netloc}/news/**/*"
-        login_url = f"{url.scheme}://{url.netloc}/user/login?ReturnUrl=*"
+        news_url = f"{url.scheme}://{url.netloc}/news"
+        login_url = f"{url.scheme}://{url.netloc}/user/login?ReturnUrl="
 
-        news_page = asyncio.create_task(page.wait_for_url(news_url, timeout=t))
-        login_page = asyncio.create_task(page.wait_for_url(login_url, timeout=t))
-        tasks = (news_page, login_page)
-        try:
-            await asyncio.wait(
-                tasks,
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-        except:
-            pass
-        finally:
-            for t in tasks:
-                t.cancel()
+        sleep_counter = 0
+        while sleep_counter < 10:
+            await asyncio.sleep(1)
+            if page.url.startswith(login_url):
+                raise InvalidCredential
+            if page.url.startswith(news_url):
+                break
+            sleep_counter += 1
+        else:
+            raise TimeoutError
 
         if await page.query_selector("#tools") is None:
             raise InvalidCredential
