@@ -89,9 +89,11 @@ async def _get_attestation_subjects(
     cookies,
     attestation_url: str,
     lang_urls: Iterable[str],
+    get_logger=get_default_logger,
 ):
+    logger = get_logger(__name__)
     result = []
-    for lang_url in lang_urls:
+    for i, lang_url in enumerate(lang_urls):
         index = 0
         async for subject in _get_attestation_subject(
             cookies, attestation_url, lang_url
@@ -100,6 +102,7 @@ async def _get_attestation_subjects(
                 result.append([])
             result[index].append(subject)
             index += 1
+        logger.info(f"got ATTESTATION_URL {i+1}/{len(lang_urls)}")
     return result
 
 
@@ -147,5 +150,7 @@ async def get_attestation(
             cookies, attendance_url, lang_url=lang_url, get_logger=get_logger
         ),
     )
-    subjects = await _get_attestation_subjects(cookies, attestation_url, lang_urls)
+    subjects = await _get_attestation_subjects(
+        cookies, attestation_url, lang_urls, get_logger=get_logger
+    )
     return _join(attestations, attendances, subjects)
