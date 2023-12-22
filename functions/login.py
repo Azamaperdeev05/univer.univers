@@ -59,16 +59,16 @@ async def login(
     login_url: str,
     get_logger=get_default_logger,
 ):
+    logger = get_logger(__name__)
+    global __logining_user
+    tries = 0
+    while __logining_user is not None:
+        logger.info(f"{__logining_user} is logging")
+        if tries > 10:
+            raise AuthorisationError
+        tries += 1
+        await asyncio.sleep(1)
     try:
-        logger = get_logger(__name__)
-        global __logining_user
-        tries = 0
-        while __logining_user is not None:
-            logger.info(f"{__logining_user} is logging")
-            if tries > 10:
-                raise AuthorisationError
-            tries += 1
-            await asyncio.sleep(1)
         __logining_user = username
         await ensure_browser()
         context = await browser.new_context()
