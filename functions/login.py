@@ -68,6 +68,7 @@ async def login(
             raise AuthorisationError
         tries += 1
         await asyncio.sleep(1)
+    context = None
     try:
         __logining_user = username
         await ensure_browser()
@@ -95,9 +96,9 @@ async def login(
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        t = 5 * 1000
+        t = 10 * 1000
         news_url = f"{url.scheme}://{url.netloc}/news/**/*"
-        login_url = f"{url.scheme}://{url.netloc}//user/login?ReturnUrl=*"
+        login_url = f"{url.scheme}://{url.netloc}/user/login?ReturnUrl=*"
 
         news_page = asyncio.create_task(page.wait_for_url(news_url, timeout=t))
         login_page = asyncio.create_task(page.wait_for_url(login_url, timeout=t))
@@ -132,4 +133,5 @@ async def login(
         raise e
     finally:
         __logining_user = None
-        await context.close()
+        if context:
+            await context.close()
