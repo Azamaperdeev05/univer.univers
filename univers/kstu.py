@@ -47,7 +47,11 @@ def compare_str_without_spaces(a: str, b: str):
 async def get_teacher(name: str, logger: Logger):
     firstname, *_ = name.split(" ")
     logger.info(f"get PERSON_URL {firstname}")
-    html = await fetch(PERSON_URL.format(firstname))
+    try:
+        html = await fetch(PERSON_URL.format(firstname))
+    except:
+        logger.info(f"error PERSON_URL {firstname}")
+        return name, None
     logger.info(f"got PERSON_URL {firstname}")
 
     soup = BeautifulSoup(html, "html.parser")
@@ -108,4 +112,5 @@ class KSTU(Univer):
 
         await asyncio.gather(*[set_teacher(lesson) for lesson in lessons])
 
+        schedule.lessons = lessons
         return schedule
