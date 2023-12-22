@@ -1,4 +1,5 @@
 from playwright.async_api import async_playwright, Playwright, Browser
+from urllib.parse import urlparse
 from asyncio import sleep
 
 from ..exceptions import InvalidCredential, AuthorisationError
@@ -73,6 +74,16 @@ async def login(
         context = await browser.new_context()
         page = await context.new_page()
 
+        netloc = urlparse(login_url).netloc
+
+        async def handler(route):
+            if netloc not in route.request.url:
+                await route.abort()
+                return
+            await route.continue_()
+
+        await page.route("**/*", handler)
+
         logger.info("get LOGIN_URL")
         await page.goto(login_url)
         logger.info("got LOGIN_URL")
@@ -82,13 +93,6 @@ async def login(
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        async def handler(route):
-            if "univer.kstu.kz" not in route.request.url:
-                await route.abort()
-                return
-            await route.continue_()
-
-        await page.route("**/*", handler)
         await sleep(1)
         if await page.query_selector("#tools") is None:
             raise InvalidCredential
