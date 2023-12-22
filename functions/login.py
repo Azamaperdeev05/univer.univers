@@ -1,6 +1,6 @@
 from playwright.async_api import async_playwright, Playwright, Browser
 from urllib.parse import urlparse
-from asyncio import sleep
+import asyncio
 
 from ..exceptions import InvalidCredential, AuthorisationError
 from ..utils.logger import get_default_logger
@@ -29,7 +29,7 @@ async def ensure_browser():
 
     while __is_browser_locked:
         logger.info("Waiting browser")
-        await sleep(1)
+        await asyncio.sleep(1)
 
     __is_browser_locked = True
     if browser is not None:
@@ -68,16 +68,18 @@ async def login(
             if tries > 10:
                 raise AuthorisationError
             tries += 1
-            await sleep(1)
+            await asyncio.sleep(1)
         __logining_user = username
         await ensure_browser()
         context = await browser.new_context()
         page = await context.new_page()
 
-        netloc = urlparse(login_url).netloc
+        url = urlparse(login_url)
 
         async def handler(route):
-            if netloc not in route.request.url:
+            if url.netloc not in route.request.url or route.request.url.endswith(
+                ".png"
+            ):
                 await route.abort()
                 return
             await route.continue_()
@@ -93,7 +95,24 @@ async def login(
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        await sleep(1)
+        t = 5 * 1000
+        news_url = f"{url.scheme}://{url.netloc}/news/**/*"
+        login_url = f"{url.scheme}://{url.netloc}//user/login?ReturnUrl=*"
+
+        news_page = asyncio.create_task(page.wait_for_url(news_url, timeout=t))
+        login_page = asyncio.create_task(page.wait_for_url(login_url, timeout=t))
+        tasks = (news_page, login_page)
+        try:
+            await asyncio.wait(
+                tasks,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        except:
+            pass
+        finally:
+            for t in tasks:
+                t.cancel()
+
         if await page.query_selector("#tools") is None:
             raise InvalidCredential
 
