@@ -2,8 +2,8 @@ from playwright.async_api import async_playwright, Playwright, Browser
 from urllib.parse import urlparse
 import asyncio
 
-from ..exceptions import InvalidCredential, AuthorisationError
-from ..utils.logger import get_default_logger
+from ..exceptions import InvalidCredential, AuthorisationError, TimeoutError
+from ..utils.logger import get_default_logger, LoggerCreator
 
 
 def string_has_one_substring(string: str, substrings: list[str]):
@@ -57,7 +57,7 @@ async def login(
     username: str,
     password: str,
     login_url: str,
-    get_logger=get_default_logger,
+    get_logger: LoggerCreator = get_default_logger,
 ):
     logger = get_logger(__name__)
     global __logining_user
@@ -96,15 +96,15 @@ async def login(
         await page.keyboard.press("Enter")
         logger.info("sent form")
 
-        news_url = f"{url.scheme}://{url.netloc}/news"
-        login_url = f"{url.scheme}://{url.netloc}/user/login?ReturnUrl="
+        news_url = f"//{url.netloc}/news"
+        login_url = f"//{url.netloc}/user/login?ReturnUrl="
 
         sleep_counter = 0
         while sleep_counter < 10:
-            await asyncio.sleep(1)
-            if page.url.startswith(login_url):
+            await asyncio.sleep(3)
+            if login_url in page.url:
                 raise InvalidCredential
-            if page.url.startswith(news_url):
+            if news_url in page.url:
                 break
             sleep_counter += 1
         else:
