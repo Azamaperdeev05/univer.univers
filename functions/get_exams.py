@@ -7,7 +7,7 @@ from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
 from ..utils.text import text
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 
 
@@ -18,6 +18,7 @@ class Exam:
     audience: str
     date: int
     type: Literal["consultation", "exam"]
+    teacher_link: str = field(default=None)
 
 
 tz = timezone(timedelta(hours=6))

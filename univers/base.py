@@ -67,7 +67,7 @@ class Univer:
     def get_logger(self, name):
         logger = create_logger(
             name,
-            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} - %(message)s ({self.language})",
+            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} ({self.language}) - %(message)s",
         )
         return logger
 
@@ -128,12 +128,23 @@ class Univer:
 
     @auth
     async def get_exams(self):
-        return await get_exams(
+        exams = await get_exams(
             self.cookies,
             self.urls.EXAMS_URL,
             lang_url=self.lang_url,
             get_logger=self.get_logger,
         )
+        if await self.get_teacher("") is NotImplemented:
+            return exams
+
+        async def set_teacher(exam):
+            teacher = await self.__get_teacher(exam.teacher)
+            fullname, href = teacher
+            exam.teacher = fullname
+            exam.teacher_link = href
+
+        await asyncio.gather(*(set_teacher(exam) for exam in exams))
+        return exams
 
     async def __get_teacher(self, name: str):
         teacher_id = f"{self.univer}-{name}"
