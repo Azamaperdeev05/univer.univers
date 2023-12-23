@@ -7,6 +7,7 @@ from ..functions.get_attendance import get_attendance
 from ..functions.get_attestation import get_attestation
 from ..functions.get_schedule import get_schedule
 from ..functions.get_exams import get_exams
+from ..utils.storage import Storage
 
 
 @dataclass
@@ -53,6 +54,7 @@ class Univer:
         cookies: dict[str, str] = None,
         language="ru",
         univer="",
+        storage: Storage = None,
     ) -> None:
         self.username = username
         self.password = password
@@ -61,6 +63,7 @@ class Univer:
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
         self.univer = univer
+        self.storage = _teachers if storage is None else storage
 
         self.logger = self.get_logger(__name__)
 
@@ -147,19 +150,19 @@ class Univer:
         return exams
 
     async def __get_teacher(self, name: str):
-        teacher_id = f"{self.univer}-{name}"
+        teacher_id = f"teacher-{self.univer}-{name}"
         while teacher_id in _working_teachers:
             await asyncio.sleep(1)
 
-        if teacher_id in _teachers:
-            return _teachers[teacher_id]
+        if teacher_id in self.storage:
+            return self.storage[teacher_id]
 
         _working_teachers.add(teacher_id)
         self.logger.info(f"get PERSON_URL {name}")
         try:
             teacher = await self.get_teacher(name)
             self.logger.info(f"got PERSON_URL {name}")
-            _teachers[teacher_id] = teacher
+            self.storage[teacher_id] = teacher
             return teacher
         except:
             self.logger.info(f"error PERSON_URL {name}")

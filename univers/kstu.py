@@ -42,6 +42,7 @@ class KSTU(Univer):
         password: str,
         cookies: dict[str, str] = None,
         language="ru",
+        storage=None,
     ) -> None:
         super().__init__(
             username,
@@ -50,6 +51,7 @@ class KSTU(Univer):
             cookies=cookies,
             language=language,
             univer="kstu",
+            storage=storage,
         )
 
     async def get_schedule(self):

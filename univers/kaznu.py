@@ -35,6 +35,7 @@ class KazNU(Univer):
         password: str,
         cookies: dict[str, str] = None,
         language="ru",
+        storage=None,
     ) -> None:
         super().__init__(
             username,
@@ -43,6 +44,7 @@ class KazNU(Univer):
             urls=KazNUUrls,
             language=language,
             univer="kaznu",
+            storage=storage,
         )
 
     async def get_teacher(self, name: str = None):
