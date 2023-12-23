@@ -38,7 +38,7 @@ def auth(function):
 
 
 def _get_lang_url(urls: Urls, lang: str):
-    return getattr(urls, f"LANG_{lang.upper()}_URL")
+    return getattr(urls, f"LANG_{lang.upper()}_URL", urls.LANG_RU_URL)
 
 
 _teachers = {}
