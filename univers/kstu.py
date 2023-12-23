@@ -65,7 +65,9 @@ class KSTU(Univer):
         schedule.lessons = lessons
         return schedule
 
-    async def get_teacher(self, name: str):
+    async def get_teacher(self, name: str = None):
+        if name is None:
+            return name, None
         firstname, *_ = name.split(" ")
         html = await fetch(PERSON_URL.format(firstname))
         soup = BeautifulSoup(html, "html.parser")

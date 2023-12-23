@@ -45,7 +45,9 @@ class KazNU(Univer):
             univer="kaznu",
         )
 
-    async def get_teacher(self, name: str):
+    async def get_teacher(self, name: str = None):
+        if name is None:
+            return name, None
         firstname, *_ = name.split(" ")
         data = urlencode({"searchname": firstname, "searchtype": "personal_sname"})
         html = await fetch(

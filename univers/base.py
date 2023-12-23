@@ -114,7 +114,7 @@ class Univer:
             lang_url=self.lang_url,
             factor=factor,
         )
-        if await self.get_teacher("") is NotImplemented:
+        if await self.get_teacher() is NotImplemented:
             return schedule
 
         async def set_teacher(lesson):
@@ -134,7 +134,7 @@ class Univer:
             lang_url=self.lang_url,
             get_logger=self.get_logger,
         )
-        if await self.get_teacher("") is NotImplemented:
+        if await self.get_teacher() is NotImplemented:
             return exams
 
         async def set_teacher(exam):
@@ -167,5 +167,5 @@ class Univer:
         finally:
             _working_teachers.remove(teacher_id)
 
-    async def get_teacher(self, name: str) -> tuple[str, str]:
+    async def get_teacher(self, name: str = None) -> tuple[str, str]:
         return NotImplemented
