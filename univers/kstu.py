@@ -21,16 +21,19 @@ def _get_factor():
 
 
 KSTUUrls = Urls(
-    ATTENDANCE_URL="http://univer.kstu.kz/student/attendance/full/",
-    LOGIN_URL="http://univer.kstu.kz/user/login",
-    LANG_RU_URL="http://univer.kstu.kz/lang/change/ru/",
-    LANG_KK_URL="http://univer.kstu.kz/lang/change/kz/",
-    LANG_EN_URL="http://univer.kstu.kz/lang/change/en/",
-    ATTESTATION_URL="http://univer.kstu.kz/student/attestation/",
+    ATTENDANCE_URL="https://univer.kstu.kz/student/attendance/full/",
+    LOGIN_URL="https://univer.kstu.kz/user/login",
+    LANG_RU_URL="https://univer.kstu.kz/lang/change/ru/",
+    LANG_KK_URL="https://univer.kstu.kz/lang/change/kz/",
+    LANG_EN_URL="https://univer.kstu.kz/lang/change/en/",
+    ATTESTATION_URL="https://univer.kstu.kz/student/attestation/",
     SCHEDULE_URL=(
-        "http://univer.kstu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
+        "https://univer.kstu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
     ),
     EXAMS_URL="http://univer.kstu.kz/student/myexam/schedule/",
+    TRANSCRIPT_URL_RU="https://univer.kstu.kz/student/transcript/2",
+    TRANSCRIPT_URL_KK="https://univer.kstu.kz/student/transcript/1/",
+    TRANSCRIPT_URL_EN="https://univer.kstu.kz/student/transcript/6/",
 )
 PERSON_URL = "https://person.kstu.kz/?s={}"
 

@@ -1,8 +1,10 @@
 import asyncio
 from dataclasses import dataclass
+
 from ..exceptions import ForbiddenException
 from ..utils.logger import create_logger
 from ..functions.login import login
+from ..functions.transcript import get_transcript
 from ..functions.get_attendance import get_attendance
 from ..functions.get_attestation import get_attestation
 from ..functions.get_schedule import get_schedule
@@ -20,6 +22,10 @@ class Urls:
     ATTESTATION_URL: str
     SCHEDULE_URL: str
     EXAMS_URL: str
+
+    TRANSCRIPT_URL_RU: str
+    TRANSCRIPT_URL_EN: str
+    TRANSCRIPT_URL_KK: str
 
 
 def auth(function):
@@ -39,6 +45,10 @@ def auth(function):
 
 def _get_lang_url(urls: Urls, lang: str):
     return getattr(urls, f"LANG_{lang.upper()}_URL", urls.LANG_RU_URL)
+
+
+def _get_transcript_url(urls: Urls, lang: str):
+    return getattr(urls, f"TRANSCRIPT_URL_{lang.upper()}", urls.TRANSCRIPT_URL_RU)
 
 
 _teachers = {}
@@ -148,6 +158,14 @@ class Univer:
 
         await asyncio.gather(*(set_teacher(exam) for exam in exams))
         return exams
+
+    @auth
+    async def get_transcript(self):
+        return await get_transcript(
+            self.cookies,
+            transcript_url=_get_transcript_url(self.urls, self.language),
+            get_logger=self.get_logger,
+        )
 
     async def __get_teacher(self, name: str):
         teacher_id = f"teacher-{self.univer}-{name}"
