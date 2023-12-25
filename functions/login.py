@@ -100,8 +100,8 @@ async def login(
         login_url = f"//{url.netloc}/user/login?ReturnUrl="
 
         sleep_counter = 0
-        while sleep_counter < 10:
-            await asyncio.sleep(3)
+        while sleep_counter < 30:
+            await asyncio.sleep(1)
             if login_url in page.url:
                 raise InvalidCredential
             if news_url in page.url:
@@ -110,7 +110,8 @@ async def login(
         else:
             raise TimeoutError
 
-        if await page.query_selector("#tools") is None:
+        await page.wait_for_url("**/news/**")
+        if await page.query_selector("#login_form") is not None:
             raise InvalidCredential
 
         _cookies = await context.cookies()
