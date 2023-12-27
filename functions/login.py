@@ -2,7 +2,7 @@ from playwright.async_api import async_playwright, Playwright, Browser
 from urllib.parse import urlparse
 import asyncio
 
-from ..exceptions import InvalidCredential, AuthorisationError, TimeoutError
+from ..exceptions import InvalidCredential, AuthorizationError, TimeoutError
 from ..utils.logger import get_default_logger, LoggerCreator
 
 
@@ -65,7 +65,7 @@ async def login(
     while __logining_user is not None:
         logger.info(f"{__logining_user} is logging")
         if tries > 10:
-            raise AuthorisationError
+            raise AuthorizationError
         tries += 1
         await asyncio.sleep(1)
     context = None

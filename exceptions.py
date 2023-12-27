@@ -9,5 +9,5 @@ class InvalidCredential(Exception):
     pass
 
 
-class AuthorisationError(Exception):
+class AuthorizationError(Exception):
     pass
