@@ -36,12 +36,12 @@ async def ensure_browser():
         if browser.is_connected():
             __is_browser_locked = False
             return
-        logger.info("Stoping browser")
+        logger.info("Stopping browser")
         await browser.close()
         logger.info("Browser stopped")
 
     if apw is not None:
-        logger.info("Stoping apw")
+        logger.info("Stopping apw")
         await apw.stop()
         logger.info("apw stopped")
 
@@ -50,7 +50,8 @@ async def ensure_browser():
     __is_browser_locked = False
 
 
-__logining_user = None
+__current_user = None
+__last_user_cookies = None
 
 
 async def login(
@@ -60,17 +61,25 @@ async def login(
     get_logger: LoggerCreator = get_default_logger,
 ):
     logger = get_logger(__name__)
-    global __logining_user
+    global __current_user
+    global __last_user_cookies
     tries = 0
-    while __logining_user is not None:
-        logger.info(f"{__logining_user} is logging")
+
+    if __current_user == username:
+        logger.info(f"waiting for another login request")
+        while __current_user is not None:
+            await asyncio.sleep(1)
+        return __last_user_cookies
+
+    while __current_user is not None:
+        logger.info(f"{__current_user} is logging")
         if tries > 10:
             raise AuthorizationError
         tries += 1
         await asyncio.sleep(1)
     context = None
     try:
-        __logining_user = username
+        __current_user = username
         await ensure_browser()
         context = await browser.new_context()
         page = await context.new_page()
@@ -124,11 +133,13 @@ async def login(
         if ".ASPXAUTH" not in cookies:
             logger.info("bad cookies")
             raise InvalidCredential
+
+        __last_user_cookies = cookies
         return cookies
     except Exception as e:
         print(e)
         raise e
     finally:
-        __logining_user = None
+        __current_user = None
         if context:
             await context.close()
