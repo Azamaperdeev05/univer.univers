@@ -65,21 +65,24 @@ async def login(
     global __last_user_cookies
     tries = 0
 
-    if __current_user == username:
+    if __current_user == (username, password):
         logger.info(f"waiting for another login request")
         while __current_user is not None:
             await asyncio.sleep(1)
+        if __last_user_cookies is None:
+            raise TimeoutError
         return __last_user_cookies
 
     while __current_user is not None:
-        logger.info(f"{__current_user} is logging")
+        logger.info(f"{__current_user[0]} is logging")
         if tries > 10:
             raise AuthorizationError
         tries += 1
         await asyncio.sleep(1)
     context = None
     try:
-        __current_user = username
+        __current_user = (username, password)
+        __last_user_cookies = None
         await ensure_browser()
         context = await browser.new_context()
         page = await context.new_page()
