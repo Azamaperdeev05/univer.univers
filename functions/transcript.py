@@ -39,8 +39,9 @@ def parse_float(text: str):
     return float(text.replace(",", "."))
 
 
-async def get_transcript(cookies, transcript_url: str, get_logger=get_default_logger):
-    logger = get_logger(__name__)
+async def get_transcript(
+    cookies, transcript_url: str, logger=get_default_logger(__name__)
+):
     logger.info("get TRANSCRIPT_URL")
     html = await fetch(transcript_url, cookies)
     logger.info("got TRANSCRIPT_URL")

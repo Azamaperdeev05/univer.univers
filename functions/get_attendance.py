@@ -61,9 +61,8 @@ async def get_attendance(
     cookies,
     attendance_url: str,
     lang_url: str,
-    get_logger=get_default_logger,
+    logger=get_default_logger(__name__),
 ):
-    logger = get_logger(__name__)
     logger.info("get ATTENDANCE_URL")
     html = await fetch(lang_url, cookies, {"referer": attendance_url})
     logger.info("got ATTENDANCE_URL")

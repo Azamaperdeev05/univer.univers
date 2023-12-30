@@ -38,9 +38,8 @@ def __get_date(text: str):
 
 
 async def get_exams(
-    cookies, exams_url: str, lang_url: str, get_logger=get_default_logger
+    cookies, exams_url: str, lang_url: str, logger=get_default_logger(__name__)
 ):
-    logger = get_logger(__name__)
     logger.info("get EXAMS_URL")
     html = await fetch(lang_url, cookies, {"referer": exams_url})
     logger.info("got EXAMS_URL")

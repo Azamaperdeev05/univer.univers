@@ -1,8 +1,7 @@
 import logging
 import sys
-from typing import Callable
 
-LoggerCreator = Callable[[str], logging.Logger]
+Logger = logging.Logger
 
 
 def create_logger(name, level=logging.INFO, *, format: str):

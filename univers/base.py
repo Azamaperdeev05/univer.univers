@@ -80,7 +80,7 @@ class Univer:
     def get_logger(self, name):
         logger = create_logger(
             name,
-            format=f"[%(asctime)s] %(name)s | {self.univer} | {self.username} ({self.language}) - %(message)s",
+            format=f"[%(asctime)s] {self.univer} | {self.username} ({self.language}) - %(message)s",
         )
         return logger
 
@@ -89,7 +89,7 @@ class Univer:
             self.username,
             self.password,
             login_url=self.urls.LOGIN_URL,
-            get_logger=self.get_logger,
+            logger=self.logger,
         )
         return self.cookies
 
@@ -99,7 +99,7 @@ class Univer:
             self.cookies,
             attendance_url=self.urls.ATTENDANCE_URL,
             lang_url=self.lang_url,
-            get_logger=self.get_logger,
+            logger=self.logger,
         )
 
     @auth
@@ -111,7 +111,7 @@ class Univer:
         ]
         return await get_attestation(
             self.cookies,
-            get_logger=self.get_logger,
+            logger=self.logger,
             attendance_url=self.urls.ATTENDANCE_URL,
             attestation_url=self.urls.ATTESTATION_URL,
             lang_url=self.lang_url,
@@ -123,7 +123,7 @@ class Univer:
         schedule = await get_schedule(
             self.cookies,
             self.urls.SCHEDULE_URL,
-            get_logger=self.get_logger,
+            logger=self.logger,
             lang_url=self.lang_url,
             factor=factor,
         )
@@ -145,7 +145,7 @@ class Univer:
             self.cookies,
             self.urls.EXAMS_URL,
             lang_url=self.lang_url,
-            get_logger=self.get_logger,
+            logger=self.logger,
         )
         if await self.get_teacher() is NotImplemented:
             return exams
@@ -164,7 +164,7 @@ class Univer:
         return await get_transcript(
             self.cookies,
             transcript_url=_get_transcript_url(self.urls, self.language),
-            get_logger=self.get_logger,
+            logger=self.logger,
         )
 
     async def __get_teacher(self, name: str):

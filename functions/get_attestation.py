@@ -29,9 +29,8 @@ async def _get_attestation(
     cookies,
     attestation_url: str,
     lang_url: str,
-    get_logger=get_default_logger,
+    logger=get_default_logger(__name__),
 ):
-    logger = get_logger(__name__)
     logger.info("get ATTESTATION_URL")
     html = await fetch(lang_url, cookies, {"referer": attestation_url})
     logger.info("got ATTESTATION_URL")
@@ -89,9 +88,8 @@ async def _get_attestation_subjects(
     cookies,
     attestation_url: str,
     lang_urls: Iterable[str],
-    get_logger=get_default_logger,
+    logger=get_default_logger(__name__),
 ):
-    logger = get_logger(__name__)
     result = []
     for i, lang_url in enumerate(lang_urls):
         index = 0
@@ -140,17 +138,13 @@ async def get_attestation(
     attendance_url: str,
     lang_url: str,
     lang_urls: Iterable[str],
-    get_logger=get_default_logger,
+    logger=get_default_logger(__name__),
 ):
     attestations, attendances = await asyncio.gather(
-        _get_attestation(
-            cookies, attestation_url, lang_url=lang_url, get_logger=get_logger
-        ),
-        get_attendance(
-            cookies, attendance_url, lang_url=lang_url, get_logger=get_logger
-        ),
+        _get_attestation(cookies, attestation_url, lang_url=lang_url, logger=logger),
+        get_attendance(cookies, attendance_url, lang_url=lang_url, logger=logger),
     )
     subjects = await _get_attestation_subjects(
-        cookies, attestation_url, lang_urls, get_logger=get_logger
+        cookies, attestation_url, lang_urls, logger=logger
     )
     return _join(attestations, attendances, subjects)

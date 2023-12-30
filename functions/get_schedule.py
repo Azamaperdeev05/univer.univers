@@ -63,9 +63,8 @@ async def get_schedule(
     schedule_url: str,
     lang_url: str,
     factor: bool | None = None,
-    get_logger=get_default_logger,
+    logger=get_default_logger(__name__),
 ):
-    logger = get_logger(__name__)
     logger.info("get SCHEDULE_URL")
     html = await fetch(lang_url, cookies, {"referer": schedule_url})
     logger.info("got SCHEDULE_URL")
