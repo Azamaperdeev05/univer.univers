@@ -135,6 +135,30 @@ async def __login(
 __current_user = None
 
 
+def is_old(user: UserCookies):
+    return get_now() - user.timestamp > 600
+
+
+def __clear_queue():
+    keys = set(queue.keys())
+    for key in keys:
+        user = queue[key]
+        if user is None:
+            continue
+        if is_old(user):
+            del queue[key]
+
+
+async def __wait_for_user():
+    tries = 0
+    while __current_user is not None:
+        if tries > 20:
+            raise AuthorizationError
+        logger.info(f"waiting for {__current_user} login")
+        tries += 1
+        await asyncio.sleep(1)
+
+
 async def login(
     username: str,
     password: str,
@@ -144,29 +168,16 @@ async def login(
     global __current_user
     context = None
 
-    for key in queue:
-        user = queue[key]
-        if user is None:
-            continue
-        if now - user.timestamp > 600:
-            del queue[key]
-
-    tries = 0
-    while __current_user is not None:
-        if tries > 20:
-            raise AuthorizationError
-        logger.info(f"waiting for {__current_user} login")
-        tries += 1
-        await asyncio.sleep(1)
+    __clear_queue()
+    await __wait_for_user()
 
     key = (username, password, login_url)
     if key in queue:
         while queue[key] is None:
             logger.info(f"waiting for another login")
             await asyncio.sleep(1)
-        now = get_now()
         user = queue[key]
-        if now - user.timestamp <= 600:
+        if not is_old(user):
             return user.cookies
 
     queue[key] = None
@@ -175,11 +186,11 @@ async def login(
         __current_user = username
         await ensure_browser()
         context = await browser.new_context()
-        user = await __login(
+        cookies = await __login(
             username, password, login_url, context=context, logger=logger
         )
-        queue[key] = UserCookies(user)
-        return user
+        queue[key] = UserCookies(cookies)
+        return cookies
     except PlaywrightTimeoutError:
         raise TimeoutError
     except Exception as e:
