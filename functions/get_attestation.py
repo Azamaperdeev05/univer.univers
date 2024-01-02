@@ -147,4 +147,4 @@ async def get_attestation(
     subjects = await _get_attestation_subjects(
         cookies, attestation_url, lang_urls, logger=logger
     )
-    return _join(attestations, attendances, subjects)
+    return sorted(_join(attestations, attendances, subjects), key=lambda a: a.subject)
