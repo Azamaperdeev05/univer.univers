@@ -18,7 +18,7 @@ class Exam:
     audience: str
     date: int
     type: Literal["consultation", "exam"]
-    teacher_link: str = field(default=None)
+    teacher_link: str | None = field(default=None)
 
 
 tz = timezone(timedelta(hours=6))
