@@ -1,5 +1,7 @@
 import asyncio
+
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from ..exceptions import ForbiddenException
 from ..utils.logger import create_logger
@@ -9,6 +11,8 @@ from ..functions.get_attendance import get_attendance
 from ..functions.get_attestation import get_attestation
 from ..functions.get_schedule import get_schedule
 from ..functions.get_exams import get_exams
+from ..functions.get_umkd import get_umkd, get_umkd_files
+from ..functions.download import download_file
 from ..utils.storage import Storage
 
 
@@ -26,6 +30,24 @@ class Urls:
     TRANSCRIPT_URL_RU: str
     TRANSCRIPT_URL_EN: str
     TRANSCRIPT_URL_KK: str
+    UMKD_URL: str
+
+
+def auth_generator(function):
+    async def f(*args):
+        univer: "Univer" = args[0]
+        if univer.cookies is None:
+            await univer.login()
+        while 1:
+            try:
+                async for v in function(*args):
+                    yield v
+                break
+            except ForbiddenException:
+                univer.logger.info("relogin")
+                await univer.login()
+
+    return f
 
 
 def auth(function):
@@ -190,3 +212,41 @@ class Univer:
 
     async def get_teacher(self, name: str = None) -> tuple[str, str]:
         return NotImplemented
+
+    @auth
+    async def get_umkd(self):
+        return await get_umkd(
+            self.cookies,
+            self.urls.UMKD_URL,
+            lang_url=self.lang_url,
+            logger=self.logger,
+        )
+
+    @auth
+    async def get_umkd_files(self, subject_id: str):
+        files = await get_umkd_files(
+            self.cookies,
+            self.urls.UMKD_URL,
+            subject_id=subject_id,
+            lang_url=self.lang_url,
+            logger=self.logger,
+        )
+        if await self.get_teacher() is NotImplemented:
+            return files
+
+        async def set_teacher(file):
+            teacher = await self.__get_teacher(file.teacher)
+            fullname, href = teacher
+            file.teacher = fullname
+            file.teacher_link = href
+
+        await asyncio.gather(*(set_teacher(file) for file in files))
+        return files
+
+    @auth_generator
+    async def download_file(self, file_url: str):
+        path = urlparse(self.urls.LOGIN_URL).path
+        base = self.urls.LOGIN_URL.replace(path, "")
+        url = f"{base}{file_url}"
+        async for chunk in download_file(self.cookies, url, self.logger):
+            yield chunk

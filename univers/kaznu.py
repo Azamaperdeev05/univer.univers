@@ -22,6 +22,7 @@ KazNUUrls = Urls(
     TRANSCRIPT_URL_RU="https://univer.kaznu.kz/student/transcript/2",
     TRANSCRIPT_URL_KK="https://univer.kaznu.kz/student/transcript/1/",
     TRANSCRIPT_URL_EN="https://univer.kaznu.kz/student/transcript/6/",
+    UMKD_URL="https://univer.kaznu.kz/student/umkd/",
 )
 PERSON_URL = "https://pps.kaznu.kz/ru/Main/Search/"
 

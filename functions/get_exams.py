@@ -1,4 +1,3 @@
-from pprint import pprint
 from bs4 import BeautifulSoup
 from typing import Literal
 

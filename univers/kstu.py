@@ -11,7 +11,7 @@ from ..utils import compare_str_without_spaces, to_initials
 
 
 def _get_factor():
-    FIRST_WEEK = "2023-09-04"
+    FIRST_WEEK = "2024-01-15"
     year, month, day = map(int, FIRST_WEEK.split("-"))
     first = date(year, month, day)
     now = date.today()
@@ -30,10 +30,11 @@ KSTUUrls = Urls(
     SCHEDULE_URL=(
         "https://univer.kstu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
     ),
-    EXAMS_URL="http://univer.kstu.kz/student/myexam/schedule/",
+    EXAMS_URL="https://univer.kstu.kz/student/myexam/schedule/",
     TRANSCRIPT_URL_RU="https://univer.kstu.kz/student/transcript/2",
     TRANSCRIPT_URL_KK="https://univer.kstu.kz/student/transcript/1/",
     TRANSCRIPT_URL_EN="https://univer.kstu.kz/student/transcript/6/",
+    UMKD_URL="https://univer.kstu.kz/student/umkd/",
 )
 PERSON_URL = "https://person.kstu.kz/?s={}"
 
