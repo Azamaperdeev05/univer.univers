@@ -16,7 +16,7 @@ KazNUUrls = Urls(
     LANG_EN_URL="https://univer.kaznu.kz/lang/change/en/",
     ATTESTATION_URL="https://univer.kaznu.kz/student/attestation/",
     SCHEDULE_URL=(
-        "https://univer.kaznu.kz/student/myschedule/2023/1/04.12.2023/10.12.2023/"
+        "https://univer.kaznu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
     ),
     EXAMS_URL="https://univer.kaznu.kz/student/myexam/schedule/",
     TRANSCRIPT_URL_RU="https://univer.kaznu.kz/student/transcript/2",
