@@ -55,12 +55,10 @@ def parse_links(table: Tag, teacher: str):
         tds = child.select("td")
 
         downloads_count = 0
-        if len(tds) < 1:
-            type = text(child)
-            continue
-        if len(tds) < 9:
+        length = len(tds)
+        if length == 6:
             icon, name, description, language, size, date = tds
-        else:
+        elif length >= 9:
             (
                 icon,
                 name,
@@ -74,6 +72,8 @@ def parse_links(table: Tag, teacher: str):
             ) = tds
             downloads_count = int(text(downloads_element))
             type = text(type_element)
+        else:
+            continue
 
         url = name.select_one("a").get("href")
         day, month, year = map(int, text(date).split("."))
