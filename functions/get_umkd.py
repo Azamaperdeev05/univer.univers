@@ -47,19 +47,33 @@ async def get_umkd(
     return sorted(result, key=lambda f: f.id)
 
 
-def parse_links(row: Tag, teacher: str):
-    for link in row.select(".file[id]"):
-        (
-            icon,
-            name,
-            description,
-            type,
-            language,
-            size,
-            date,
-            downloads_count,
-            *_,
-        ) = link.select("td")
+def parse_links(table: Tag, teacher: str):
+    type = None
+    for child in table.select_one("table").children:
+        if not isinstance(child, Tag):
+            continue
+        tds = child.select("td")
+
+        downloads_count = 0
+        if len(tds) < 1:
+            type = text(child)
+            continue
+        if len(tds) < 9:
+            icon, name, description, language, size, date = tds
+        else:
+            (
+                icon,
+                name,
+                description,
+                type_element,
+                language,
+                size,
+                date,
+                downloads_element,
+                *_,
+            ) = tds
+            downloads_count = int(text(downloads_element))
+            type = text(type_element)
 
         url = name.select_one("a").get("href")
         day, month, year = map(int, text(date).split("."))
@@ -67,9 +81,9 @@ def parse_links(row: Tag, teacher: str):
         yield UmkdFile(
             name=text(name),
             description=text(description),
-            type=text(type),
+            type=type,
             language=language_text if language_text != "-" else None,
-            downloads_count=int(text(downloads_count)),
+            downloads_count=downloads_count,
             date=int(datetime(year, month, day).timestamp()),
             size=text(size),
             teacher=teacher,
