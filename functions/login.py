@@ -1,6 +1,7 @@
 from ..exceptions import InvalidCredential, TimeoutError
 from ..utils.logger import get_default_logger, Logger
 from aiohttp import ClientSession
+from urllib.parse import urlencode
 
 
 async def login(
@@ -11,7 +12,8 @@ async def login(
 ):
     if logger is None:
         logger = get_default_logger(__name__)
-    url = f"{login_url}?login={username}&password={password}"
+    query_string = urlencode({"login": username, "password": password})
+    url = f"{login_url}?{query_string}"
     async with ClientSession() as session:
         try:
             logger.info("get LOGIN_URL")
