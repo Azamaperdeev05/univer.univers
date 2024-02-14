@@ -22,7 +22,7 @@ def _get_factor():
 
 KSTUUrls = Urls(
     ATTENDANCE_URL="https://univer.kstu.kz/student/attendance/full/",
-    LOGIN_URL="https://univer.kstu.kz/user/login",
+    LOGIN_URL="https://univerapi.kstu.kz/",
     LANG_RU_URL="https://univer.kstu.kz/lang/change/ru/",
     LANG_KK_URL="https://univer.kstu.kz/lang/change/kz/",
     LANG_EN_URL="https://univer.kstu.kz/lang/change/en/",

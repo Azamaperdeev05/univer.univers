@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 KazNUUrls = Urls(
     ATTENDANCE_URL="https://univer.kaznu.kz/student/attendance/full/",
-    LOGIN_URL="https://univer.kaznu.kz/user/login",
+    LOGIN_URL="https://univerapi.kaznu.kz/",
     LANG_RU_URL="https://univer.kaznu.kz/lang/change/ru/",
     LANG_KK_URL="https://univer.kaznu.kz/lang/change/kz/",
     LANG_EN_URL="https://univer.kaznu.kz/lang/change/en/",
