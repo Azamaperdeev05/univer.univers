@@ -7,7 +7,3 @@ class ForbiddenException(Exception):
 
 class InvalidCredential(Exception):
     pass
-
-
-class AuthorizationError(Exception):
-    pass

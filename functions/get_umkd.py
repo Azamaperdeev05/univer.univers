@@ -6,6 +6,7 @@ from ..utils.auth import check_auth
 from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
 from ..utils.text import text
+from .login import UserCookies
 
 
 @dataclass
@@ -30,10 +31,13 @@ class UmkdFile:
 
 
 async def get_umkd(
-    cookies, umkd_url: str, lang_url: str, logger=get_default_logger(__name__)
+    cookies: UserCookies,
+    umkd_url: str,
+    lang_url: str,
+    logger=get_default_logger(__name__),
 ) -> list[UmkdFolder]:
     logger.info("get UMKD_URL")
-    html = await fetch(lang_url, cookies, {"referer": umkd_url})
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": umkd_url})
     logger.info("got UMKD_URL")
 
     soup = BeautifulSoup(html, "html.parser")
@@ -92,14 +96,16 @@ def parse_links(table: Tag, teacher: str):
 
 
 async def get_umkd_files(
-    cookies,
+    cookies: UserCookies,
     umkd_url: str,
     subject_id: str,
     lang_url: str,
     logger=get_default_logger(__name__),
 ):
     logger.info(f"get UMKD_URL_FILES {subject_id}")
-    html = await fetch(lang_url, cookies, {"referer": f"{umkd_url}/{subject_id}"})
+    html = await fetch(
+        lang_url, cookies.as_dict(), {"referer": f"{umkd_url}/{subject_id}"}
+    )
     logger.info(f"got UMKD_URL_FILES {subject_id}")
 
     soup = BeautifulSoup(html, "html.parser")

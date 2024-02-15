@@ -34,15 +34,11 @@ def remove_spaces(text: str):
 class KazNU(Univer):
     def __init__(
         self,
-        username: str,
-        password: str,
         cookies: dict[str, str] = None,
         language="ru",
         storage=None,
     ) -> None:
         super().__init__(
-            username,
-            password,
             cookies=cookies,
             urls=KazNUUrls,
             language=language,

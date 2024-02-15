@@ -8,6 +8,7 @@ from ..utils.text import text
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
+from .login import UserCookies
 
 
 @dataclass
@@ -37,10 +38,13 @@ def __get_date(text: str):
 
 
 async def get_exams(
-    cookies, exams_url: str, lang_url: str, logger=get_default_logger(__name__)
+    cookies: UserCookies,
+    exams_url: str,
+    lang_url: str,
+    logger=get_default_logger(__name__),
 ):
     logger.info("get EXAMS_URL")
-    html = await fetch(lang_url, cookies, {"referer": exams_url})
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": exams_url})
     logger.info("got EXAMS_URL")
 
     soup = BeautifulSoup(html, "html.parser")

@@ -3,13 +3,24 @@ from ..utils.logger import get_default_logger, Logger
 from aiohttp import ClientSession
 from urllib.parse import urlencode
 
+from typing import NamedTuple
+
+
+class UserCookies(NamedTuple):
+    token: str
+    session_id: str
+    username: str
+
+    def as_dict(self):
+        return {".ASPXAUTH": self.token, "ASP.NET_SessionId": self.session_id}
+
 
 async def login(
     username: str,
     password: str,
     login_url: str,
     logger: Logger = None,
-):
+) -> UserCookies:
     if logger is None:
         logger = get_default_logger(__name__)
     query_string = urlencode({"login": username, "password": password})
@@ -22,9 +33,10 @@ async def login(
         except:
             raise TimeoutError
 
-        cookies = {}
-        for key, value in response.cookies.items():
-            cookies[key] = value.value
-        if ".ASPXAUTH" in cookies:
-            return cookies
-        raise InvalidCredential
+        if ".ASPXAUTH" not in response.cookies:
+            raise InvalidCredential
+        return UserCookies(
+            token=response.cookies[".ASPXAUTH"].value,
+            session_id=response.cookies["ASP.NET_SessionId"].value,
+            username=username,
+        )

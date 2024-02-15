@@ -3,9 +3,8 @@ import asyncio
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from ..exceptions import ForbiddenException
 from ..utils.logger import create_logger
-from ..functions.login import login
+from ..functions.login import login, UserCookies
 from ..functions.transcript import get_transcript
 from ..functions.get_attendance import get_attendance
 from ..functions.get_attestation import get_attestation
@@ -33,38 +32,6 @@ class Urls:
     UMKD_URL: str
 
 
-def auth_generator(function):
-    async def f(*args):
-        univer: "Univer" = args[0]
-        if univer.cookies is None:
-            await univer.login()
-        while 1:
-            try:
-                async for v in function(*args):
-                    yield v
-                break
-            except ForbiddenException:
-                univer.logger.info("relogin")
-                await univer.login()
-
-    return f
-
-
-def auth(function):
-    async def f(*args):
-        univer: "Univer" = args[0]
-        if univer.cookies is None:
-            await univer.login()
-        while 1:
-            try:
-                return await function(*args)
-            except ForbiddenException:
-                univer.logger.info("relogin")
-                await univer.login()
-
-    return f
-
-
 def _get_lang_url(urls: Urls, lang: str):
     return getattr(urls, f"LANG_{lang.upper()}_URL", urls.LANG_RU_URL)
 
@@ -80,17 +47,13 @@ _working_teachers = set()
 class Univer:
     def __init__(
         self,
-        username: str,
-        password: str,
         urls: Urls,
-        cookies: dict[str, str] = None,
+        cookies: UserCookies = None,
         language="ru",
         univer="",
         storage: Storage = None,
     ) -> None:
-        self.username = username
-        self.password = password
-        self.cookies = cookies
+        self.__apply_cookies(cookies)
         self.language = language
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
@@ -99,6 +62,13 @@ class Univer:
 
         self.logger = self.get_logger(__name__)
 
+    def __apply_cookies(self, cookies: UserCookies | None):
+        if cookies is None:
+            self.username = "<unknown>"
+            return
+        self.cookies = cookies
+        self.username = cookies.username
+
     def get_logger(self, name):
         logger = create_logger(
             name,
@@ -106,16 +76,6 @@ class Univer:
         )
         return logger
 
-    async def login(self):
-        self.cookies = await login(
-            self.username,
-            self.password,
-            login_url=self.urls.LOGIN_URL,
-            logger=self.logger,
-        )
-        return self.cookies
-
-    @auth
     async def get_attendance(self):
         return await get_attendance(
             self.cookies,
@@ -124,7 +84,10 @@ class Univer:
             logger=self.logger,
         )
 
-    @auth
+    async def login(self, username: str, password: str):
+        self.cookies = await login(username, password, self.urls.LOGIN_URL)
+        return self.cookies
+
     async def get_attestation(self):
         lang_urls = [
             self.urls.LANG_RU_URL,
@@ -140,7 +103,6 @@ class Univer:
             lang_urls=lang_urls,
         )
 
-    @auth
     async def get_schedule(self, factor=None):
         schedule = await get_schedule(
             self.cookies,
@@ -161,7 +123,6 @@ class Univer:
         await asyncio.gather(*(set_teacher(lesson) for lesson in schedule.lessons))
         return schedule
 
-    @auth
     async def get_exams(self):
         exams = await get_exams(
             self.cookies,
@@ -181,7 +142,6 @@ class Univer:
         await asyncio.gather(*(set_teacher(exam) for exam in exams))
         return exams
 
-    @auth
     async def get_transcript(self):
         return await get_transcript(
             self.cookies,
@@ -213,7 +173,6 @@ class Univer:
     async def get_teacher(self, name: str = None) -> tuple[str, str]:
         return NotImplemented
 
-    @auth
     async def get_umkd(self):
         return await get_umkd(
             self.cookies,
@@ -222,7 +181,6 @@ class Univer:
             logger=self.logger,
         )
 
-    @auth
     async def get_umkd_files(self, subject_id: str):
         files = await get_umkd_files(
             self.cookies,
@@ -243,7 +201,6 @@ class Univer:
         await asyncio.gather(*(set_teacher(file) for file in files))
         return files
 
-    @auth_generator
     async def download_file(self, file_url: str):
         path = urlparse(self.urls.LOGIN_URL).path
         base = self.urls.LOGIN_URL.replace(path, "")

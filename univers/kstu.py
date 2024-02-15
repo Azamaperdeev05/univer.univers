@@ -42,15 +42,11 @@ PERSON_URL = "https://person.kstu.kz/?s={}"
 class KSTU(Univer):
     def __init__(
         self,
-        username: str,
-        password: str,
         cookies: dict[str, str] = None,
         language="ru",
         storage=None,
     ) -> None:
         super().__init__(
-            username,
-            password,
             urls=KSTUUrls,
             cookies=cookies,
             language=language,

@@ -5,6 +5,7 @@ from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 
 from dataclasses import dataclass, field
+from .login import UserCookies
 
 
 @dataclass
@@ -59,14 +60,14 @@ def get_lessons(row: Tag):
 
 
 async def get_schedule(
-    cookies,
+    cookies: UserCookies,
     schedule_url: str,
     lang_url: str,
     factor: bool | None = None,
     logger=get_default_logger(__name__),
 ):
     logger.info("get SCHEDULE_URL")
-    html = await fetch(lang_url, cookies, {"referer": schedule_url})
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": schedule_url})
     logger.info("got SCHEDULE_URL")
 
     soup = BeautifulSoup(html, "html.parser")

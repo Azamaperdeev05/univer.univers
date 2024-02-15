@@ -7,6 +7,7 @@ from ..utils.auth import check_auth
 from ..utils.logger import get_default_logger
 from ..utils.text import text
 from ..type import Mark
+from .login import UserCookies
 
 
 @dataclass
@@ -58,13 +59,13 @@ def capitalize(text: str):
 
 
 async def get_attendance(
-    cookies,
+    cookies: UserCookies,
     attendance_url: str,
     lang_url: str,
     logger=get_default_logger(__name__),
 ):
     logger.info("get ATTENDANCE_URL")
-    html = await fetch(lang_url, cookies, {"referer": attendance_url})
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": attendance_url})
     logger.info("got ATTENDANCE_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)

@@ -9,6 +9,7 @@ from ..utils.text import text
 from ..type import Mark, ActiveMark
 from ..utils.logger import get_default_logger
 from .get_attendance import get_attendance, Attendance as _Attendance
+from .login import UserCookies
 
 
 @dataclass
@@ -26,13 +27,13 @@ class Attestation:
 
 
 async def _get_attestation(
-    cookies,
+    cookies: UserCookies,
     attestation_url: str,
     lang_url: str,
     logger=get_default_logger(__name__),
 ):
     logger.info("get ATTESTATION_URL")
-    html = await fetch(lang_url, cookies, {"referer": attestation_url})
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": attestation_url})
     logger.info("got ATTESTATION_URL")
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
@@ -75,8 +76,10 @@ def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
     return result
 
 
-async def _get_attestation_subject(cookies, attestation_url: str, lang_url: str):
-    html = await fetch(lang_url, cookies, {"referer": attestation_url})
+async def _get_attestation_subject(
+    cookies: UserCookies, attestation_url: str, lang_url: str
+):
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": attestation_url})
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
     table = soup.select("#tools + table + table .mid table.inner > tr")
@@ -85,7 +88,7 @@ async def _get_attestation_subject(cookies, attestation_url: str, lang_url: str)
 
 
 async def _get_attestation_subjects(
-    cookies,
+    cookies: UserCookies,
     attestation_url: str,
     lang_urls: Iterable[str],
     logger=get_default_logger(__name__),
@@ -144,7 +147,7 @@ def _join(
 
 
 async def get_attestation(
-    cookies,
+    cookies: UserCookies,
     attestation_url: str,
     attendance_url: str,
     lang_url: str,

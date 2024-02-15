@@ -8,6 +8,7 @@ from ..utils.auth import check_auth
 from ..utils.text import text
 
 from dataclasses import dataclass
+from .login import UserCookies
 
 
 @dataclass
@@ -40,10 +41,10 @@ def parse_float(text: str):
 
 
 async def get_transcript(
-    cookies, transcript_url: str, logger=get_default_logger(__name__)
+    cookies: UserCookies, transcript_url: str, logger=get_default_logger(__name__)
 ):
     logger.info("get TRANSCRIPT_URL")
-    html = await fetch(transcript_url, cookies)
+    html = await fetch(transcript_url, cookies.as_dict())
     logger.info("got TRANSCRIPT_URL")
 
     soup = BeautifulSoup(html, "html.parser")
