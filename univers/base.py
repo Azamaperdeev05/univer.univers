@@ -101,6 +101,7 @@ class Univer:
             attestation_url=self.urls.ATTESTATION_URL,
             lang_url=self.lang_url,
             lang_urls=lang_urls,
+            umkd_url=self.urls.UMKD_URL,
         )
 
     async def get_schedule(self, factor=None):
