@@ -205,8 +205,8 @@ class Univer:
         return files
 
     async def download_file(self, file_url: str):
-        path = urlparse(self.urls.LOGIN_URL).path
-        base = self.urls.LOGIN_URL.replace(path, "")
+        path = urlparse(self.urls.EXAMS_URL).path
+        base = self.urls.EXAMS_URL.replace(path, "")
         url = f"{base}{file_url}"
         async for chunk in download_file(self.cookies, url, self.logger):
             yield chunk
