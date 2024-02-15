@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from bs4 import BeautifulSoup, Tag
+from typing import Iterable
 import re
 
 from ..utils.fetch import fetch
@@ -58,11 +59,38 @@ def capitalize(text: str):
     return text[0].upper() + text[1:]
 
 
+async def _get_subject(cookies: UserCookies, umkd_url: str, lang_url: str):
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": umkd_url})
+    soup = BeautifulSoup(html, "html.parser")
+    check_auth(soup)
+    for row in soup.select(".link[id]"):
+        _, title, *_ = row.select("td")
+        yield text(title)
+
+
+async def _get_subjects(
+    cookies: UserCookies,
+    umkd_url: str,
+    lang_urls: Iterable[str],
+    logger=get_default_logger(__name__),
+):
+    result: dict[str, list[str]] = {}
+    for i, lang_url in enumerate(lang_urls):
+        async for subject in _get_subject(cookies, umkd_url, lang_url):
+            if lang_url not in result:
+                result[lang_url] = []
+            result[lang_url].append(subject)
+        logger.info(f"got UMKD_URL {i+1}/{len(lang_urls)}")
+    return result
+
+
 async def get_attendance(
     cookies: UserCookies,
     attendance_url: str,
     lang_url: str,
     logger=get_default_logger(__name__),
+    umkd_url: str = None,
+    lang_urls: Iterable[str] = None,
 ):
     logger.info("get ATTENDANCE_URL")
     html = await fetch(lang_url, cookies.as_dict(), {"referer": attendance_url})
@@ -112,4 +140,13 @@ async def get_attendance(
             attendances.append(attendance)
             part = Part(None, None, [])
             attendance = Attendance(None, None, [])
+
+    all_subjects = await _get_subjects(cookies, umkd_url, lang_urls)
+
+    for a in attendances:
+        for subjects in all_subjects.values():
+            if a.subject in subjects:
+                a.subject = all_subjects[lang_url][subjects.index(a.subject)]
+                break
+
     return attendances

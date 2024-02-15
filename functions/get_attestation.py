@@ -76,55 +76,19 @@ def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
     return result
 
 
-async def _get_subject(cookies: UserCookies, umkd_url: str, lang_url: str):
-    html = await fetch(lang_url, cookies.as_dict(), {"referer": umkd_url})
-    soup = BeautifulSoup(html, "html.parser")
-    check_auth(soup)
-    for row in soup.select(".link[id]"):
-        _, title, *_ = row.select("td")
-        yield text(title)
-
-
-async def _get_subjects(
-    cookies: UserCookies,
-    umkd_url: str,
-    lang_urls: Iterable[str],
-    logger=get_default_logger(__name__),
-):
-    result = []
-    for i, lang_url in enumerate(lang_urls):
-        index = 0
-        async for subject in _get_subject(cookies, umkd_url, lang_url):
-            while len(result) <= index:
-                result.append([])
-            result[index].append(subject)
-            index += 1
-        logger.info(f"got UMKD_URL {i+1}/{len(lang_urls)}")
-    return result
-
-
 def _get_attestation_by_subject(
-    attestations: list[Attestation], subject: str, subjects: list[str]
+    attestations: list[Attestation], subject: str
 ) -> Attestation:
-    if len(subjects) < 1:
-        return None
-    for current_subject in subjects:
-        if subject in current_subject:
-            break
     for attestation in attestations:
-        if attestation.subject in current_subject:
+        if attestation.subject == subject:
             return attestation
     return None
 
 
-def _join(
-    attestations: list[Attestation], attendances: list[_Attendance], subjects: list[str]
-):
+def _join(attestations: list[Attestation], attendances: list[_Attendance]):
     no_attestation = len(attestations) < 1
     for attendance in attendances:
-        attestation = _get_attestation_by_subject(
-            attestations, attendance.subject, subjects
-        )
+        attestation = _get_attestation_by_subject(attestations, attendance.subject)
         if no_attestation:
             new_attestation = [Mark(title, 0) for title, _ in attendance.summary]
             attestation = Attestation(
@@ -153,7 +117,13 @@ async def get_attestation(
 ):
     attestations, attendances = await asyncio.gather(
         _get_attestation(cookies, attestation_url, lang_url=lang_url, logger=logger),
-        get_attendance(cookies, attendance_url, lang_url=lang_url, logger=logger),
+        get_attendance(
+            cookies,
+            attendance_url,
+            lang_url=lang_url,
+            logger=logger,
+            umkd_url=umkd_url,
+            lang_urls=lang_urls,
+        ),
     )
-    subjects = await _get_subjects(cookies, umkd_url, lang_urls, logger=logger)
-    return sorted(_join(attestations, attendances, subjects), key=lambda a: a.subject)
+    return sorted(_join(attestations, attendances), key=lambda a: a.subject)

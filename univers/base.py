@@ -59,6 +59,11 @@ class Univer:
         self.urls = urls
         self.univer = univer
         self.storage = _teachers if storage is None else storage
+        self.lang_urls = [
+            self.urls.LANG_RU_URL,
+            self.urls.LANG_EN_URL,
+            self.urls.LANG_KK_URL,
+        ]
 
         self.logger = self.get_logger(__name__)
 
@@ -82,6 +87,8 @@ class Univer:
             attendance_url=self.urls.ATTENDANCE_URL,
             lang_url=self.lang_url,
             logger=self.logger,
+            lang_urls=self.lang_urls,
+            umkd_url=self.urls.UMKD_URL,
         )
 
     async def login(self, username: str, password: str):
@@ -89,18 +96,13 @@ class Univer:
         return self.cookies
 
     async def get_attestation(self):
-        lang_urls = [
-            self.urls.LANG_RU_URL,
-            self.urls.LANG_EN_URL,
-            self.urls.LANG_KK_URL,
-        ]
         return await get_attestation(
             self.cookies,
             logger=self.logger,
             attendance_url=self.urls.ATTENDANCE_URL,
             attestation_url=self.urls.ATTESTATION_URL,
             lang_url=self.lang_url,
-            lang_urls=lang_urls,
+            lang_urls=self.lang_urls,
             umkd_url=self.urls.UMKD_URL,
         )
 
