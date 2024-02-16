@@ -12,7 +12,22 @@ class UserCookies(NamedTuple):
     username: str
 
     def as_dict(self):
-        return {".ASPXAUTH": self.token, "ASP.NET_SessionId": self.session_id}
+        return {
+            ".ASPXAUTH": self.token,
+            "ASP.NET_SessionId": self.session_id,
+            "user_login": self.username,
+        }
+
+    def items(self):
+        return self.as_dict().items()
+
+    @classmethod
+    def from_cookies(cls, cookies: dict):
+        return cls(
+            token=cookies[".ASPXAUTH"],
+            session_id=cookies["ASP.NET_SessionId"],
+            username=cookies.get("user_login", "<unknown>"),
+        )
 
 
 async def login(
