@@ -3,7 +3,6 @@ import asyncio
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from ..utils.logger import create_logger
 from ..functions.login import login, UserCookies
 from ..functions.transcript import get_transcript
 from ..functions.get_attendance import get_attendance
@@ -12,7 +11,13 @@ from ..functions.get_schedule import get_schedule
 from ..functions.get_exams import get_exams
 from ..functions.get_umkd import get_umkd, get_umkd_files
 from ..functions.download import download_file
-from ..utils.storage import Storage
+from ..type import Translation
+from ..utils import (
+    merge_attestation_attendance,
+    get_subject_translations_from_umkd,
+    Storage,
+    create_logger,
+)
 
 
 @dataclass
@@ -40,8 +45,12 @@ def _get_transcript_url(urls: Urls, lang: str):
     return getattr(urls, f"TRANSCRIPT_URL_{lang.upper()}", urls.TRANSCRIPT_URL_RU)
 
 
-_teachers = {}
+_storage = {}
 _working_teachers = set()
+
+
+def SubjectId(subject: str):
+    return f"subject-{subject}"
 
 
 class Univer:
@@ -58,21 +67,15 @@ class Univer:
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
         self.univer = univer
-        self.storage = _teachers if storage is None else storage
-        self.lang_urls = [
-            self.urls.LANG_RU_URL,
-            self.urls.LANG_EN_URL,
-            self.urls.LANG_KK_URL,
-        ]
-
-        self.logger = self.get_logger(__name__)
+        self.storage = _storage if storage is None else storage
 
     def __apply_cookies(self, cookies: UserCookies | None):
         if cookies is None:
             self.username = "<unknown>"
             return
-        self.cookies = cookies
         self.username = cookies.username
+        self.cookies = cookies
+        self.logger = self.get_logger(__name__)
 
     def get_logger(self, name):
         logger = create_logger(
@@ -81,30 +84,59 @@ class Univer:
         )
         return logger
 
+    async def get_subject_translations(self, subjects: list[str]) -> list[Translation]:
+        if not all((SubjectId(subject) in self.storage) for subject in subjects):
+            all_subjects = await get_subject_translations_from_umkd(
+                cookies=self.cookies,
+                umkd_url=self.urls.UMKD_URL,
+                lang_urls=Translation(
+                    ru=self.urls.LANG_RU_URL,
+                    en=self.urls.LANG_EN_URL,
+                    kk=self.urls.LANG_KK_URL,
+                ),
+                logger=self.logger,
+            )
+            for subject in all_subjects:
+                for translation in subject:
+                    self.storage[SubjectId(translation)] = subject
+            return all_subjects
+
+        return [self.storage[SubjectId(subject)] for subject in subjects]
+
     async def get_attendance(self):
-        return await get_attendance(
+        attendances = await get_attendance(
             self.cookies,
             attendance_url=self.urls.ATTENDANCE_URL,
             lang_url=self.lang_url,
             logger=self.logger,
-            lang_urls=self.lang_urls,
-            umkd_url=self.urls.UMKD_URL,
         )
+        all_subjects = await self.get_subject_translations(
+            (a.subject for a in attendances)
+        )
+
+        for a in attendances:
+            for subjects in all_subjects:
+                if a.subject in subjects:
+                    a.subject = str(getattr(subjects, self.language, a.subject))
+                    break
+        return attendances
 
     async def login(self, username: str, password: str):
-        self.cookies = await login(username, password, self.urls.LOGIN_URL)
-        return self.cookies
+        cookies = await login(username, password, self.urls.LOGIN_URL)
+        self.__apply_cookies(cookies)
+        return cookies
 
     async def get_attestation(self):
-        return await get_attestation(
-            self.cookies,
-            logger=self.logger,
-            attendance_url=self.urls.ATTENDANCE_URL,
-            attestation_url=self.urls.ATTESTATION_URL,
-            lang_url=self.lang_url,
-            lang_urls=self.lang_urls,
-            umkd_url=self.urls.UMKD_URL,
+        attestation, attendance = await asyncio.gather(
+            get_attestation(
+                self.cookies,
+                logger=self.logger,
+                attestation_url=self.urls.ATTESTATION_URL,
+                lang_url=self.lang_url,
+            ),
+            self.get_attendance(),
         )
+        return merge_attestation_attendance(attestation, attendance)
 
     async def get_schedule(self, factor=None):
         schedule = await get_schedule(

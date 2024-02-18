@@ -1,13 +1,10 @@
-import asyncio
 from bs4 import BeautifulSoup
 from dataclasses import replace
 from datetime import date
-from logging import Logger
 
-from ..functions.get_schedule import Lesson
-from .base import Univer, Urls
 from ..utils.fetch import fetch
 from ..utils import compare_str_without_spaces, to_initials
+from .base import Univer, Urls
 
 
 def _get_factor():

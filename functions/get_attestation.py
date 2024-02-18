@@ -1,14 +1,11 @@
 from dataclasses import dataclass
-import asyncio
-from typing import Iterable
 from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
 from ..utils.text import text
-from ..type import Mark, ActiveMark
+from ..type import Mark
 from ..utils.logger import get_default_logger
-from .get_attendance import get_attendance, Attendance as _Attendance
 from .login import UserCookies
 
 
@@ -26,7 +23,7 @@ class Attestation:
     attendance: list[Attendance]
 
 
-async def _get_attestation(
+async def get_attestation(
     cookies: UserCookies,
     attestation_url: str,
     lang_url: str,
@@ -55,75 +52,3 @@ async def _get_attestation(
             Attestation(subject=subject.strip(), attestation=marks_list, attendance=[])
         )
     return attestation
-
-
-def _find_element_by_key(elements: list, predicate):
-    for element in elements:
-        if predicate(element):
-            return element
-
-
-def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
-    result: list[Mark] = []
-    is_active_set = False
-    for a_mark in a:
-        b_mark = _find_element_by_key(b, lambda b_mark: a_mark.title == b_mark.title)
-        result_mark = b_mark or a_mark
-        if not is_active_set and a_mark.value == 0:
-            result_mark = ActiveMark(title=result_mark.title, value=result_mark.value)
-            is_active_set = tuple
-        result.append(result_mark)
-    return result
-
-
-def _get_attestation_by_subject(
-    attestations: list[Attestation], subject: str
-) -> Attestation:
-    for attestation in attestations:
-        if attestation.subject == subject:
-            return attestation
-    return None
-
-
-def _join(attestations: list[Attestation], attendances: list[_Attendance]):
-    no_attestation = len(attestations) < 1
-    for attendance in attendances:
-        attestation = _get_attestation_by_subject(attestations, attendance.subject)
-        if no_attestation:
-            new_attestation = [Mark(title, 0) for title, _ in attendance.summary]
-            attestation = Attestation(
-                subject=attendance.subject,
-                attestation=new_attestation + [Mark(title="", value=0)],
-                attendance=[],
-            )
-            attestations.append(attestation)
-        if attestation is None:
-            continue
-        attestation.attestation = _join_marks(
-            attestation.attestation, attendance.summary
-        )
-        attestation.attendance = attendance.attendance
-    return attestations
-
-
-async def get_attestation(
-    cookies: UserCookies,
-    attestation_url: str,
-    attendance_url: str,
-    lang_url: str,
-    lang_urls: Iterable[str],
-    umkd_url: str,
-    logger=get_default_logger(__name__),
-):
-    attestations, attendances = await asyncio.gather(
-        _get_attestation(cookies, attestation_url, lang_url=lang_url, logger=logger),
-        get_attendance(
-            cookies,
-            attendance_url,
-            lang_url=lang_url,
-            logger=logger,
-            umkd_url=umkd_url,
-            lang_urls=lang_urls,
-        ),
-    )
-    return sorted(_join(attestations, attendances), key=lambda a: a.subject)

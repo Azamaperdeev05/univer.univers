@@ -13,3 +13,9 @@ class ActiveMark(NamedTuple):
     title: str
     value: int
     active: int = 1
+
+
+class Translation(NamedTuple):
+    ru: str
+    en: str
+    kk: str

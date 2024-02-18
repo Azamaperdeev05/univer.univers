@@ -1,9 +1,6 @@
-import asyncio
-from logging import Logger
 from bs4 import BeautifulSoup
 from ..utils.fetch import fetch
 from ..utils import compare_str_without_spaces, to_initials
-from ..functions.get_schedule import Lesson
 from .base import Univer, Urls
 import re
 from urllib.parse import urlencode
