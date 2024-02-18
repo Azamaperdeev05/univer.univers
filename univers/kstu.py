@@ -32,6 +32,7 @@ KSTUUrls = Urls(
     TRANSCRIPT_URL_KK="https://univer.kstu.kz/student/transcript/1/",
     TRANSCRIPT_URL_EN="https://univer.kstu.kz/student/transcript/6/",
     UMKD_URL="https://univer.kstu.kz/student/umkd/",
+    EDUCATION_PLAN_URL="https://univer.kstu.kz/student/educplan/",
 )
 PERSON_URL = "https://person.kstu.kz/?s={}"
 

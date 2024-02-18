@@ -1,6 +1,6 @@
 import re
 
-from .get_subject_translations_from_umkd import get_subject_translations_from_umkd
+from .get_subject_translations import get_subject_translations
 from .fetch import fetch
 from .merge_attestation_attendance import merge_attestation_attendance
 from .storage import Storage

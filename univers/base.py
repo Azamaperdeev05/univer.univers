@@ -14,7 +14,7 @@ from ..functions.download import download_file
 from ..type import Translation
 from ..utils import (
     merge_attestation_attendance,
-    get_subject_translations_from_umkd,
+    get_subject_translations,
     Storage,
     create_logger,
 )
@@ -35,6 +35,7 @@ class Urls:
     TRANSCRIPT_URL_EN: str
     TRANSCRIPT_URL_KK: str
     UMKD_URL: str
+    EDUCATION_PLAN_URL: str
 
 
 def _get_lang_url(urls: Urls, lang: str):
@@ -85,9 +86,9 @@ class Univer:
 
     async def get_subject_translations(self, subjects: list[str]) -> list[Translation]:
         if not all((SubjectId(subject) in self.storage) for subject in subjects):
-            all_subjects = await get_subject_translations_from_umkd(
+            all_subjects = await get_subject_translations(
                 cookies=self.cookies,
-                umkd_url=self.urls.UMKD_URL,
+                education_plan_url=self.urls.EDUCATION_PLAN_URL,
                 lang_urls=Translation(
                     ru=self.urls.LANG_RU_URL,
                     en=self.urls.LANG_EN_URL,

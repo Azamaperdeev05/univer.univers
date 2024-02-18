@@ -5,32 +5,31 @@ from .auth import check_auth
 from .fetch import fetch
 from .logger import get_default_logger
 from .text import text
-from pprint import pprint
 
 
-async def _get_subject(cookies: UserCookies, umkd_url: str, lang_url: str):
-    html = await fetch(lang_url, cookies.as_dict(), {"referer": umkd_url})
+async def _get_subject(cookies: UserCookies, education_plan_url: str, lang_url: str):
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": education_plan_url})
     soup = BeautifulSoup(html, "html.parser")
     check_auth(soup)
-    for row in soup.select(".link[id]"):
+    for row in soup.select("tr.link"):
         _, title, *_ = row.select("td")
         yield text(title)
 
 
-async def get_subject_translations_from_umkd(
+async def get_subject_translations(
     cookies: UserCookies,
-    umkd_url: str,
+    education_plan_url: str,
     lang_urls: Translation,
     logger=get_default_logger(__name__),
 ) -> list[Translation]:
     translations: dict[str, list[str]] = {}
     for i, lang_url in enumerate(lang_urls):
-        logger.info(f"get UMKD_URL {i+1}/{len(lang_urls)}")
-        async for subject in _get_subject(cookies, umkd_url, lang_url):
+        logger.info(f"get EDUCATION_PLAN_URL {i+1}/{len(lang_urls)}")
+        async for subject in _get_subject(cookies, education_plan_url, lang_url):
             if lang_url not in translations:
                 translations[lang_url] = []
             translations[lang_url].append(subject)
-        logger.info(f"got UMKD_URL {i+1}/{len(lang_urls)}")
+        logger.info(f"got EDUCATION_PLAN_URL {i+1}/{len(lang_urls)}")
 
     result = []
     for index, ru_subject in enumerate(translations[lang_urls.ru]):
