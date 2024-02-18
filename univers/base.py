@@ -62,19 +62,18 @@ class Univer:
         univer="",
         storage: Storage = None,
     ) -> None:
-        self.__apply_cookies(cookies)
         self.language = language
         self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
         self.univer = univer
         self.storage = _storage if storage is None else storage
+        self.__apply_cookies(cookies)
 
     def __apply_cookies(self, cookies: UserCookies | None):
-        if cookies is None:
-            self.username = "<unknown>"
-            return
-        self.username = cookies.username
-        self.cookies = cookies
+        self.username = "<unknown>"
+        if cookies is not None:
+            self.username = cookies.username
+            self.cookies = cookies
         self.logger = self.get_logger(__name__)
 
     def get_logger(self, name):
