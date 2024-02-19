@@ -1,6 +1,7 @@
 import asyncio
 
 from dataclasses import dataclass
+from typing import Iterable
 from urllib.parse import urlparse
 
 from ..functions.login import login, UserCookies
@@ -84,7 +85,8 @@ class Univer:
         )
         return logger
 
-    async def get_subject_translations(self, subjects: list[str]) -> list[Translation]:
+    async def get_subject_translations(self, subjects: Iterable[str]) -> list[Translation]:
+        subjects = tuple(subjects)
         if not all((SubjectId(subject) in self.storage) for subject in subjects):
             all_subjects = await get_subject_translations(
                 cookies=self.cookies,
