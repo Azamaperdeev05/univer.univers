@@ -85,7 +85,9 @@ class Univer:
         )
         return logger
 
-    async def get_subject_translations(self, subjects: Iterable[str]) -> list[Translation]:
+    async def get_subject_translations(
+        self, subjects: Iterable[str]
+    ) -> list[Translation]:
         subjects = tuple(subjects)
         if not all((SubjectId(subject) in self.storage) for subject in subjects):
             all_subjects = await get_subject_translations(
@@ -140,13 +142,12 @@ class Univer:
         )
         return merge_attestation_attendance(attestation, attendance)
 
-    async def get_schedule(self, factor=None):
+    async def get_schedule(self):
         schedule = await get_schedule(
             self.cookies,
             self.urls.SCHEDULE_URL,
             logger=self.logger,
             lang_url=self.lang_url,
-            factor=factor,
         )
         if await self.get_teacher() is NotImplemented:
             return schedule

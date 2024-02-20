@@ -1,21 +1,9 @@
 from bs4 import BeautifulSoup
 from dataclasses import replace
-from datetime import date
 
 from ..utils.fetch import fetch
 from ..utils import compare_str_without_spaces, to_initials
 from .base import Univer, Urls
-
-
-def _get_factor():
-    FIRST_WEEK = "2024-01-15"
-    year, month, day = map(int, FIRST_WEEK.split("-"))
-    first = date(year, month, day)
-    now = date.today()
-    weekday = 1 if now.weekday() > 4 else 0
-    week = (now - first).days // 7 + 1 + weekday
-    return week % 2 == 0
-
 
 KSTUUrls = Urls(
     ATTENDANCE_URL="https://univer.kstu.kz/student/attendance/full/",
@@ -53,7 +41,7 @@ class KSTU(Univer):
         )
 
     async def get_schedule(self):
-        schedule = await super().get_schedule(_get_factor())
+        schedule = await super().get_schedule()
         lessons = []
         for lesson in schedule.lessons:
             if lesson.factor is None:
@@ -63,6 +51,7 @@ class KSTU(Univer):
             lessons.append(lesson)
 
         schedule.lessons = lessons
+        schedule.factor = schedule.week % 2 == 0
         return schedule
 
     async def get_teacher(self, name: str = None):

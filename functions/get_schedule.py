@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup, Tag
+from dataclasses import dataclass, field
+from datetime import date
 
 from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
 from ..utils.auth import check_auth
-
-from dataclasses import dataclass, field
+from ..utils.text import text
 from .login import UserCookies
 
 
@@ -24,11 +25,17 @@ class Lesson:
 class Schedule:
     lessons: list[Lesson]
     factor: bool | None
+    week: int
 
 
-def text(element):
-    if element:
-        return element.text.strip()
+def get_week():
+    FIRST_WEEK = "2024-01-15"
+    year, month, day = map(int, FIRST_WEEK.split("-"))
+    first = date(year, month, day)
+    now = date.today()
+    weekday = 1 if now.weekday() > 4 else 0
+    week = (now - first).days // 7 + 1 + weekday
+    return week
 
 
 def get_lessons(row: Tag):
@@ -63,7 +70,6 @@ async def get_schedule(
     cookies: UserCookies,
     schedule_url: str,
     lang_url: str,
-    factor: bool | None = None,
     logger=get_default_logger(__name__),
 ):
     logger.info("get SCHEDULE_URL")
@@ -76,5 +82,4 @@ async def get_schedule(
     lessons = []
     for row in schedule_table:
         lessons += list(get_lessons(row))
-
-    return Schedule(lessons=lessons, factor=factor)
+    return Schedule(lessons=lessons, factor=None, week=get_week())
