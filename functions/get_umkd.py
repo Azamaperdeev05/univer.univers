@@ -114,7 +114,11 @@ async def get_umkd_files(
     result: list[UmkdFile] = []
 
     teacher = None
-    for row in soup.select_one(".brk").parent.children:
+
+    table = soup.select_one(".brk")
+    if table is None:
+        return []
+    for row in table.parent.children:
         if not isinstance(row, Tag):
             continue
 
