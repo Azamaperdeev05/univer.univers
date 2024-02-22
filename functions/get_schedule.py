@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup, Tag
 from dataclasses import dataclass, field
 from datetime import date
+from hashlib import md5
 
 from ..utils.logger import get_default_logger
 from ..utils.fetch import fetch
@@ -19,6 +20,20 @@ class Lesson:
     time: str
     factor: bool
     teacher_link: str = field(default=None)
+    id: str = field(default=None)
+
+    def get_id(self):
+        data = (
+            self.subject,
+            self.day,
+            self.time,
+            self.factor,
+            self.teacher,
+            self.audience,
+            self.period,
+            self.teacher_link,
+        )
+        return hash("-".join(map(str, data)))
 
 
 @dataclass
@@ -26,6 +41,11 @@ class Schedule:
     lessons: list[Lesson]
     factor: bool | None
     week: int
+
+    def with_id(self):
+        for lesson in self.lessons:
+            lesson.id = lesson.get_id()
+        return self
 
 
 def get_week():
@@ -38,6 +58,10 @@ def get_week():
     return week
 
 
+def hash(text: str):
+    return md5(text.encode()).hexdigest()
+
+
 def get_lessons(row: Tag):
     time = text(row.select_one(".time"))
     days = row.select("td.field")
@@ -48,20 +72,20 @@ def get_lessons(row: Tag):
 
         for lesson in lessons:
             subject_element = lesson.select_one("p")
-            audience = text(lesson.select_one(".aud_faculty").next_sibling)
             denominator = lesson.select_one(".denominator")
             factor = (
                 None
                 if denominator is None
                 else text(denominator).lower() != "числитель"
             )
+
             yield Lesson(
                 subject=text(subject_element).replace("(", " (").replace("  (", " ("),
                 day=day,
                 time=time,
                 factor=factor,
                 teacher=text(subject_element.next_sibling),
-                audience=audience,
+                audience=text(lesson.select_one(".aud_faculty").next_sibling),
                 period=text(lesson.select_one(".dateStartLbl")),
             )
 

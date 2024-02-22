@@ -159,7 +159,7 @@ class Univer:
             lesson.teacher_link = href
 
         await asyncio.gather(*(set_teacher(lesson) for lesson in schedule.lessons))
-        return schedule
+        return schedule.with_id()
 
     async def get_exams(self):
         exams = await get_exams(

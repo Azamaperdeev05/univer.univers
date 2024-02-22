@@ -52,7 +52,7 @@ class KSTU(Univer):
 
         schedule.lessons = lessons
         schedule.factor = schedule.week % 2 == 0
-        return schedule
+        return schedule.with_id()
 
     async def get_teacher(self, name: str = None):
         if name is None:
