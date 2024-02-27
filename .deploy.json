@@ -1,4 +1,4 @@
 {
     "directory": ".",
-    "ssh": "user@static.eloh1m.com:/home/user/univer/univer"
+    "ssh": "vlad@192.168.2.33:/home/vlad/univer/univer"
 }
