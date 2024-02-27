@@ -21,7 +21,7 @@ class Exam:
     teacher_link: str | None = field(default=None)
 
 
-tz = timezone(timedelta(hours=6))
+tz = timezone(timedelta(hours=5))
 
 
 def __get_date(text: str):
