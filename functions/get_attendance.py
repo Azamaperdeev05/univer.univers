@@ -29,6 +29,13 @@ def get_subject(line: str):
     return re.sub(" +", " ", line[:index].strip())
 
 
+def parse_float(string: str):
+    try:
+        return float(string.replace(",", "."))
+    except:
+        return string
+
+
 def parse_table(table: Tag):
     headings = table.select("th")
     if len(headings) == 0:
@@ -38,9 +45,7 @@ def parse_table(table: Tag):
     for heading, value in zip(headings[1:], values[:-1]):
         v = text(value)
         if v:
-            marks.append(
-                Mark(title=text(heading), value=int(v) if not v.isalpha() else v)
-            )
+            marks.append(Mark(title=text(heading), value=parse_float(v)))
     return text(headings[0]), marks
 
 
@@ -48,7 +53,7 @@ def get_summary(line: str):
     def summary(line: str):
         line = line.replace("\xa0\xa0\xa0\xa0", "").strip()
         title, value = line.split(":")
-        return Mark(get_subject(title.strip()), int(value.strip()))
+        return Mark(get_subject(title.strip()), parse_float(value))
 
     lines = line.split("\n")
     return [summary(s) for s in filter(lambda l: l.strip(), lines)]

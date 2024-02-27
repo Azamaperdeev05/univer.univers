@@ -6,12 +6,12 @@ from .utils.storage import Storage
 
 class Mark(NamedTuple):
     title: str
-    value: int
+    value: float
 
 
 class ActiveMark(NamedTuple):
     title: str
-    value: int
+    value: float
     active: int = 1
 
 
