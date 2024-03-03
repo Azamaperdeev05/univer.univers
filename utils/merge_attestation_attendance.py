@@ -12,21 +12,18 @@ def _get_attestation_by_subject(
     return None
 
 
-def _find_element_by_key(elements: list, predicate):
-    for element in elements:
-        if predicate(element):
-            return element
-
-
 def _join_marks(a: list[Mark], b: list[Mark]) -> list[Mark]:
     result: list[Mark] = []
     is_active_set = False
-    for a_mark in a:
-        b_mark = _find_element_by_key(b, lambda b_mark: a_mark.title == b_mark.title)
+    for index, a_mark in enumerate(a):
+        if index >= len(b):
+            result.append(a_mark)
+            break
+        b_mark = b[index]
         result_mark = b_mark or a_mark
         if not is_active_set and a_mark.value == 0:
             result_mark = ActiveMark(title=result_mark.title, value=result_mark.value)
-            is_active_set = tuple
+            is_active_set = True
         result.append(result_mark)
     return result
 
