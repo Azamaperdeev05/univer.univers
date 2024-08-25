@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 
 from ..utils.fetch import fetch
@@ -21,7 +21,7 @@ class Attestation:
     subject: str
     attestation: list[Mark]
     attendance: list[Attendance]
-    sum: Mark
+    sum: Mark = field(default_factory=lambda: Mark("", 0))
 
 
 async def get_attestation(
@@ -30,7 +30,7 @@ async def get_attestation(
     lang_url: str,
     logger=get_default_logger(__name__),
 ):
-    """ Текущая аттестация """
+    """Текущая аттестация"""
     logger.info("get ATTESTATION_URL")
     html = await fetch(lang_url, cookies.as_dict(), {"referer": attestation_url})
     logger.info("got ATTESTATION_URL")
@@ -51,9 +51,11 @@ async def get_attestation(
                 Mark(title=header_marks[i].replace("*", ""), value=int(mark))
             )
         attestation.append(
-            Attestation(subject=subject.strip(), attestation=marks_list, attendance=[], sum=Mark(
-                title=sum_header,
-                value=int(sum)
-            ))
+            Attestation(
+                subject=subject.strip(),
+                attestation=marks_list,
+                attendance=[],
+                sum=Mark(title=sum_header, value=int(sum)),
+            )
         )
     return attestation
