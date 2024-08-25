@@ -13,7 +13,7 @@ KSTUUrls = Urls(
     LANG_EN_URL="https://univer.kstu.kz/lang/change/en/",
     ATTESTATION_URL="https://univer.kstu.kz/student/attestation/",
     SCHEDULE_URL=(
-        "https://univer.kstu.kz/student/myschedule/2023/2/22.01.2024/28.01.2024/"
+        "https://univer.kstu.kz/student/myschedule/2024/1/30.09.2024/06.10.2024/"
     ),
     EXAMS_URL="https://univer.kstu.kz/student/myexam/schedule/",
     TRANSCRIPT_URL_RU="https://univer.kstu.kz/student/transcript/2",
