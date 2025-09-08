@@ -69,6 +69,7 @@ async def get_attendance(
     lang_url: str,
     logger=get_default_logger(__name__),
 ):
+    """ Журнал посещений и успеваемости """
     logger.info("get ATTENDANCE_URL")
     html = await fetch(lang_url, cookies.as_dict(), {"referer": attendance_url})
     logger.info("got ATTENDANCE_URL")

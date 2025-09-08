@@ -49,7 +49,7 @@ class Schedule:
 
 
 def get_week():
-    FIRST_WEEK = "2024-01-15"
+    FIRST_WEEK = "2024-09-2"
     year, month, day = map(int, FIRST_WEEK.split("-"))
     first = date(year, month, day)
     now = date.today()
