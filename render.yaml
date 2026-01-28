@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: univer-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 7435
+    healthCheckPath: /

@@ -1,0 +1,6 @@
+aiohttp
+beautifulsoup4
+
+[dev]
+pytest
+pytest-asyncio

@@ -1,0 +1,11 @@
+__pycache__
+venv
+.git
+.idea
+.vscode
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+univer.client
+test_*.py

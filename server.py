@@ -1,0 +1,506 @@
+from aiohttp import web
+from dataclasses import asdict
+import json
+import os
+import sys
+
+# Core папкасын path-қа қосу (импорттар жұмыс істеуі үшін)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
+
+from univers import KSTU, KazNU, get_univer
+from univers.base import Univer
+from functions.login import UserCookies
+
+# Frontend static папкасының жолы
+CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
+
+routes = web.RouteTableDef()
+
+
+# Univer объектісін алу үшін көмекші функция
+def get_user_univer(request) -> Univer:
+    # Сессиядан немесе cookie-ден деректерді алу керек
+    # Бұл жерде қарапайым болу үшін cookie-ден оқимыз деп болжаймыз
+    # Шын мәнінде, client жағы token мен session_id жіберуі керек
+    # Қазірше login арқылы алынған cookie-лерді қалай сақтайтынын қарастыру керек
+    # Client secure-storage-тен оқып headers-ке қоса ма?
+    # auth.svelte.ts қарасақ credentials: "include" бар.
+    # Демек cookies серверге келеді.
+    pass
+
+
+# Login handler
+@routes.post("/auth/login")
+async def login(request):
+    data = await request.json()
+    username = data.get("username")
+    password = data.get("password")
+    university = data.get("univer")  # 'kstu' or 'kaznu' or url
+
+    try:
+        UniverClass = get_univer(university)  # Егер университет атымен келсе
+        if not UniverClass:
+            # Егер url болса, мүмкін kstu деп default алу керек пе?
+            # univer.client логикасында универ қалай таңдалады?
+            UniverClass = KSTU
+
+        # Инстанция құру
+        univer = UniverClass()
+
+        # Логин жасау (бұл aiohttp session қолданады)
+        cookies = await univer.login(username, password)
+
+        response = web.json_response({"status": "ok"})
+        # Cookie-лерді орнату
+        response.set_cookie(".ASPXAUTH", cookies.token, httponly=True)
+        response.set_cookie("ASP.NET_SessionId", cookies.session_id, httponly=True)
+        response.set_cookie("univer_code", university)  # Қай универ екенін сақтау
+
+        return response
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=401)
+
+
+# API middleware - Univer объектісін дайындау
+async def univer_middleware(app, handler):
+    async def middleware_handler(request):
+        if request.path.startswith("/api/"):
+            token = request.cookies.get(".ASPXAUTH")
+            session_id = request.cookies.get("ASP.NET_SessionId")
+            univer_code = request.cookies.get("univer_code", "kstu")
+
+            if not token or not session_id:
+                return web.json_response({"error": "Unauthorized"}, status=401)
+
+            cookies = UserCookies(token=token, session_id=session_id, username="")
+
+            UniverClass = get_univer(univer_code) or KSTU
+            request["univer"] = UniverClass(cookies=cookies)
+
+        return await handler(request)
+
+    return middleware_handler
+
+
+@routes.get("/api/schedule")
+async def get_schedule(request):
+    univer: Univer = request["univer"]
+    # Тілді алу (query params: lang)
+    lang = request.query.get("lang", "ru")
+    univer.language = lang
+
+    try:
+        schedule = await univer.get_schedule()
+        return web.json_response(
+            asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/transcript")
+async def get_transcript(request):
+    univer: Univer = request["univer"]
+    try:
+        transcript = await univer.get_transcript()
+        return web.json_response(
+            asdict(transcript), dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/attestation")
+async def get_attestation(request):
+    univer: Univer = request["univer"]
+    try:
+        attestation = await univer.get_attestation()
+        # тізімді dict-ке айналдыру немесе сол күйінде жіберу
+        # attestation - бұл список
+        return web.json_response(
+            [asdict(a) for a in attestation], dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/exams")
+async def get_exams(request):
+    univer: Univer = request["univer"]
+    # Тілді алу
+    lang = request.query.get("lang", "ru")
+    univer.language = lang
+
+    try:
+        exams = await univer.get_exams()
+        return web.json_response(
+            [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/umkd")
+async def get_umkd_folders(request):
+    univer: Univer = request["univer"]
+    lang = request.query.get("lang", "ru")
+    univer.language = lang
+    try:
+        folders = await univer.get_umkd()
+        return web.json_response(
+            [asdict(f) for f in folders], dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/umkd/{id}")
+async def get_umkd_files(request):
+    univer: Univer = request["univer"]
+    subject_id = request.match_info["id"]
+    lang = request.query.get("lang", "ru")
+    univer.language = lang
+    try:
+        files = await univer.get_umkd_files(subject_id)
+        return web.json_response(
+            [asdict(f) for f in files], dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# FAQ деректері - 3 тілде
+FAQ_DATA = {
+    "kk": [
+        {
+            "id": "1",
+            "label": "Қосымшаға қалай кіремін?",
+            "text": "Университеттің univer.kstu.kz немесе univer.kaznu.kz порталындағы логин мен құпия сөзіңізді пайдаланыңыз. Бұл деректер сіздің жеке кабинетіңізге кіру үшін қолданылады.",
+        },
+        {
+            "id": "2",
+            "label": "Бағалар қашан жаңарады?",
+            "text": "Бағалар университет жүйесінен нақты уақыт режимінде алынады. Оқытушы бағаны қойған кезде ол бірден көрінеді.",
+        },
+        {
+            "id": "3",
+            "label": "Құпия сөзді қалай өзгертемін?",
+            "text": "Құпия сөзді тек университеттің ресми порталында (univer.kstu.kz немесе univer.kaznu.kz) өзгерту керек. Біздің қосымша құпия сөздерді сақтамайды.",
+        },
+        {
+            "id": "4",
+            "label": "Сабақ кестесі дұрыс емес көрсетіледі",
+            "text": "Кесте университет жүйесінен автоматты түрде алынады. Егер қате болса, деканатқа хабарласыңыз.",
+        },
+        {
+            "id": "5",
+            "label": "Қосымша қауіпсіз бе?",
+            "text": "Иә, қосымша толық қауіпсіз. Біз сіздің деректеріңізді сақтамаймыз және тек университет жүйесімен байланысу үшін қолданамыз. Барлық байланыс шифрланған.",
+        },
+        {
+            "id": "6",
+            "label": "Интернетсіз жұмыс істей ала ма?",
+            "text": "Иә, қосымша офлайн режимде жұмыс істей алады. Соңғы жүктелген деректер кэште сақталады.",
+        },
+        {
+            "id": "7",
+            "label": "Қай университеттер қолдау көрсетіледі?",
+            "text": "Қазіргі уақытта KSTU (Қарағанды техникалық университеті) және KazNU (Әл-Фараби атындағы Қазақ ұлттық университеті) қолдау көрсетіледі.",
+        },
+        {
+            "id": "8",
+            "label": "GPA қалай есептеледі?",
+            "text": "GPA университет жүйесінен тікелей алынады. Есептеу формуласы: барлық пәндердің кредит×балл қосындысы / жалпы кредиттер.",
+        },
+    ],
+    "ru": [
+        {
+            "id": "1",
+            "label": "Как войти в приложение?",
+            "text": "Используйте логин и пароль от портала univer.kstu.kz или univer.kaznu.kz. Эти данные используются для доступа к вашему личному кабинету.",
+        },
+        {
+            "id": "2",
+            "label": "Когда обновляются оценки?",
+            "text": "Оценки получаются из системы университета в реальном времени. Как только преподаватель поставит оценку, она сразу отобразится.",
+        },
+        {
+            "id": "3",
+            "label": "Как изменить пароль?",
+            "text": "Пароль можно изменить только на официальном портале университета (univer.kstu.kz или univer.kaznu.kz). Наше приложение не хранит пароли.",
+        },
+        {
+            "id": "4",
+            "label": "Расписание отображается неправильно",
+            "text": "Расписание автоматически загружается из системы университета. Если есть ошибка, обратитесь в деканат.",
+        },
+        {
+            "id": "5",
+            "label": "Безопасно ли приложение?",
+            "text": "Да, приложение полностью безопасно. Мы не храним ваши данные и используем их только для связи с системой университета. Все соединения зашифрованы.",
+        },
+        {
+            "id": "6",
+            "label": "Работает ли без интернета?",
+            "text": "Да, приложение может работать в офлайн режиме. Последние загруженные данные сохраняются в кэше.",
+        },
+        {
+            "id": "7",
+            "label": "Какие университеты поддерживаются?",
+            "text": "В настоящее время поддерживаются KSTU (Карагандинский технический университет) и KazNU (Казахский национальный университет им. аль-Фараби).",
+        },
+        {
+            "id": "8",
+            "label": "Как рассчитывается GPA?",
+            "text": "GPA получается напрямую из системы университета. Формула расчета: сумма (кредиты × баллы) всех предметов / общее количество кредитов.",
+        },
+    ],
+    "en": [
+        {
+            "id": "1",
+            "label": "How do I log in?",
+            "text": "Use your login and password from the univer.kstu.kz or univer.kaznu.kz portal. These credentials are used to access your personal account.",
+        },
+        {
+            "id": "2",
+            "label": "When are grades updated?",
+            "text": "Grades are fetched from the university system in real-time. As soon as a teacher enters a grade, it will be displayed immediately.",
+        },
+        {
+            "id": "3",
+            "label": "How do I change my password?",
+            "text": "You can only change your password on the official university portal (univer.kstu.kz or univer.kaznu.kz). Our app does not store passwords.",
+        },
+        {
+            "id": "4",
+            "label": "The schedule is displayed incorrectly",
+            "text": "The schedule is automatically loaded from the university system. If there is an error, please contact the dean's office.",
+        },
+        {
+            "id": "5",
+            "label": "Is the app secure?",
+            "text": "Yes, the app is completely secure. We do not store your data and only use it to communicate with the university system. All connections are encrypted.",
+        },
+        {
+            "id": "6",
+            "label": "Does it work offline?",
+            "text": "Yes, the app can work in offline mode. The last loaded data is saved in the cache.",
+        },
+        {
+            "id": "7",
+            "label": "Which universities are supported?",
+            "text": "Currently, KSTU (Karaganda Technical University) and KazNU (Al-Farabi Kazakh National University) are supported.",
+        },
+        {
+            "id": "8",
+            "label": "How is GPA calculated?",
+            "text": "GPA is obtained directly from the university system. Calculation formula: sum of (credits × points) for all subjects / total credits.",
+        },
+    ],
+}
+
+# Құпиялылық саясаты - 3 тілде
+PRIVACY_POLICY = {
+    "kk": """
+<h1>Құпиялылық саясаты</h1>
+<p><strong>Соңғы жаңарту:</strong> 2026 жылғы қаңтар</p>
+
+<h2>1. Кіріспе</h2>
+<p>Univer қосымшасы (бұдан әрі – «Қосымша») сіздің жеке деректеріңіздің қауіпсіздігін қамтамасыз етуге міндеттенеді. Бұл құпиялылық саясаты біздің деректерді қалай жинайтынымызды, пайдаланатынымызды және қорғайтынымызды түсіндіреді.</p>
+
+<h2>2. Жиналатын деректер</h2>
+<p>Біз келесі деректерді жинаймыз:</p>
+<ul>
+<li>Университет жүйесіне кіру үшін логин (тек сессия уақытында)</li>
+<li>Сабақ кестесі, бағалар және транскрипт деректері (тек көрсету үшін)</li>
+</ul>
+
+<h2>3. Деректерді сақтау</h2>
+<p><strong>Маңызды:</strong> Біз сіздің құпия сөзіңізді серверде САҚТАМАЙМЫЗ. Барлық аутентификация тікелей университет серверлерімен жүргізіледі.</p>
+
+<h2>4. Деректерді пайдалану</h2>
+<p>Жиналған деректер тек:</p>
+<ul>
+<li>Сізге сабақ кестесін көрсету үшін</li>
+<li>Бағалар мен үлгерім туралы ақпаратты көрсету үшін</li>
+<li>Қосымша функционалдығын қамтамасыз ету үшін</li>
+</ul>
+
+<h2>5. Деректерді қорғау</h2>
+<p>Біз деректеріңіздің қауіпсіздігін қамтамасыз ету үшін:</p>
+<ul>
+<li>SSL/TLS шифрлауын қолданамыз</li>
+<li>Деректерді үшінші тараптарға бермейміз</li>
+<li>Серверлік қауіпсіздік шараларын қолданамыз</li>
+</ul>
+
+<h2>6. Cookies файлдары</h2>
+<p>Қосымша сессияны басқару үшін cookies файлдарын қолданады. Бұл университет жүйесімен байланысу үшін қажет.</p>
+
+<h2>7. Сіздің құқықтарыңыз</h2>
+<p>Сізде келесі құқықтар бар:</p>
+<ul>
+<li>Деректеріңізді жою (жүйеден шығу арқылы)</li>
+<li>Cookies файлдарынан бас тарту</li>
+<li>Қосымшаны кез келген уақытта пайдалануды тоқтату</li>
+</ul>
+
+<h2>8. Байланыс</h2>
+<p>Сұрақтарыңыз болса, университетіңіздің техникалық қолдау қызметіне хабарласыңыз.</p>
+""",
+    "ru": """
+<h1>Политика конфиденциальности</h1>
+<p><strong>Последнее обновление:</strong> Январь 2026</p>
+
+<h2>1. Введение</h2>
+<p>Приложение Univer (далее – «Приложение») обязуется обеспечивать безопасность ваших персональных данных. Настоящая политика конфиденциальности объясняет, как мы собираем, используем и защищаем данные.</p>
+
+<h2>2. Собираемые данные</h2>
+<p>Мы собираем следующие данные:</p>
+<ul>
+<li>Логин для входа в систему университета (только на время сессии)</li>
+<li>Данные расписания, оценок и транскрипта (только для отображения)</li>
+</ul>
+
+<h2>3. Хранение данных</h2>
+<p><strong>Важно:</strong> Мы НЕ ХРАНИМ ваш пароль на сервере. Вся аутентификация происходит напрямую с серверами университета.</p>
+
+<h2>4. Использование данных</h2>
+<p>Собранные данные используются только для:</p>
+<ul>
+<li>Отображения расписания занятий</li>
+<li>Показа информации об оценках и успеваемости</li>
+<li>Обеспечения функциональности приложения</li>
+</ul>
+
+<h2>5. Защита данных</h2>
+<p>Для обеспечения безопасности ваших данных мы:</p>
+<ul>
+<li>Используем SSL/TLS шифрование</li>
+<li>Не передаём данные третьим лицам</li>
+<li>Применяем серверные меры безопасности</li>
+</ul>
+
+<h2>6. Файлы cookies</h2>
+<p>Приложение использует файлы cookies для управления сессией. Это необходимо для связи с системой университета.</p>
+
+<h2>7. Ваши права</h2>
+<p>У вас есть следующие права:</p>
+<ul>
+<li>Удаление ваших данных (путём выхода из системы)</li>
+<li>Отказ от файлов cookies</li>
+<li>Прекращение использования приложения в любое время</li>
+</ul>
+
+<h2>8. Контакты</h2>
+<p>При возникновении вопросов обращайтесь в службу технической поддержки вашего университета.</p>
+""",
+    "en": """
+<h1>Privacy Policy</h1>
+<p><strong>Last updated:</strong> January 2026</p>
+
+<h2>1. Introduction</h2>
+<p>The Univer application (hereinafter – "Application") is committed to ensuring the security of your personal data. This privacy policy explains how we collect, use, and protect data.</p>
+
+<h2>2. Data Collected</h2>
+<p>We collect the following data:</p>
+<ul>
+<li>Login credentials for university system access (session duration only)</li>
+<li>Schedule, grades, and transcript data (for display purposes only)</li>
+</ul>
+
+<h2>3. Data Storage</h2>
+<p><strong>Important:</strong> We DO NOT STORE your password on our server. All authentication is done directly with university servers.</p>
+
+<h2>4. Data Usage</h2>
+<p>Collected data is used only for:</p>
+<ul>
+<li>Displaying your class schedule</li>
+<li>Showing grades and academic performance information</li>
+<li>Ensuring application functionality</li>
+</ul>
+
+<h2>5. Data Protection</h2>
+<p>To ensure your data security, we:</p>
+<ul>
+<li>Use SSL/TLS encryption</li>
+<li>Do not share data with third parties</li>
+<li>Apply server-side security measures</li>
+</ul>
+
+<h2>6. Cookies</h2>
+<p>The application uses cookies for session management. This is necessary for communication with the university system.</p>
+
+<h2>7. Your Rights</h2>
+<p>You have the following rights:</p>
+<ul>
+<li>Delete your data (by logging out)</li>
+<li>Opt out of cookies</li>
+<li>Stop using the application at any time</li>
+</ul>
+
+<h2>8. Contact</h2>
+<p>If you have any questions, please contact your university's technical support service.</p>
+""",
+}
+
+
+@routes.get("/faq")
+async def get_faq(request):
+    lang = request.query.get("lang", "ru")
+    if lang not in FAQ_DATA:
+        lang = "ru"
+    return web.json_response(FAQ_DATA[lang])
+
+
+@routes.get("/api/privacy-policy")
+async def get_privacy(request):
+    lang = request.query.get("lang", "ru")
+    if lang not in PRIVACY_POLICY:
+        lang = "ru"
+    return web.json_response({"text": PRIVACY_POLICY[lang]})
+
+
+@routes.get("/auth/logout")
+async def logout(request):
+    response = web.json_response({"status": "ok"})
+    response.del_cookie(".ASPXAUTH")
+    response.del_cookie("ASP.NET_SessionId")
+    return response
+
+
+# Frontend Routes
+@routes.get("/")
+async def index(request):
+    return web.FileResponse(os.path.join(CLIENT_DIR, "index.html"))
+
+
+# Басқа frontend route-тарды index.html-ге бағыттау (SPA үшін)
+# Мысалы /login, /schedule, т.б.
+# Бұны қалай дұрыс істеу керек? wildcard route қолдануға болады, бірақ api-мен шатаспау керек.
+
+
+async def frontend_handler(request):
+    # Егер файл табылса (assets), соны береміз
+    # Әйтпесе index.html береміз (client side routing)
+
+    path = request.match_info.get("path", "")
+
+    # Файлдың нақты жолы
+    file_path = os.path.join(CLIENT_DIR, path)
+
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return web.FileResponse(file_path)
+
+    # Егер API емес болса және файл табылмаса -> index.html
+    return web.FileResponse(os.path.join(CLIENT_DIR, "index.html"))
+
+
+# App setup
+app = web.Application(middlewares=[univer_middleware])
+app.add_routes(routes)
+app.router.add_get("/{path:.*}", frontend_handler)  # Catch-all for frontend
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 7435))
+    web.run_app(app, port=port)

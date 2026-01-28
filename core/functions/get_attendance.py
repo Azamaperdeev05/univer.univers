@@ -1,0 +1,124 @@
+from dataclasses import dataclass
+from bs4 import BeautifulSoup, Tag
+import re
+
+from utils.fetch import fetch
+from utils.auth import check_auth
+from utils.logger import get_default_logger
+from utils.text import text
+from type import Mark
+from functions.login import UserCookies
+
+
+@dataclass
+class Part:
+    part: str
+    type: str
+    marks: list[Mark]
+
+
+@dataclass
+class Attendance:
+    subject: str
+    summary: list[Mark]
+    attendance: list[Part]
+
+
+def get_subject(line: str):
+    index = line.index("(")
+    return re.sub(" +", " ", line[:index].strip())
+
+
+def parse_float(string: str):
+    try:
+        return float(string.replace(",", "."))
+    except:
+        return string
+
+
+def parse_table(table: Tag):
+    headings = table.select("th")
+    if len(headings) == 0:
+        return None
+    values = table.select("td")
+    marks: list[Mark] = []
+    for heading, value in zip(headings[1:], values[:-1]):
+        v = text(value)
+        if v:
+            marks.append(Mark(title=text(heading), value=parse_float(v)))
+    return text(headings[0]), marks
+
+
+def get_summary(line: str):
+    def summary(line: str):
+        line = line.replace("\xa0\xa0\xa0\xa0", "").strip()
+        if ":" not in line:
+            return None
+        title, value = line.split(":", 1)
+        return Mark(get_subject(title.strip()), parse_float(value))
+
+    lines = line.split("\n")
+    return [s for s in (summary(l) for l in lines if l.strip()) if s is not None]
+
+
+def capitalize(text: str):
+    return text[0].upper() + text[1:]
+
+
+async def get_attendance(
+    cookies: UserCookies,
+    attendance_url: str,
+    lang_url: str,
+    logger=get_default_logger(__name__),
+):
+    """Журнал посещений и успеваемости"""
+    logger.info("get ATTENDANCE_URL")
+    html = await fetch(lang_url, cookies.as_dict(), {"referer": attendance_url})
+    logger.info("got ATTENDANCE_URL")
+    soup = BeautifulSoup(html, "html.parser")
+    check_auth(soup)
+    attendance_table = soup.select("#tools + table + table tr")[1:]
+    attendances: list[Attendance] = []
+    if len(attendance_table) < 1:
+        return attendances
+
+    ignore = True
+
+    attendance = Attendance(None, None, [])
+    part = Part(None, None, [])
+    for index, row in enumerate(attendance_table):
+        c, *_ = row.attrs.get("class", ["mid"])
+        if c == "top":
+            ignore = False
+        if ignore:
+            continue
+
+        if c == "top":
+            attendance.subject = get_subject(row.text)
+            continue
+
+        button = row.select_one("a")
+        if button is not None:
+            part.type = capitalize(get_subject(button.text))
+            continue
+        table = row.select_one("table")
+        if table is not None:
+            marks = parse_table(table)
+            if marks is None:
+                continue
+            part.part, part.marks = marks
+            if part.type is None:
+                part.type = attendance.attendance[-1].type
+            attendance.attendance.append(part)
+            part = Part(None, None, [])
+            continue
+
+        next = attendance_table[(index + 1) % len(attendance_table)]
+        if next.attrs.get("class", ["mid"])[0] in ["top", "bot"]:
+            summary = get_summary(text(row))
+            attendance.summary = summary
+            attendances.append(attendance)
+            part = Part(None, None, [])
+            attendance = Attendance(None, None, [])
+
+    return attendances
