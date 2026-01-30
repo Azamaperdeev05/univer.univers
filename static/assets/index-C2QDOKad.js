@@ -1,5 +1,28 @@
 
 ;(function(){
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const response = await originalFetch.apply(this, args);
+    const url = (args[0] || '').toString();
+    
+    // Login endpoint-ін exclude ету
+    if (url.includes('/auth/login')) {
+      return response;
+    }
+    
+    // Тек API сұраныстары үшін 401 check
+    if (response.status === 401 && url.includes('/api/')) {
+      // Session expired - logout
+      document.cookie = '.ASPXAUTH=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'ASP.NET_SessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      alert('Сессия мерзімі бітті. Қайта кіріңіз. / Сессия истекла. Войдите снова. / Session expired. Please log in again.');
+      window.location.href = '/login';
+    }
+    return response;
+  };
+})();
+
+;(function(){
   // Session expired модал стильдері
   const modalStyles = `
     .session-modal-overlay {
