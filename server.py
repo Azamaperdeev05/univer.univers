@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 from univers import KSTU, KazNU, get_univer
 from univers.base import Univer
 from functions.login import UserCookies
+from exceptions import ForbiddenException
 
 # Frontend static папкасының жолы
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -61,6 +62,20 @@ async def login(request):
         return web.json_response({"error": str(e)}, status=401)
 
 
+# Helper функция - API қателерін дұрыс handle ету
+def handle_api_error(e: Exception):
+    """API қатесін дұрыс status code-пен қайтару"""
+    if isinstance(e, ForbiddenException):
+        return web.json_response(
+            {
+                "error": "session_expired",
+                "message": "Сессия мерзімі бітті. Қайта кіріңіз.",
+            },
+            status=401,
+        )
+    return web.json_response({"error": str(e)}, status=500)
+
+
 # API middleware - Univer объектісін дайындау
 async def univer_middleware(app, handler):
     async def middleware_handler(request):
@@ -70,7 +85,10 @@ async def univer_middleware(app, handler):
             univer_code = request.cookies.get("univer_code", "kstu")
 
             if not token or not session_id:
-                return web.json_response({"error": "Unauthorized"}, status=401)
+                return web.json_response(
+                    {"error": "unauthorized", "message": "Авторизация қажет"},
+                    status=401,
+                )
 
             cookies = UserCookies(token=token, session_id=session_id, username="")
 
@@ -95,7 +113,7 @@ async def get_schedule(request):
             asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 @routes.get("/api/transcript")
@@ -107,7 +125,7 @@ async def get_transcript(request):
             asdict(transcript), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 @routes.get("/api/attestation")
@@ -121,7 +139,7 @@ async def get_attestation(request):
             [asdict(a) for a in attestation], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 @routes.get("/api/exams")
@@ -137,7 +155,7 @@ async def get_exams(request):
             [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 @routes.get("/api/umkd")
@@ -151,7 +169,7 @@ async def get_umkd_folders(request):
             [asdict(f) for f in folders], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 @routes.get("/api/umkd/{id}")
@@ -166,7 +184,7 @@ async def get_umkd_files(request):
             [asdict(f) for f in files], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return handle_api_error(e)
 
 
 # FAQ деректері - 3 тілде
