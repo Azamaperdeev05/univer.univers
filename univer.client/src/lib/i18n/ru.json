@@ -81,5 +81,9 @@
     "notifications.permission-denied": "Необходимо разрешить уведомления в браузере",
     "notifications.test": "Тестовое уведомление",
     "notifications.test-title": "До занятия 5 минут!",
-    "notifications.test-body": "Это тестовое уведомление"
+    "notifications.test-body": "Это тестовое уведомление",
+    "cache": "Кэш",
+    "cache.clear": "Очистить кэш",
+    "cache.clear-confirm": "Очистить кэш и обновить страницу?",
+    "cache.cleared": "Кэш очищен!"
 }

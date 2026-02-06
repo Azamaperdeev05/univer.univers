@@ -55,19 +55,76 @@ export async function requestNotificationPermission(): Promise<boolean> {
     return false
 }
 
-// Уведомлениени көрсету
+// Уведомлениені көрсету
 export function showNotification(title: string, body: string, icon?: string): void {
-    if (Notification.permission === "granted") {
+    console.log("[Notification] showNotification called:", { title, body })
+    console.log("[Notification] Permission status:", Notification.permission)
+    
+    if (!("Notification" in window)) {
+        console.error("[Notification] Browser does not support notifications")
+        return
+    }
+    
+    if (Notification.permission !== "granted") {
+        console.warn("[Notification] Permission not granted, requesting...")
+        Notification.requestPermission().then(permission => {
+            console.log("[Notification] Permission result:", permission)
+            if (permission === "granted") {
+                createNotification(title, body, icon)
+            }
+        })
+        return
+    }
+    
+    createNotification(title, body, icon)
+}
+
+// Нақты уведомление құру (Service Worker арқылы)
+async function createNotification(title: string, body: string, icon?: string): Promise<void> {
+    // Service Worker арқылы notification көрсету (PWA үшін - телефонда да жұмыс істейді)
+    if ("serviceWorker" in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.ready
+            await registration.showNotification(title, {
+                body,
+                icon: icon || "/android-chrome-192x192.png",
+                badge: "/android-chrome-192x192.png",
+                tag: "univer-notification-" + Date.now(),
+                vibrate: [200, 100, 200],
+                requireInteraction: false,
+                silent: false
+            } as NotificationOptions)
+            console.log("[Notification] Service Worker notification sent!")
+            return
+        } catch (error) {
+            console.warn("[Notification] Service Worker failed, using fallback:", error)
+        }
+    }
+    
+    // Fallback: әдеттегі Notification API
+    try {
         const notification = new Notification(title, {
             body,
             icon: icon || "/android-chrome-192x192.png",
-            badge: "/android-chrome-192x192.png",
-            tag: "univer-notification",
+            tag: "univer-notification-" + Date.now(),
             requireInteraction: false
         })
         
+        console.log("[Notification] Created via Notification API")
+        
+        notification.onclick = () => {
+            window.focus()
+            notification.close()
+        }
+        
+        notification.onerror = (e) => {
+            console.error("[Notification] Error:", e)
+        }
+        
         // 10 секундтан кейін автоматты жабу
         setTimeout(() => notification.close(), 10000)
+    } catch (error) {
+        console.error("[Notification] Failed to create:", error)
     }
 }
 

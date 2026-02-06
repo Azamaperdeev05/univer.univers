@@ -58,6 +58,44 @@
             _("notifications.test-body"),
         )
     }
+
+    // Кэшті тазалау функциясы
+    const clearCache = async () => {
+        if (!confirm(_("cache.clear-confirm"))) return
+
+        try {
+            // Service Worker кэшін тазалау
+            if ("caches" in window) {
+                const cacheNames = await caches.keys()
+                await Promise.all(cacheNames.map((name) => caches.delete(name)))
+            }
+
+            // Service Worker-ді қайта тіркеу
+            if ("serviceWorker" in navigator) {
+                const registrations =
+                    await navigator.serviceWorker.getRegistrations()
+                for (const registration of registrations) {
+                    await registration.unregister()
+                }
+            }
+
+            // Local Storage тазалау (тіл мен тема сақталады)
+            const lang = localStorage.getItem("lang")
+            const colorSchemeValue = localStorage.getItem("color-scheme")
+            localStorage.clear()
+            if (lang) localStorage.setItem("lang", lang)
+            if (colorSchemeValue)
+                localStorage.setItem("color-scheme", colorSchemeValue)
+
+            alert(_("cache.cleared"))
+
+            // Бетті қайта жүктеу
+            window.location.reload()
+        } catch (error) {
+            console.error("Cache clear error:", error)
+            alert("Error: " + error)
+        }
+    }
 </script>
 
 <Page>
@@ -126,6 +164,14 @@
                     {_("notifications.test")}
                 </Button>
             {/if}
+        </div>
+
+        <!-- Кэш -->
+        <div class="grid gap-4">
+            <h3 class="font-semibold">{_("cache")}</h3>
+            <Button variant="destructive" onclick={clearCache}>
+                {_("cache.clear")}
+            </Button>
         </div>
 
         <div>

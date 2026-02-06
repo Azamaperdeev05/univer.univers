@@ -81,5 +81,9 @@
     "notifications.permission-denied": "Please allow notifications in your browser",
     "notifications.test": "Test notification",
     "notifications.test-title": "5 minutes until class!",
-    "notifications.test-body": "This is a test notification"
+    "notifications.test-body": "This is a test notification",
+    "cache": "Cache",
+    "cache.clear": "Clear cache",
+    "cache.clear-confirm": "Clear cache and reload the page?",
+    "cache.cleared": "Cache cleared!"
 }

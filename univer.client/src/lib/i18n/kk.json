@@ -23,7 +23,7 @@
     "exams.now": "Қазіргі",
     "exams.ended": "Өтті",
     "exams.consultation": "Кеңес",
-    "settings": "Боптау",
+    "settings": "Баптау",
     "color-scheme": "Түсі",
     "color-scheme.auto": "Жүйелі",
     "color-scheme.dark": "Қараңғы",
@@ -81,5 +81,9 @@
     "notifications.permission-denied": "Браузер хабарламаларына рұқсат беру қажет",
     "notifications.test": "Сынақ хабарлама",
     "notifications.test-title": "Сабаққа 5 минут қалды!",
-    "notifications.test-body": "Бұл сынақ хабарлама"
+    "notifications.test-body": "Бұл сынақ хабарлама",
+    "cache": "Кэш",
+    "cache.clear": "Кэшті тазалау",
+    "cache.clear-confirm": "Кэшті тазалап, бетті жаңартасыз ба?",
+    "cache.cleared": "Кэш тазаланды!"
 }
