@@ -69,5 +69,17 @@
     "day": "День",
     "month": "Месяц",
     "grade": "Оценка",
-    "menu": "Меню"
+    "menu": "Меню",
+    "telegram": "Telegram",
+    "github": "GitHub",
+    "univer.kstu": "КарТУ",
+    "univer.kaznu": "КазНУ",
+    "notifications": "Уведомления",
+    "notifications.enabled": "Включить уведомления",
+    "notifications.lesson-reminder": "Напоминание за 5 минут до занятия",
+    "notifications.evening-reminder": "Напоминание о завтрашних занятиях",
+    "notifications.permission-denied": "Необходимо разрешить уведомления в браузере",
+    "notifications.test": "Тестовое уведомление",
+    "notifications.test-title": "До занятия 5 минут!",
+    "notifications.test-body": "Это тестовое уведомление"
 }

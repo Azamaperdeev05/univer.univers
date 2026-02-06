@@ -12,8 +12,20 @@
     const api = useApi()
     const query = api.fetchExams()
 
+    // Intl үшін locale кодын дұрыстау (kk → kk-KZ)
+    const getLocale = (lang: string) => {
+        const localeMap: Record<string, string> = {
+            kk: "kk-KZ",
+            ru: "ru-RU",
+            en: "en-US",
+        }
+        return localeMap[lang] || lang
+    }
+
     let rtf = $derived(
-        new Intl.RelativeTimeFormat(i18n.language, { style: "long" }),
+        new Intl.RelativeTimeFormat(getLocale(i18n.language), {
+            style: "long",
+        }),
     )
 
     const SECOND = 1000
@@ -22,7 +34,7 @@
     const DAY = 24 * HOUR
 
     let dtf = $derived(
-        new Intl.DateTimeFormat(i18n.language, {
+        new Intl.DateTimeFormat(getLocale(i18n.language), {
             year: "numeric",
             month: "long",
             day: "numeric",

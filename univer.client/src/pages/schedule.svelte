@@ -18,15 +18,28 @@
     const api = useApi()
     const query = api.fetchSchedule()
 
-    let DAYS = $derived([
-        _("days.monday"),
-        _("days.tuesday"),
-        _("days.wednesday"),
-        _("days.thursday"),
-        _("days.friday"),
-        _("days.saturday"),
-        _("days.sunday"),
-    ])
+    // Intl.DateTimeFormat үшін locale кодын дұрыстау (kk → kk-KZ)
+    const getLocale = (lang: string) => {
+        const localeMap: Record<string, string> = {
+            kk: "kk-KZ",
+            ru: "ru-RU",
+            en: "en-US",
+        }
+        return localeMap[lang] || lang
+    }
+
+    let dtf = $derived(
+        new Intl.DateTimeFormat(getLocale(i18n.language), { weekday: "long" }),
+    )
+    const capitalize = (text: string) =>
+        text[0].toUpperCase() + text.substring(1)
+
+    let DAYS = $derived(
+        Array(7)
+            .fill(1)
+            .map((_, index) => dtf.format(new Date(Date.UTC(2021, 5, index))))
+            .map(capitalize),
+    )
 
     const getLessonsByDay = (
         schedule: Schedule | undefined,

@@ -65,8 +65,8 @@
         </div>
         <Separator class="my-3" />
         <div class="grid grid-cols-4">
-            {@render Item(routes.telegram, "Telegram", Telegram)}
-            {@render Item(routes.github, "GitHub", Github)}
+            {@render Item(routes.telegram, _("telegram"), Telegram)}
+            {@render Item(routes.github, _("github"), Github)}
             {@render Item(routes.settings, _("settings"), Settings)}
             {@render Item(routes.faq, _("faq"), CircleHelp)}
         </div>

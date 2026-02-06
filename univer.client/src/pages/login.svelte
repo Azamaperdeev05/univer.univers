@@ -26,8 +26,8 @@
     import Github from "$lib/icons/github.svelte"
 
     const univers = {
-        kstu: "KSTU",
-        kaznu: "KazNU",
+        kstu: "univer.kstu",
+        kaznu: "univer.kaznu",
     }
     const api = useApi()
     let univer = $state<keyof typeof univers>("kstu")
@@ -117,7 +117,7 @@
     >
         <Radio.Root bind:value={univer} name="univer">
             {#each Object.entries(univers) as [value, label]}
-                <Radio.Item {value}>{label}</Radio.Item>
+                <Radio.Item {value}>{_(label as any)}</Radio.Item>
             {/each}
         </Radio.Root>
 

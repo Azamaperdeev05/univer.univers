@@ -6,12 +6,58 @@
     import { _, i18n } from "$lib/i18n"
     import { locales } from "$lib/i18n"
     import { onMount } from "svelte"
+    import Switch from "$lib/components/ui/switch"
+    import { Button } from "$lib/components/ui/button"
 
     import Page from "$lib/layouts/page.svelte"
     import { routes } from "./url"
     import colorScheme from "$lib/color-scheme"
+    import {
+        getNotificationSettings,
+        saveNotificationSettings,
+        requestNotificationPermission,
+        showNotification,
+        type NotificationSettings,
+    } from "$lib/notifications"
 
     const { version } = useApi()
+
+    // Уведомление баптаулары
+    let notifSettings = $state<NotificationSettings>(getNotificationSettings())
+    let permissionGranted = $state(false)
+    let permissionDenied = $state(false)
+
+    onMount(() => {
+        if ("Notification" in window) {
+            permissionGranted = Notification.permission === "granted"
+            permissionDenied = Notification.permission === "denied"
+        }
+    })
+
+    const toggleNotifications = async () => {
+        if (!notifSettings.enabled) {
+            // Қосу әрекеті
+            const granted = await requestNotificationPermission()
+            if (granted) {
+                notifSettings.enabled = true
+                permissionGranted = true
+                saveNotificationSettings(notifSettings)
+            } else {
+                permissionDenied = true
+            }
+        } else {
+            // Өшіру
+            notifSettings.enabled = false
+            saveNotificationSettings(notifSettings)
+        }
+    }
+
+    const sendTestNotification = () => {
+        showNotification(
+            _("notifications.test-title"),
+            _("notifications.test-body"),
+        )
+    }
 </script>
 
 <Page>
@@ -36,6 +82,51 @@
                 {/each}
             </Radio.Root>
         </Label>
+
+        <!-- Уведомление параметрлері -->
+        <div class="grid gap-4">
+            <h3 class="font-semibold">{_("notifications")}</h3>
+
+            {#if permissionDenied}
+                <p class="text-destructive text-sm">
+                    {_("notifications.permission-denied")}
+                </p>
+            {/if}
+
+            <label class="flex items-center justify-between gap-4">
+                <span>{_("notifications.enabled")}</span>
+                <Switch
+                    checked={notifSettings.enabled}
+                    onchange={toggleNotifications}
+                />
+            </label>
+
+            {#if notifSettings.enabled}
+                <label class="flex items-center justify-between gap-4 pl-4">
+                    <span class="text-sm"
+                        >{_("notifications.lesson-reminder")}</span
+                    >
+                    <Switch
+                        bind:checked={notifSettings.lessonReminder}
+                        onchange={() => saveNotificationSettings(notifSettings)}
+                    />
+                </label>
+
+                <label class="flex items-center justify-between gap-4 pl-4">
+                    <span class="text-sm"
+                        >{_("notifications.evening-reminder")}</span
+                    >
+                    <Switch
+                        bind:checked={notifSettings.eveningReminder}
+                        onchange={() => saveNotificationSettings(notifSettings)}
+                    />
+                </label>
+
+                <Button variant="outline" onclick={sendTestNotification}>
+                    {_("notifications.test")}
+                </Button>
+            {/if}
+        </div>
 
         <div>
             <p>{_("version.client")}: <b>{version.client}</b></p>

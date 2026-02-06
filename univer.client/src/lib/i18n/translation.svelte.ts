@@ -6,7 +6,7 @@ export const locales = { ru, kk, en }
 export type Language = keyof typeof locales
 type Locale = (typeof locales)[Language]
 
-const defaultLanguage = "ru"
+const defaultLanguage = "kk"
 class Translation {
     language = $state<Language>(defaultLanguage)
 
