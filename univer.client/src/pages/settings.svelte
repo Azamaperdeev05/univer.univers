@@ -7,15 +7,13 @@
     import { locales } from "$lib/i18n"
     import { onMount } from "svelte"
 
-
     import Page from "$lib/layouts/page.svelte"
     import { routes } from "./url"
     import colorScheme from "$lib/color-scheme"
 
     const { version } = useApi()
-    onMount(() => version.fetch())
-
 </script>
+
 <Page>
     {#snippet header()}
         <AppBar title={_("settings")} />
@@ -34,26 +32,18 @@
             {_("language")}
             <Radio.Root bind:value={i18n.language}>
                 {#each Object.entries(locales) as [value, locale]}
-                <Radio.Item {value}>{locale.CURRENT_LANGUAGE}</Radio.Item>
+                    <Radio.Item {value}>{locale.CURRENT_LANGUAGE}</Radio.Item>
                 {/each}
             </Radio.Root>
         </Label>
 
         <div>
-            <p>
-                {_("version.server")}:
-                {#if version.loading}
-                    {_("loading")}
-                {:else}
-                    <b>{version.server}</b>
-                {/if}
-            </p>
             <p>{_("version.client")}: <b>{version.client}</b></p>
-            {#if version.update}
-                <p class="text-destructive text-center">{_("version.update-required")}</p>
-            {/if}
         </div>
 
-        <a class="text-primary underline hover:no-underline" href={routes.privacy}>{@html _("privacy-policy", routes.privacy)}</a>
+        <a
+            class="text-primary underline hover:no-underline"
+            href={routes.privacy}>{@html _("privacy-policy", routes.privacy)}</a
+        >
     </div>
 </Page>

@@ -15,13 +15,14 @@
     import { hostMatches } from "$lib/router"
     import { useApi } from "$api"
     import Telegram from "$lib/icons/telegram.svelte"
+    import Github from "$lib/icons/github.svelte"
     import Page from "$lib/layouts/page.svelte"
     import AppBar from "$lib/components/app-bar.svelte"
     import { Separator } from "$lib/components/ui/separator"
     import { Skeleton } from "$lib/components/ui/skeleton"
     import { randInt } from "$lib/utils"
 
-    type IconComponent = typeof BookA | typeof Telegram
+    type IconComponent = typeof BookA | typeof Telegram | typeof Github
     const api = useApi()
 
     const transcript = api.fetchTranscript()
@@ -63,8 +64,9 @@
             {@render Item(routes.profile, _("profile"), CircleUserRound)}
         </div>
         <Separator class="my-3" />
-        <div class="grid grid-cols-3">
+        <div class="grid grid-cols-4">
             {@render Item(routes.telegram, "Telegram", Telegram)}
+            {@render Item(routes.github, "GitHub", Github)}
             {@render Item(routes.settings, _("settings"), Settings)}
             {@render Item(routes.faq, _("faq"), CircleHelp)}
         </div>

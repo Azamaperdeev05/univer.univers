@@ -49,13 +49,32 @@ class Schedule:
 
 
 def get_week():
-    # 2025-2026 оқу жылы, апта санауды дұрыстау үшін 25 тамыздан бастаймыз
-    FIRST_WEEK = "2025-08-25"
-    year, month, day = map(int, FIRST_WEEK.split("-"))
-    first = date(year, month, day)
-    now = date.today()
-    weekday = 1 if now.weekday() > 4 else 0
-    week = (now - first).days // 7 + 1 + weekday
+    """
+    Ағымдағы апта нөмірін есептеу.
+    Автоматты түрде оқу жылы мен семестрді анықтайды.
+    """
+    today = date.today()
+
+    # Оқу жылын анықтау (қыркүйек - желтоқсан = осы жыл, қаңтар - тамыз = өткен жыл)
+    if today.month >= 9:
+        # Күз семестрі (қыркүйек - желтоқсан)
+        academic_year = today.year
+        semester_start = date(academic_year, 9, 1)  # 1 қыркүйек
+    else:
+        # Көктем семестрі (қаңтар - тамыз)
+        academic_year = today.year - 1
+        # Көктем семестрі әдетте қаңтардың 2-ші аптасынан басталады
+        semester_start = date(today.year, 1, 6)  # Шамамен 6 қаңтар
+
+    # Семестр басынан өткен күндер
+    days_passed = (today - semester_start).days
+
+    # Апта нөмірін есептеу (1-ден бастаймыз)
+    week = max(1, days_passed // 7 + 1)
+
+    # Максимум апта саны 20 (бір семестрде)
+    week = min(week, 20)
+
     return week
 
 

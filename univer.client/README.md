@@ -44,4 +44,4 @@
 
 ## Обратная связь
 
-Телеграм-канал — [@univerapp](https://t.me/univerapp)
+Телеграм-канал — [@code_improper](https://t.me/code_improper)
