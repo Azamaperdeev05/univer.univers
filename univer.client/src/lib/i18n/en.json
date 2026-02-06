@@ -1,4 +1,11 @@
 {
+    "day.0": "Monday",
+    "day.1": "Tuesday",
+    "day.2": "Wednesday",
+    "day.3": "Thursday",
+    "day.4": "Friday",
+    "day.5": "Saturday",
+    "day.6": "Sunday",
     "schedule": "Schedule",
     "schedule.current": "(c) ",
     "schedule.current-week": "Current week number",

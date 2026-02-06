@@ -117,7 +117,14 @@
     >
         <Radio.Root bind:value={univer} name="univer">
             {#each Object.entries(univers) as [value, label]}
-                <Radio.Item {value}>{_(label as any)}</Radio.Item>
+                <Radio.Item {value}>
+                    <img
+                        src="/images/{value}.png"
+                        alt={_(label as any)}
+                        class="w-6 h-6 object-contain"
+                    />
+                    {_(label as any)}
+                </Radio.Item>
             {/each}
         </Radio.Root>
 

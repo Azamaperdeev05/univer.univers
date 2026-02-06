@@ -28,18 +28,18 @@
         return localeMap[lang] || lang
     }
 
-    let dtf = $derived(
-        new Intl.DateTimeFormat(getLocale(i18n.language), { weekday: "long" }),
-    )
     const capitalize = (text: string) =>
         text[0].toUpperCase() + text.substring(1)
 
-    let DAYS = $derived(
-        Array(7)
-            .fill(1)
-            .map((_, index) => dtf.format(new Date(Date.UTC(2021, 5, index))))
-            .map(capitalize),
-    )
+    let DAYS = $derived([
+        _("day.0" as any),
+        _("day.1" as any),
+        _("day.2" as any),
+        _("day.3" as any),
+        _("day.4" as any),
+        _("day.5" as any),
+        _("day.6" as any),
+    ])
 
     const getLessonsByDay = (
         schedule: Schedule | undefined,

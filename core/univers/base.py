@@ -64,12 +64,21 @@ class Univer:
         univer="",
         storage: Storage = None,
     ) -> None:
-        self.language = language
-        self.lang_url = _get_lang_url(urls, language)
         self.urls = urls
         self.univer = univer
         self.storage = _storage if storage is None else storage
+        self._language = language
+        self.lang_url = _get_lang_url(urls, language)
         self.__apply_cookies(cookies)
+
+    @property
+    def language(self):
+        return self._language
+
+    @language.setter
+    def language(self, value):
+        self._language = value
+        self.lang_url = _get_lang_url(self.urls, value)
 
     def __apply_cookies(self, cookies: UserCookies | None):
         self.username = "<unknown>"
