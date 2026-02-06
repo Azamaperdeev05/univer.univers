@@ -18,18 +18,15 @@
     const api = useApi()
     const query = api.fetchSchedule()
 
-    let dtf = $derived(
-        new Intl.DateTimeFormat(i18n.language, { weekday: "long" }),
-    )
-    const capitalize = (text: string) =>
-        text[0].toUpperCase() + text.substring(1)
-
-    let DAYS = $derived(
-        Array(7)
-            .fill(1)
-            .map((_, index) => dtf.format(new Date(Date.UTC(2021, 5, index))))
-            .map(capitalize),
-    )
+    let DAYS = $derived([
+        _("days.monday"),
+        _("days.tuesday"),
+        _("days.wednesday"),
+        _("days.thursday"),
+        _("days.friday"),
+        _("days.saturday"),
+        _("days.sunday"),
+    ])
 
     const getLessonsByDay = (
         schedule: Schedule | undefined,
