@@ -1,0 +1,38 @@
+{
+  "name": "client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "@tsconfig/svelte": "^5.0.4",
+    "@vitejs/plugin-legacy": "^5.4.3",
+    "autoprefixer": "^10.4.20",
+    "bits-ui": "^0.21.16",
+    "clsx": "^2.1.1",
+    "lucide-svelte": "^0.453.0",
+    "postcss": "^8.5.0",
+    "svelte": "^5.17.4",
+    "svelte-check": "^4.1.4",
+    "svelte-sonner": "^0.3.28",
+    "tailwind-merge": "^2.6.0",
+    "tailwind-variants": "^0.2.1",
+    "tailwindcss": "^3.4.17",
+    "terser": "^5.37.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.3",
+    "vaul-svelte": "^0.3.2",
+    "vite": "^5.4.11",
+    "vite-plugin-pwa": "^0.20.5"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.2.1",
+    "secure-web-storage": "^1.0.2"
+  }
+}

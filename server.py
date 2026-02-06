@@ -3,6 +3,7 @@ from dataclasses import asdict
 import json
 import os
 import sys
+import base64
 
 # Core папкасын path-қа қосу (импорттар жұмыс істеуі үшін)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
@@ -10,12 +11,31 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 from univers import KSTU, KazNU, get_univer
 from univers.base import Univer
 from functions.login import UserCookies
-from exceptions import ForbiddenException
+from exceptions import ForbiddenException, InvalidCredential
 
 # Frontend static папкасының жолы
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 routes = web.RouteTableDef()
+
+
+# Credentials шифрлау/дешифрлау функциялары
+def encode_credentials(username: str, password: str) -> str:
+    """Username мен password-ты base64-ке шифрлау"""
+    credentials = f"{username}:{password}"
+    return base64.b64encode(credentials.encode()).decode()
+
+
+def decode_credentials(encoded: str) -> tuple[str, str] | None:
+    """Base64-тен credentials-ты дешифрлау"""
+    try:
+        decoded = base64.b64decode(encoded.encode()).decode()
+        if ":" in decoded:
+            username, password = decoded.split(":", 1)
+            return username, password
+    except Exception:
+        pass
+    return None
 
 
 # Univer объектісін алу үшін көмекші функция
@@ -57,15 +77,64 @@ async def login(request):
         response.set_cookie("ASP.NET_SessionId", cookies.session_id, httponly=True)
         response.set_cookie("univer_code", university)  # Қай универ екенін сақтау
 
+        # Credentials-ты cookie-ге шифрлап сақтау (автоматты жаңарту үшін)
+        encoded_creds = encode_credentials(username, password)
+        response.set_cookie(
+            "_uc", encoded_creds, httponly=True
+        )  # _uc = user credentials
+
         return response
     except Exception as e:
         return web.json_response({"error": str(e)}, status=401)
 
 
-# Helper функция - API қателерін дұрыс handle ету
-def handle_api_error(e: Exception):
-    """API қатесін дұрыс status code-пен қайтару"""
+# Helper функция - API қателерін дұрыс handle ету және токенді автоматты жаңарту
+async def handle_api_error(e: Exception, request):
+    """API қатесін дұрыс өңдеу - сессия аяқталса қайта кіру"""
     if isinstance(e, ForbiddenException):
+        # Сессия аяқталған - credentials арқылы қайта кіру
+        encoded_creds = request.get("encoded_creds")
+        univer_code = request.cookies.get("univer_code", "kstu")
+
+        if encoded_creds:
+            creds = decode_credentials(encoded_creds)
+            if creds:
+                username, password = creds
+                try:
+                    UniverClass = get_univer(univer_code) or KSTU
+                    univer = UniverClass()
+                    new_cookies = await univer.login(username, password)
+
+                    # Жаңа cookies-пен redirect жасау (client retry етеді)
+                    response = web.json_response(
+                        {
+                            "error": "session_refreshed",
+                            "message": "Сессия жаңартылды. Қайталаңыз.",
+                        },
+                        status=401,
+                    )
+                    response.set_cookie(".ASPXAUTH", new_cookies.token, httponly=True)
+                    response.set_cookie(
+                        "ASP.NET_SessionId", new_cookies.session_id, httponly=True
+                    )
+                    return response
+                except InvalidCredential:
+                    # Пароль ауысқан - барлығын тазалап login-ге жіберу
+                    response = web.json_response(
+                        {
+                            "error": "credentials_changed",
+                            "message": "Құпия сөз өзгерген. Қайта кіріңіз.",
+                        },
+                        status=401,
+                    )
+                    response.del_cookie(".ASPXAUTH")
+                    response.del_cookie("ASP.NET_SessionId")
+                    response.del_cookie("_uc")
+                    return response
+                except Exception:
+                    pass
+
+        # Credentials жоқ немесе қате - login-ге жіберу
         return web.json_response(
             {
                 "error": "session_expired",
@@ -76,24 +145,58 @@ def handle_api_error(e: Exception):
     return web.json_response({"error": str(e)}, status=500)
 
 
-# API middleware - Univer объектісін дайындау
+# API middleware - Univer объектісін дайындау және токенді автоматты жаңарту
 async def univer_middleware(app, handler):
     async def middleware_handler(request):
         if request.path.startswith("/api/"):
             token = request.cookies.get(".ASPXAUTH")
             session_id = request.cookies.get("ASP.NET_SessionId")
             univer_code = request.cookies.get("univer_code", "kstu")
+            encoded_creds = request.cookies.get("_uc")  # encrypted credentials
 
             if not token or not session_id:
+                # Токен жоқ, бірақ credentials бар ма?
+                if encoded_creds:
+                    # Credentials арқылы қайта кіру
+                    creds = decode_credentials(encoded_creds)
+                    if creds:
+                        username, password = creds
+                        try:
+                            UniverClass = get_univer(univer_code) or KSTU
+                            univer = UniverClass()
+                            new_cookies = await univer.login(username, password)
+
+                            # Жаңа cookies-пен univer дайындау
+                            request["univer"] = UniverClass(cookies=new_cookies)
+                            request["new_cookies"] = (
+                                new_cookies  # Response-та update жасау үшін
+                            )
+                            return await handler(request)
+                        except InvalidCredential:
+                            # Пароль ауысқан - барлығын тазалап login-ге жіберу
+                            response = web.json_response(
+                                {
+                                    "error": "credentials_changed",
+                                    "message": "Құпия сөз өзгерген. Қайта кіріңіз.",
+                                },
+                                status=401,
+                            )
+                            response.del_cookie(".ASPXAUTH")
+                            response.del_cookie("ASP.NET_SessionId")
+                            response.del_cookie("_uc")
+                            return response
+                        except Exception:
+                            pass
+
                 return web.json_response(
                     {"error": "unauthorized", "message": "Авторизация қажет"},
                     status=401,
                 )
 
             cookies = UserCookies(token=token, session_id=session_id, username="")
-
             UniverClass = get_univer(univer_code) or KSTU
             request["univer"] = UniverClass(cookies=cookies)
+            request["encoded_creds"] = encoded_creds  # Қайта кіру үшін сақтау
 
         return await handler(request)
 
@@ -113,7 +216,7 @@ async def get_schedule(request):
             asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 @routes.get("/api/transcript")
@@ -125,7 +228,7 @@ async def get_transcript(request):
             asdict(transcript), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 @routes.get("/api/attestation")
@@ -139,7 +242,7 @@ async def get_attestation(request):
             [asdict(a) for a in attestation], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 @routes.get("/api/exams")
@@ -155,7 +258,7 @@ async def get_exams(request):
             [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 @routes.get("/api/umkd")
@@ -169,7 +272,7 @@ async def get_umkd_folders(request):
             [asdict(f) for f in folders], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 @routes.get("/api/umkd/{id}")
@@ -184,7 +287,7 @@ async def get_umkd_files(request):
             [asdict(f) for f in files], dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        return handle_api_error(e)
+        return await handle_api_error(e, request)
 
 
 # FAQ деректері - 3 тілде
@@ -484,6 +587,8 @@ async def logout(request):
     response = web.json_response({"status": "ok"})
     response.del_cookie(".ASPXAUTH")
     response.del_cookie("ASP.NET_SessionId")
+    response.del_cookie("_uc")  # Credentials cookie-ін де жою
+    response.del_cookie("univer_code")  # Университет кодын да жою
     return response
 
 
