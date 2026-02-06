@@ -19,6 +19,11 @@
         showNotification,
         type NotificationSettings,
     } from "$lib/notifications"
+    import {
+        subscribeToPush,
+        unsubscribeFromPush,
+        isPushSubscribed,
+    } from "$lib/push-notifications"
 
     const { version } = useApi()
 
@@ -26,12 +31,14 @@
     let notifSettings = $state<NotificationSettings>(getNotificationSettings())
     let permissionGranted = $state(false)
     let permissionDenied = $state(false)
+    let pushSubscribed = $state(false)
 
-    onMount(() => {
+    onMount(async () => {
         if ("Notification" in window) {
             permissionGranted = Notification.permission === "granted"
             permissionDenied = Notification.permission === "denied"
         }
+        pushSubscribed = await isPushSubscribed()
     })
 
     const toggleNotifications = async () => {
@@ -41,13 +48,26 @@
             if (granted) {
                 notifSettings.enabled = true
                 permissionGranted = true
+
+                // Server Push-қа жазылу
+                const sub = await subscribeToPush()
+                pushSubscribed = !!sub
+
                 saveNotificationSettings(notifSettings)
+                if (pushSubscribed) {
+                    showNotification(
+                        _("notifications.enabled-title" as any),
+                        _("notifications.enabled-body" as any),
+                    )
+                }
             } else {
                 permissionDenied = true
             }
         } else {
             // Өшіру
             notifSettings.enabled = false
+            await unsubscribeFromPush()
+            pushSubscribed = false
             saveNotificationSettings(notifSettings)
         }
     }

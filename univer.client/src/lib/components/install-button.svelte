@@ -8,11 +8,13 @@
     let canInstall = $state(false)
     let disabled = $state(true)
     let installEvent = $state<BeforeInstallPromptEvent>()
+    let isSafari = $state(false)
+    let isIOS = $state(false)
 
     let {
         class: class_ = "",
         tag = "div",
-        children
+        children,
     }: {
         class?: string
         tag?: string
@@ -32,10 +34,22 @@
     }
 
     onMount(() => {
-        if ("BeforeInstallPromptEvent" in window === false) return
-        canInstall = true
-        window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt)
-        window.addEventListener("appinstalled", onInstall)
+        const ua = navigator.userAgent
+        isIOS = /iPad|iPhone|iPod/.test(ua)
+        isSafari = /^((?!chrome|android).)*safari/i.test(ua)
+
+        if ("BeforeInstallPromptEvent" in window) {
+            window.addEventListener(
+                "beforeinstallprompt",
+                onBeforeInstallPrompt,
+            )
+            window.addEventListener("appinstalled", onInstall)
+        } else if (isSafari || isIOS) {
+            // Safari/iOS doesn't support the event, but we show the button
+            canInstall = true
+            disabled = false
+        }
+
         return () => {
             window.removeEventListener(
                 "beforeinstallprompt",
@@ -46,26 +60,28 @@
     })
 
     const onclick = async () => {
-        if (!installEvent) return
-        installEvent.prompt()
-        const result = await installEvent.userChoice
-        if (result.outcome === "accepted") onInstall()
+        if (installEvent) {
+            installEvent.prompt()
+            const result = await installEvent.userChoice
+            if (result.outcome === "accepted") onInstall()
+        } else if (isSafari || isIOS) {
+            alert(
+                "Safari-де орнату үшін:\n1. 'Бөлісу' (Share) батырмасын басыңыз\n2. 'Басты экранға қосу' (Add to Home Screen) таңдаңыз",
+            )
+        }
     }
 </script>
 
 {#if !disabled && canInstall}
-<svelte:element
-    this={tag}
-    class="install-button {class_}"
->
-    {@render children(onclick)}
-</svelte:element>
+    <svelte:element this={tag} class="install-button {class_}">
+        {@render children(onclick)}
+    </svelte:element>
 {/if}
 
 <style>
     @media (display-mode: standalone) {
         .install-button {
-            @apply hidden
+            @apply hidden;
         }
     }
 </style>

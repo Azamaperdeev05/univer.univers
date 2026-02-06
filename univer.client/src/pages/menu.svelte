@@ -21,6 +21,8 @@
     import { Separator } from "$lib/components/ui/separator"
     import { Skeleton } from "$lib/components/ui/skeleton"
     import { randInt } from "$lib/utils"
+    import InstallButton from "$lib/components/install-button.svelte"
+    import { MonitorDown } from "lucide-svelte"
 
     type IconComponent = typeof BookA | typeof Telegram | typeof Github
     const api = useApi()
@@ -64,11 +66,24 @@
             {@render Item(routes.profile, _("profile"), CircleUserRound)}
         </div>
         <Separator class="my-3" />
-        <div class="grid grid-cols-4">
+        <div class="grid grid-cols-5">
             {@render Item(routes.telegram, _("telegram"), Telegram)}
             {@render Item(routes.github, _("github"), Github)}
             {@render Item(routes.settings, _("settings"), Settings)}
             {@render Item(routes.faq, _("faq"), CircleHelp)}
+            <InstallButton tag="div">
+                {#snippet children(onclick)}
+                    <Button
+                        {onclick}
+                        size="lg"
+                        variant="ghost"
+                        class="grid gap-2 justify-items-center h-auto px-0 py-2"
+                    >
+                        <MonitorDown />
+                        <span class="text-xs">{_("install")}</span>
+                    </Button>
+                {/snippet}
+            </InstallButton>
         </div>
     </div>
 </Page>

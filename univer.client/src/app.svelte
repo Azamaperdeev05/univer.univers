@@ -58,6 +58,7 @@
     import Files from "./pages/files/index.svelte"
     import FilesItem from "./pages/files/item.svelte"
     import Menu from "./pages/menu.svelte"
+    import OfflineIndicator from "$lib/components/offline-indicator.svelte"
 
     const app = new App()
     const isAuth = (router: Router, navigate = false) => {
@@ -88,6 +89,7 @@
     {/if}
 </svelte:head>
 <Toaster />
+<OfflineIndicator />
 
 <Wrapper home={routes.home}>
     {#snippet children(router)}

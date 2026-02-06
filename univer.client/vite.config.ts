@@ -10,7 +10,16 @@ import manifest from "./src/manifest.js"
 export default defineConfig({
     plugins: [
         svelte(),
-        VitePWA({ manifest, includeAssets: ["images/icons.svg"] }),
+        VitePWA({
+            manifest,
+            srcDir: "src",
+            filename: "sw.ts",
+            strategies: "injectManifest",
+            includeAssets: ["images/*.png", "images/*.svg", "favicon.ico", "robots.txt"],
+            injectManifest: {
+                globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+            },
+        }),
         legacy({
             targets: ["defaults", "not IE 11"],
         }),

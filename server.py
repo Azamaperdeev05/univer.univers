@@ -12,6 +12,7 @@ from univers import KSTU, KazNU, get_univer
 from univers.base import Univer
 from functions.login import UserCookies
 from exceptions import ForbiddenException, InvalidCredential
+from push_notifications import push_service, scheduled_notifications
 
 # Frontend static папкасының жолы
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -248,6 +249,57 @@ async def get_attestation(request):
 @routes.get("/api/exams")
 async def get_exams(request):
     univer: Univer = request["univer"]
+    try:
+        exams = await univer.get_exams()
+        return web.json_response(
+            [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
+        )
+    except Exception as e:
+        return await handle_api_error(e, request)
+
+
+@routes.post("/api/push/subscribe")
+async def push_subscribe(request):
+    data = await request.json()
+    encoded_creds = request.get("encoded_creds")
+    univer_code = request.cookies.get("univer_code", "kstu")
+    lang = request.query.get("lang", "kk")
+
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    # Username-ді user_id ретінде қолдану
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+
+    push_service.subscribe(
+        user_id=username,
+        subscription_info=data,
+        univer_code=univer_code,
+        encoded_creds=encoded_creds,
+        language=lang,
+    )
+
+    return web.json_response({"status": "ok"})
+
+
+@routes.post("/api/push/unsubscribe")
+async def push_unsubscribe(request):
+    encoded_creds = request.get("encoded_creds")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    push_service.unsubscribe(username)
+
+    return web.json_response({"status": "ok"})
     # Тілді алу
     lang = request.query.get("lang", "ru")
     univer.language = lang
@@ -619,8 +671,22 @@ async def frontend_handler(request):
     return web.FileResponse(os.path.join(CLIENT_DIR, "index.html"))
 
 
+async def on_startup(app):
+    """Сервер қосылғанда орындалатын іс-шаралар"""
+    await scheduled_notifications.start()
+    print("Background tasks started")
+
+
+async def on_cleanup(app):
+    """Сервер тоқтағанда орындалатын іс-шаралар"""
+    await scheduled_notifications.stop()
+    print("Background tasks stopped")
+
+
 # App setup
 app = web.Application(middlewares=[univer_middleware])
+app.on_startup.append(on_startup)
+app.on_cleanup.append(on_cleanup)
 app.add_routes(routes)
 app.router.add_get("/{path:.*}", frontend_handler)  # Catch-all for frontend
 
