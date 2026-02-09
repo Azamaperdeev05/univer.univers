@@ -9,7 +9,7 @@ export const routes = {
     privacy: "/privacy",
     files: "/files",
     filesItem: "/files/:id",
-    telegram: "https://t.me/code_improper",
+    telegram: "https://t.me/univerkstusite",
     github: "https://github.com/Azamaperdeev05/univer.univers",
     faq: "/faq",
     menu: "/menu",

@@ -30,16 +30,16 @@ const icon = (
 
 /** @param {string} name */
 const mobileScreenshot = (name) => ({
-    src: `images/screens/mobile/${name}.jpg`,
+    src: `images/screens/mobile/${name}.JPG`,
     type: "image/jpeg",
-    sizes: "540x1067",
+    sizes: "1080x1920",
     form_factor: "narrow",
 })
 /** @param {string} name */
 const desktopScreenshot = (name) => ({
-    src: `images/screens/desktop/${name}.jpg`,
-    type: "image/jpeg",
-    sizes: "800x450",
+    src: `images/screens/desktop/${name}.png`,
+    type: "image/png",
+    sizes: "1920x1080",
     form_factor: "wide",
 })
 
@@ -49,10 +49,11 @@ export default {
     display: "standalone",
     scope: "/",
     start_url: routes.home,
+    lang: "kk",
     name: "Univer",
     short_name: "Univer",
     description:
-        "Приложение для просмотра оценок, расписания занятий и экзаменов, и другой информации о студенте.",
+        "Бағаларды, сабақ кестесін, емтихандарды және студент туралы басқа да ақпаратты көруге арналған қосымша.",
     icons: [
         icon(64),
         icon(128),
@@ -65,11 +66,11 @@ export default {
     ],
     screenshots: [
         mobileScreenshot("schedule"),
-        mobileScreenshot("attendance"),
-        mobileScreenshot("marks"),
         mobileScreenshot("calculator"),
-        mobileScreenshot("exams"),
-        mobileScreenshot("profile"),
+        mobileScreenshot("marks"),
+        mobileScreenshot("UMKD"),
+        mobileScreenshot("menu"),
+        mobileScreenshot("setting"),
         desktopScreenshot("schedule"),
         desktopScreenshot("attendance"),
         desktopScreenshot("profile"),

@@ -54,7 +54,7 @@
     "sum": "Sum",
     "no-data": "No data",
     "version.server": "Server version",
-    "version.client": "Client version",
+    "version.client": "Site version",
     "version.update-required": "Update required",
     "install": "Install",
     "transcript.fullname": "Full name",

@@ -476,7 +476,7 @@ FAQ_DATA = {
 PRIVACY_POLICY = {
     "kk": """
 <h1>Құпиялылық саясаты</h1>
-<p><strong>Соңғы жаңарту:</strong> 2026 жылғы қаңтар</p>
+<p><strong>Соңғы жаңарту:</strong> 2026 жылғы ақпан</p>
 
 <h2>1. Кіріспе</h2>
 <p>Univer қосымшасы (бұдан әрі – «Қосымша») сіздің жеке деректеріңіздің қауіпсіздігін қамтамасыз етуге міндеттенеді. Бұл құпиялылық саясаты біздің деректерді қалай жинайтынымызды, пайдаланатынымызды және қорғайтынымызды түсіндіреді.</p>
@@ -523,7 +523,7 @@ PRIVACY_POLICY = {
 """,
     "ru": """
 <h1>Политика конфиденциальности</h1>
-<p><strong>Последнее обновление:</strong> Январь 2026</p>
+<p><strong>Последнее обновление:</strong> Февраль 2026</p>
 
 <h2>1. Введение</h2>
 <p>Приложение Univer (далее – «Приложение») обязуется обеспечивать безопасность ваших персональных данных. Настоящая политика конфиденциальности объясняет, как мы собираем, используем и защищаем данные.</p>
@@ -570,7 +570,7 @@ PRIVACY_POLICY = {
 """,
     "en": """
 <h1>Privacy Policy</h1>
-<p><strong>Last updated:</strong> January 2026</p>
+<p><strong>Last updated:</strong> February 2026</p>
 
 <h2>1. Introduction</h2>
 <p>The Univer application (hereinafter – "Application") is committed to ensuring the security of your personal data. This privacy policy explains how we collect, use, and protect data.</p>
@@ -618,12 +618,34 @@ PRIVACY_POLICY = {
 }
 
 
+@routes.get("/api/version")
+async def get_version(request):
+    return web.json_response("1.01")
+
+
 @routes.get("/faq")
 async def get_faq(request):
     lang = request.query.get("lang", "ru")
     if lang not in FAQ_DATA:
         lang = "ru"
     return web.json_response(FAQ_DATA[lang])
+
+
+@routes.get("/faq/{id}")
+async def get_faq_item(request):
+    item_id = request.match_info["id"]
+    lang = request.query.get("lang", "ru")
+    if lang not in FAQ_DATA:
+        lang = "ru"
+
+    # Сұрақты табу
+    item = next((i for i in FAQ_DATA[lang] if i["id"] == item_id), None)
+    if not item:
+        return web.Response(text="<h1>FAQ табылған жоқ</h1>", content_type="text/html")
+
+    # HTML форматында қайтару (Frontend h1-ді қолданады)
+    html = f"<h1>{item['label']}</h1>\n<p>{item['text']}</p>"
+    return web.Response(text=html, content_type="text/html")
 
 
 @routes.get("/api/privacy-policy")
