@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="static/images/logo.svg" alt="Univer Logo" width="120">
+
 # 🎓 Univer - Студенттерге арналған қосымша
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
