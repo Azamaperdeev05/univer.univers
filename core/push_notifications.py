@@ -4,6 +4,7 @@ Push Notification модулі - Web Push API арқылы хабарламал�
 
 import json
 import asyncio
+import os
 import base64
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
@@ -36,8 +37,26 @@ class PushNotificationService:
     """Push хабарламаларды басқаратын сервис"""
 
     def __init__(self):
-        self.vapid = Vapid.from_file(VAPID_PRIVATE_KEY_PATH)
+        self._init_vapid()
         self.subscriptions: Dict[str, Dict[str, Any]] = self._load_subscriptions()
+
+    def _init_vapid(self):
+        """VAPID кілттерін жүктеу немесе генерациялау"""
+        if os.path.exists(VAPID_PRIVATE_KEY_PATH):
+            try:
+                self.vapid = Vapid.from_file(VAPID_PRIVATE_KEY_PATH)
+            except Exception:
+                self.vapid = Vapid()
+                self.vapid.generate_keys()
+                self.vapid.save_key(VAPID_PRIVATE_KEY_PATH)
+        else:
+            self.vapid = Vapid()
+            self.vapid.generate_keys()
+            self.vapid.save_key(VAPID_PRIVATE_KEY_PATH)
+
+        # Public key-ді де сақтап қояйық (клиентке керек болуы мүмкін)
+        if not os.path.exists("vapid_public.pem"):
+            self.vapid.save_public_key("vapid_public.pem")
 
     def _load_subscriptions(self) -> Dict[str, Dict[str, Any]]:
         """Файлдан жазылуларды жүктеу"""
