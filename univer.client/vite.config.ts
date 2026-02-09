@@ -15,7 +15,7 @@ export default defineConfig({
             srcDir: "src",
             filename: "sw.ts",
             strategies: "injectManifest",
-            includeAssets: ["images/*.png", "images/*.svg", "favicon.ico", "robots.txt"],
+            includeAssets: ["images/**/*.{png,svg}", "favicon.ico", "robots.txt"],
             injectManifest: {
                 globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
             },

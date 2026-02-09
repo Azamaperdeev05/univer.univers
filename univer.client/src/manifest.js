@@ -44,11 +44,11 @@ const desktopScreenshot = (name) => ({
 })
 
 export default {
-    theme_color: "#7f67be",
+    theme_color: "#4f46e5",
     background_color: "#fff",
     display: "standalone",
     scope: "/",
-    start_url: routes.home.path,
+    start_url: routes.home,
     name: "Univer",
     short_name: "Univer",
     description:
