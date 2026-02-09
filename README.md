@@ -11,7 +11,7 @@
 
 **Университет өмірін жеңілдететін заманауи және қауіпсіз веб-қосымша**
 
-[Демо](https://univerkstusite.site) · [Telegram Арна](https://t.me/univerkstusite) · [Қате туралы хабарлау](../../issues)
+[РЕСМИ САЙТ](https://univerkstu.site) · [Telegram Арна](https://t.me/univerkstusite) · [Қате туралы хабарлау](../../issues)
 
 <img src="univer.client/public/images/banner.png" alt="Univer Banner" width="600">
 
