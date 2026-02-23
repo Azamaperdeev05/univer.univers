@@ -882,6 +882,12 @@ async def logout(request):
 
 
 # Frontend Routes
+@routes.get("/health")
+async def health_check(request):
+    """Health check endpoint for Railway"""
+    return web.json_response({"status": "ok", "service": "univer"})
+
+
 @routes.get("/")
 async def index(request):
     return web.FileResponse(os.path.join(CLIENT_DIR, "index.html"))
@@ -910,8 +916,12 @@ async def frontend_handler(request):
 
 async def on_startup(app):
     """Сервер қосылғанда орындалатын іс-шаралар"""
-    await scheduled_notifications.start()
-    print("Background tasks started")
+    try:
+        await scheduled_notifications.start()
+        print("Background tasks started")
+    except Exception as e:
+        print(f"Warning: Background tasks failed to start: {e}")
+        print("Server will continue without background tasks")
 
 
 async def on_cleanup(app):

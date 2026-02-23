@@ -9,10 +9,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Жоба файлдарын көшіру
-# .dockerignore файлын қолданған дұрыс, бірақ мұнда тікелей көшіреміз
 COPY server.py .
 COPY core/ core/
 COPY static/ static/
+
+# VAPID кілттерін көшіру (егер бар болса)
+COPY vapid_*.pem ./ 2>/dev/null || true
 
 # Flask/aiohttp портты ашу
 EXPOSE 7435
