@@ -9,6 +9,7 @@
         api: Api
 
         themeColor = $state<string>()
+        sidebarOpen = $state(false)
         updateThemeColor(..._: unknown[]) {
             tick().then(() => {
                 const pages = document.querySelectorAll(".page")
@@ -52,7 +53,7 @@
     import Settings from "./pages/settings.svelte"
     import { Toaster } from "$lib/components/ui/sonner"
     import Profile from "./pages/profile.svelte"
-    import Navigation from "$lib/components/navigation.svelte"
+    import Sidebar from "$lib/components/sidebar.svelte"
     import Calculator from "./pages/calculator.svelte"
     import Exams from "./pages/exams.svelte"
     import Files from "./pages/files/index.svelte"
@@ -90,6 +91,7 @@
 </svelte:head>
 <Toaster />
 <OfflineIndicator />
+<Sidebar />
 
 <Wrapper home={routes.home}>
     {#snippet children(router)}
@@ -121,16 +123,6 @@
             <Menu />
         {:else if faqParams}
             <FaqItem id={faqParams.id} />
-        {/if}
-    {/snippet}
-    {#snippet navigation()}
-        {#if app.isAuth}
-            <div
-                bind:clientHeight={app.navigationHeight}
-                class="fixed bottom-0 left-0 right-0"
-            >
-                <Navigation />
-            </div>
         {/if}
     {/snippet}
 </Wrapper>

@@ -61,6 +61,14 @@
                 >
                     <ArrowLeft />
                 </Button>
+            {:else}
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    onclick={() => (app.sidebarOpen = true)}
+                >
+                    <Menu />
+                </Button>
             {/if}
             {@render left?.()}
         </div>
