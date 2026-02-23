@@ -118,10 +118,6 @@ class PushNotificationService:
         }
         self._save_subscriptions()
         return True
-            "updated_at": datetime.now().isoformat(),
-        }
-        self._save_subscriptions()
-        return True
 
     def unsubscribe(self, user_id: str) -> bool:
         """Пайдаланушыны хабарламалардан шығару"""
@@ -143,12 +139,15 @@ class PushNotificationService:
     def get_settings(self, user_id: str) -> Optional[Dict[str, bool]]:
         """Пайдаланушының хабарлама параметрлерін алу"""
         if user_id in self.subscriptions:
-            return self.subscriptions[user_id].get("settings", {
-                "new_grades": True,
-                "lesson_reminders": True,
-                "tomorrow_schedule": True,
-                "exam_reminders": True,
-            })
+            return self.subscriptions[user_id].get(
+                "settings",
+                {
+                    "new_grades": True,
+                    "lesson_reminders": True,
+                    "tomorrow_schedule": True,
+                    "exam_reminders": True,
+                },
+            )
         return None
 
     def is_subscribed(self, user_id: str) -> bool:
@@ -202,7 +201,9 @@ class PushNotificationService:
 
         # Тек соңғы 100 хабарламаны сақтау
         if len(self.notification_history[user_id]) > 100:
-            self.notification_history[user_id] = self.notification_history[user_id][:100]
+            self.notification_history[user_id] = self.notification_history[user_id][
+                :100
+            ]
 
         self._save_notification_history()
         return notification_id
@@ -246,9 +247,7 @@ class PushNotificationService:
 
         original_length = len(self.notification_history[user_id])
         self.notification_history[user_id] = [
-            n
-            for n in self.notification_history[user_id]
-            if n["id"] != notification_id
+            n for n in self.notification_history[user_id] if n["id"] != notification_id
         ]
 
         if len(self.notification_history[user_id]) < original_length:
@@ -299,14 +298,16 @@ class PushNotificationService:
             "total_sent": total_sent,
             "total_read": total_read,
             "total_clicked": total_clicked,
-            "read_rate": round((total_read / total_sent) * 100, 2) if total_sent > 0 else 0.0,
-            "click_rate": round((total_clicked / total_sent) * 100, 2) if total_sent > 0 else 0.0,
+            "read_rate": (
+                round((total_read / total_sent) * 100, 2) if total_sent > 0 else 0.0
+            ),
+            "click_rate": (
+                round((total_clicked / total_sent) * 100, 2) if total_sent > 0 else 0.0
+            ),
             "by_type": by_type,
         }
 
-    def update_time_settings(
-        self, user_id: str, time_settings: Dict[str, Any]
-    ) -> bool:
+    def update_time_settings(self, user_id: str, time_settings: Dict[str, Any]) -> bool:
         """Уақыт параметрлерін жаңарту"""
         if user_id in self.subscriptions:
             self.subscriptions[user_id]["time_settings"] = time_settings
@@ -493,18 +494,6 @@ class PushNotificationService:
             actions=[{"action": "view", "title": "Толық кестені көру"}],
             notification_type="tomorrow_schedule",
         )
-            )
-            if len(lessons) > 5:
-                body += f"\n... және тағы {len(lessons) - 5} сабақ"
-
-        return await self.send_notification(
-            user_id=user_id,
-            title="📅 Ертеңгі кесте",
-            body=body,
-            tag="tomorrow-schedule",
-            data={"type": "tomorrow_schedule", "url": "/schedule"},
-            actions=[{"action": "view", "title": "Толық кестені көру"}],
-        )
 
     async def send_exam_reminder(
         self, user_id: str, subject: str, date: str, time: str, room: str
@@ -675,7 +664,7 @@ class ScheduledNotifications:
             settings = sub_data.get("settings", {})
             if not settings.get("new_grades", True):
                 continue
-                
+
             univer = await self._get_univer_instance(sub_data)
             if not univer:
                 continue
