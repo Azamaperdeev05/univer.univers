@@ -124,7 +124,7 @@ export class Api {
             (lang) =>
                 fetch(api(`/api/privacy-policy?lang=${lang}`)).then((r) =>
                     r.json()
-                ),
+                ).then((data) => data.text),
             {
                 key: "privacy",
             }
