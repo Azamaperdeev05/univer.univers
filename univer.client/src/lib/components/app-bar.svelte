@@ -45,7 +45,7 @@
         : undefined
 </script>
 
-<header class="bg-primary text-primary-foreground header" bind:this={element}>
+<header class="bg-background text-foreground header" bind:this={element}>
     <div
         class="grid items-center gap-2 p-2"
         class:h-14={!bottom}
