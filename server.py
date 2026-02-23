@@ -300,17 +300,232 @@ async def push_unsubscribe(request):
     push_service.unsubscribe(username)
 
     return web.json_response({"status": "ok"})
-    # Тілді алу
-    lang = request.query.get("lang", "ru")
-    univer.language = lang
 
-    try:
-        exams = await univer.get_exams()
-        return web.json_response(
-            [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
-        )
-    except Exception as e:
-        return await handle_api_error(e, request)
+
+@routes.get("/api/push/status")
+async def push_status(request):
+    """Пайдаланушының жазылу статусын тексеру"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"subscribed": False})
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"subscribed": False})
+
+    username, _ = creds
+    is_subscribed = push_service.is_subscribed(username)
+    settings = push_service.get_settings(username) if is_subscribed else None
+
+    return web.json_response({
+        "subscribed": is_subscribed,
+        "settings": settings
+    })
+
+
+@routes.post("/api/push/settings")
+async def push_update_settings(request):
+    """Хабарлама параметрлерін жаңарту"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    data = await request.json()
+    settings = data.get("settings", {})
+
+    success = push_service.update_settings(username, settings)
+    if success:
+        return web.json_response({"status": "ok", "settings": settings})
+    else:
+        return web.json_response({"error": "not_subscribed"}, status=404)
+
+
+@routes.post("/api/push/test")
+async def push_test(request):
+    """Тестілік хабарлама жіберу"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    
+    # Тілді алу
+    lang = request.query.get("lang", "kk")
+    
+    # Тілге сәйкес хабарлама
+    messages = {
+        "kk": {
+            "title": "🎉 Тестілік хабарлама",
+            "body": "Хабарламалар дұрыс жұмыс істеп тұр!"
+        },
+        "ru": {
+            "title": "🎉 Тестовое уведомление",
+            "body": "Уведомления работают правильно!"
+        },
+        "en": {
+            "title": "🎉 Test Notification",
+            "body": "Notifications are working correctly!"
+        }
+    }
+    
+    msg = messages.get(lang, messages["kk"])
+    
+    success = await push_service.send_notification(
+        user_id=username,
+        title=msg["title"],
+        body=msg["body"],
+        tag="test-notification"
+    )
+
+    if success:
+        return web.json_response({"status": "ok"})
+    else:
+        return web.json_response({"error": "not_subscribed"}, status=404)
+
+
+@routes.get("/api/push/history")
+async def push_get_history(request):
+    """Хабарлама тарихын алу"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    limit = int(request.query.get("limit", 50))
+    offset = int(request.query.get("offset", 0))
+
+    history = push_service.get_notification_history(username, limit, offset)
+    return web.json_response({"history": history, "count": len(history)})
+
+
+@routes.post("/api/push/history/{notification_id}/mark-read")
+async def push_mark_read(request):
+    """Хабарламаны оқылған деп белгілеу"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    notification_id = request.match_info["notification_id"]
+
+    success = push_service.mark_notification_read(username, notification_id)
+    if success:
+        return web.json_response({"status": "ok"})
+    else:
+        return web.json_response({"error": "not_found"}, status=404)
+
+
+@routes.post("/api/push/history/{notification_id}/mark-clicked")
+async def push_mark_clicked(request):
+    """Хабарламаны басылған деп белгілеу"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    notification_id = request.match_info["notification_id"]
+
+    success = push_service.mark_notification_clicked(username, notification_id)
+    if success:
+        return web.json_response({"status": "ok"})
+    else:
+        return web.json_response({"error": "not_found"}, status=404)
+
+
+@routes.delete("/api/push/history/{notification_id}")
+async def push_delete_notification(request):
+    """Хабарламаны жою"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    notification_id = request.match_info["notification_id"]
+
+    success = push_service.delete_notification(username, notification_id)
+    if success:
+        return web.json_response({"status": "ok"})
+    else:
+        return web.json_response({"error": "not_found"}, status=404)
+
+
+@routes.delete("/api/push/history")
+async def push_clear_history(request):
+    """Барлық хабарлама тарихын тазалау"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    push_service.clear_notification_history(username)
+    return web.json_response({"status": "ok"})
+
+
+@routes.get("/api/push/stats")
+async def push_get_stats(request):
+    """Хабарлама статистикасын алу"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    stats = push_service.get_notification_stats(username)
+    return web.json_response(stats)
+
+
+@routes.post("/api/push/time-settings")
+async def push_update_time_settings(request):
+    """Уақыт параметрлерін жаңарту"""
+    encoded_creds = request.cookies.get("_uc")
+    if not encoded_creds:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    creds = decode_credentials(encoded_creds)
+    if not creds:
+        return web.json_response({"error": "invalid_creds"}, status=401)
+
+    username, _ = creds
+    data = await request.json()
+    time_settings = data.get("time_settings", {})
+
+    success = push_service.update_time_settings(username, time_settings)
+    if success:
+        return web.json_response({"status": "ok", "time_settings": time_settings})
+    else:
+        return web.json_response({"error": "not_subscribed"}, status=404)
 
 
 @routes.get("/api/umkd")

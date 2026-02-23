@@ -31,6 +31,7 @@ def decode_credentials(encoded: str) -> tuple[str, str] | None:
 # Subscription деректерін сақтау үшін файл
 SUBSCRIPTIONS_FILE = "subscriptions.json"
 LAST_STATE_FILE = "last_state.json"
+NOTIFICATION_HISTORY_FILE = "notification_history.json"
 
 
 class PushNotificationService:
@@ -39,6 +40,9 @@ class PushNotificationService:
     def __init__(self):
         self._init_vapid()
         self.subscriptions: Dict[str, Dict[str, Any]] = self._load_subscriptions()
+        self.notification_history: Dict[str, List[Dict[str, Any]]] = (
+            self._load_notification_history()
+        )
 
     def _init_vapid(self):
         """VAPID кілттерін жүктеу немесе генерациялау"""
@@ -81,13 +85,39 @@ class PushNotificationService:
         univer_code: str = "kstu",
         encoded_creds: Optional[str] = None,
         language: str = "kk",
+        settings: Optional[Dict[str, bool]] = None,
     ) -> bool:
         """Пайдаланушыны хабарламаларға жазу"""
+        # Default settings - барлық хабарламалар қосулы
+        default_settings = {
+            "new_grades": True,  # Жаңа бағалар
+            "lesson_reminders": True,  # Сабаққа ескерту
+            "tomorrow_schedule": True,  # Ертеңгі кесте
+            "exam_reminders": True,  # Емтихан ескертулері
+        }
+
+        # Default time settings - икемді уақыт параметрлері
+        default_time_settings = {
+            "lesson_reminder_minutes": 10,  # Сабаққа қанша минут қалғанда
+            "evening_schedule_time": "22:00",  # Ертеңгі кесте уақыты
+            "quiet_hours": {
+                "enabled": False,
+                "start": "23:00",
+                "end": "07:00",
+            },
+        }
+
         self.subscriptions[user_id] = {
             "subscription": subscription_info,
             "univer_code": univer_code,
             "creds": encoded_creds,
             "lang": language,
+            "settings": settings or default_settings,
+            "time_settings": default_time_settings,
+            "updated_at": datetime.now().isoformat(),
+        }
+        self._save_subscriptions()
+        return True
             "updated_at": datetime.now().isoformat(),
         }
         self._save_subscriptions()
@@ -101,6 +131,225 @@ class PushNotificationService:
             return True
         return False
 
+    def update_settings(self, user_id: str, settings: Dict[str, bool]) -> bool:
+        """Хабарлама параметрлерін жаңарту"""
+        if user_id in self.subscriptions:
+            self.subscriptions[user_id]["settings"] = settings
+            self.subscriptions[user_id]["updated_at"] = datetime.now().isoformat()
+            self._save_subscriptions()
+            return True
+        return False
+
+    def get_settings(self, user_id: str) -> Optional[Dict[str, bool]]:
+        """Пайдаланушының хабарлама параметрлерін алу"""
+        if user_id in self.subscriptions:
+            return self.subscriptions[user_id].get("settings", {
+                "new_grades": True,
+                "lesson_reminders": True,
+                "tomorrow_schedule": True,
+                "exam_reminders": True,
+            })
+        return None
+
+    def is_subscribed(self, user_id: str) -> bool:
+        """Пайдаланушы жазылған ба тексеру"""
+        return user_id in self.subscriptions
+
+    def _load_notification_history(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Хабарлама тарихын жүктеу"""
+        try:
+            with open(NOTIFICATION_HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+
+    def _save_notification_history(self):
+        """Хабарлама тарихын сақтау"""
+        try:
+            with open(NOTIFICATION_HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(self.notification_history, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Error saving notification history: {e}")
+
+    def _add_to_history(
+        self,
+        user_id: str,
+        notification_type: str,
+        title: str,
+        body: str,
+        data: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Хабарламаны тарихқа қосу"""
+        import uuid
+
+        notification_id = str(uuid.uuid4())
+
+        if user_id not in self.notification_history:
+            self.notification_history[user_id] = []
+
+        notification = {
+            "id": notification_id,
+            "type": notification_type,
+            "title": title,
+            "body": body,
+            "data": data or {},
+            "sent_at": datetime.now().isoformat(),
+            "read": False,
+            "clicked": False,
+        }
+
+        self.notification_history[user_id].insert(0, notification)
+
+        # Тек соңғы 100 хабарламаны сақтау
+        if len(self.notification_history[user_id]) > 100:
+            self.notification_history[user_id] = self.notification_history[user_id][:100]
+
+        self._save_notification_history()
+        return notification_id
+
+    def get_notification_history(
+        self, user_id: str, limit: int = 50, offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """Пайдаланушының хабарлама тарихын алу"""
+        history = self.notification_history.get(user_id, [])
+        return history[offset : offset + limit]
+
+    def mark_notification_read(self, user_id: str, notification_id: str) -> bool:
+        """Хабарламаны оқылған деп белгілеу"""
+        if user_id not in self.notification_history:
+            return False
+
+        for notification in self.notification_history[user_id]:
+            if notification["id"] == notification_id:
+                notification["read"] = True
+                self._save_notification_history()
+                return True
+        return False
+
+    def mark_notification_clicked(self, user_id: str, notification_id: str) -> bool:
+        """Хабарламаны басылған деп белгілеу"""
+        if user_id not in self.notification_history:
+            return False
+
+        for notification in self.notification_history[user_id]:
+            if notification["id"] == notification_id:
+                notification["clicked"] = True
+                notification["read"] = True  # Басылса автоматты оқылған
+                self._save_notification_history()
+                return True
+        return False
+
+    def delete_notification(self, user_id: str, notification_id: str) -> bool:
+        """Хабарламаны жою"""
+        if user_id not in self.notification_history:
+            return False
+
+        original_length = len(self.notification_history[user_id])
+        self.notification_history[user_id] = [
+            n
+            for n in self.notification_history[user_id]
+            if n["id"] != notification_id
+        ]
+
+        if len(self.notification_history[user_id]) < original_length:
+            self._save_notification_history()
+            return True
+        return False
+
+    def clear_notification_history(self, user_id: str) -> bool:
+        """Барлық хабарлама тарихын тазалау"""
+        if user_id in self.notification_history:
+            self.notification_history[user_id] = []
+            self._save_notification_history()
+            return True
+        return False
+
+    def get_notification_stats(self, user_id: str) -> Dict[str, Any]:
+        """Хабарлама статистикасын алу"""
+        history = self.notification_history.get(user_id, [])
+
+        if not history:
+            return {
+                "total_sent": 0,
+                "total_read": 0,
+                "total_clicked": 0,
+                "read_rate": 0.0,
+                "click_rate": 0.0,
+                "by_type": {},
+            }
+
+        total_sent = len(history)
+        total_read = sum(1 for n in history if n["read"])
+        total_clicked = sum(1 for n in history if n["clicked"])
+
+        # Түрі бойынша статистика
+        by_type: Dict[str, Dict[str, int]] = {}
+        for notification in history:
+            n_type = notification["type"]
+            if n_type not in by_type:
+                by_type[n_type] = {"sent": 0, "read": 0, "clicked": 0}
+
+            by_type[n_type]["sent"] += 1
+            if notification["read"]:
+                by_type[n_type]["read"] += 1
+            if notification["clicked"]:
+                by_type[n_type]["clicked"] += 1
+
+        return {
+            "total_sent": total_sent,
+            "total_read": total_read,
+            "total_clicked": total_clicked,
+            "read_rate": round((total_read / total_sent) * 100, 2) if total_sent > 0 else 0.0,
+            "click_rate": round((total_clicked / total_sent) * 100, 2) if total_sent > 0 else 0.0,
+            "by_type": by_type,
+        }
+
+    def update_time_settings(
+        self, user_id: str, time_settings: Dict[str, Any]
+    ) -> bool:
+        """Уақыт параметрлерін жаңарту"""
+        if user_id in self.subscriptions:
+            self.subscriptions[user_id]["time_settings"] = time_settings
+            self.subscriptions[user_id]["updated_at"] = datetime.now().isoformat()
+            self._save_subscriptions()
+            return True
+        return False
+
+    def get_time_settings(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Уақыт параметрлерін алу"""
+        if user_id in self.subscriptions:
+            return self.subscriptions[user_id].get(
+                "time_settings",
+                {
+                    "lesson_reminder_minutes": 10,
+                    "evening_schedule_time": "22:00",
+                    "quiet_hours": {"enabled": False, "start": "23:00", "end": "07:00"},
+                },
+            )
+        return None
+
+    def is_quiet_hours(self, user_id: str) -> bool:
+        """Тыныш сағаттар уақыты ма тексеру"""
+        time_settings = self.get_time_settings(user_id)
+        if not time_settings:
+            return False
+
+        quiet_hours = time_settings.get("quiet_hours", {})
+        if not quiet_hours.get("enabled", False):
+            return False
+
+        now = datetime.now()
+        current_time = now.strftime("%H:%M")
+
+        start_time = quiet_hours.get("start", "23:00")
+        end_time = quiet_hours.get("end", "07:00")
+
+        # Түнгі уақытты тексеру (мысалы 23:00 - 07:00)
+        if start_time > end_time:
+            return current_time >= start_time or current_time < end_time
+        else:
+            return start_time <= current_time < end_time
+
     async def send_notification(
         self,
         user_id: str,
@@ -113,11 +362,19 @@ class PushNotificationService:
         actions: Optional[List[Dict[str, str]]] = None,
         vibrate: Optional[List[int]] = None,
         require_interaction: bool = False,
+        notification_type: str = "general",
     ) -> bool:
         """Бір пайдаланушыға хабарлама жіберу"""
 
         sub_data = self.subscriptions.get(user_id)
         if not sub_data:
+            return False
+
+        # Тыныш сағаттарды тексеру
+        if self.is_quiet_hours(user_id):
+            print(f"Quiet hours active for {user_id}, skipping notification")
+            # Тарихқа қосамыз, бірақ жібермейміз
+            self._add_to_history(user_id, notification_type, title, body, data)
             return False
 
         subscription = sub_data["subscription"]
@@ -147,6 +404,8 @@ class PushNotificationService:
                 vapid_private_key=VAPID_PRIVATE_KEY_PATH,
                 vapid_claims=VAPID_CLAIMS,
             )
+            # Тарихқа қосу
+            self._add_to_history(user_id, notification_type, title, body, data)
             return True
         except WebPushException as e:
             print(f"Push error for {user_id}: {e}")
@@ -186,6 +445,7 @@ class PushNotificationService:
             ],
             vibrate=[200, 100, 200],
             require_interaction=True,
+            notification_type="new_grade",
         )
 
     async def send_lesson_reminder(
@@ -205,6 +465,7 @@ class PushNotificationService:
             data={"type": "lesson_reminder", "subject": subject, "url": "/schedule"},
             actions=[{"action": "view_schedule", "title": "Кестені ашу"}],
             vibrate=[300, 100, 300, 100, 300],
+            notification_type="lesson_reminder",
         )
 
     async def send_tomorrow_schedule(
@@ -219,6 +480,19 @@ class PushNotificationService:
                     f"• {l['time']} - {l['subject']}"
                     for l in lessons[:5]  # Ең көбі 5 сабақ
                 ]
+            )
+            if len(lessons) > 5:
+                body += f"\n... және тағы {len(lessons) - 5} сабақ"
+
+        return await self.send_notification(
+            user_id=user_id,
+            title="📅 Ертеңгі кесте",
+            body=body,
+            tag="tomorrow-schedule",
+            data={"type": "tomorrow_schedule", "url": "/schedule"},
+            actions=[{"action": "view", "title": "Толық кестені көру"}],
+            notification_type="tomorrow_schedule",
+        )
             )
             if len(lessons) > 5:
                 body += f"\n... және тағы {len(lessons) - 5} сабақ"
@@ -293,18 +567,28 @@ class ScheduledNotifications:
             await asyncio.sleep(1800)  # 30 минут
 
     async def _evening_schedule_loop(self):
-        """Кешкі 22:00-де ертеңгі кестені жіберу"""
+        """Кешкі уақытта ертеңгі кестені жіберу (икемді уақыт)"""
         while self.running:
             now = datetime.now()
 
-            # Келесі 22:00-ді есептеу
-            target = now.replace(hour=22, minute=0, second=0, microsecond=0)
+            # Барлық пайдаланушылардың уақытын тексеру
+            # Ең ерте уақытты табу
+            earliest_time = "22:00"  # Default
+            for sub_data in self.push_service.subscriptions.values():
+                time_settings = sub_data.get("time_settings", {})
+                user_time = time_settings.get("evening_schedule_time", "22:00")
+                if user_time < earliest_time:
+                    earliest_time = user_time
+
+            # Келесі уақытты есептеу
+            hour, minute = map(int, earliest_time.split(":"))
+            target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
             if now >= target:
                 target += timedelta(days=1)
 
             wait_seconds = (target - now).total_seconds()
             print(
-                f"Evening schedule waiter: waiting {wait_seconds} seconds until 22:00"
+                f"Evening schedule waiter: waiting {wait_seconds} seconds until {earliest_time}"
             )
             await asyncio.sleep(wait_seconds)
 
@@ -339,13 +623,17 @@ class ScheduledNotifications:
         """Жақын сабақтарды тексеру"""
         now = datetime.now()
         weekday = now.weekday()  # 0-6 (Дүйсенбі-Жексенбі)
-        # JS-тегідей 0-6 конвертациясы (біздің кестелерде 0 - Дүйсенбі)
-
-        current_time = now.strftime("%H:%M")
 
         for user_id, sub_data in self.push_service.subscriptions.items():
-            # Сабаққа хабарлама қосулы ма?
-            # settings жоқ болса default True деп алайық
+            # Сабаққа хабарлама қосулы ма тексеру
+            settings = sub_data.get("settings", {})
+            if not settings.get("lesson_reminders", True):
+                continue
+
+            # Икемді уақытты алу
+            time_settings = sub_data.get("time_settings", {})
+            reminder_minutes = time_settings.get("lesson_reminder_minutes", 10)
+
             univer = await self._get_univer_instance(sub_data)
             if not univer:
                 continue
@@ -366,14 +654,14 @@ class ScheduledNotifications:
 
                     diff = (l_datetime - now).total_seconds() / 60
 
-                    # 10 минут қалса (9.5-тен 10.5-ке дейін, қайталанбау үшін)
-                    if 9.5 <= diff <= 10.5:
+                    # Икемді уақытпен тексеру (мысалы 10 минут ± 0.5)
+                    if (reminder_minutes - 0.5) <= diff <= (reminder_minutes + 0.5):
                         await self.push_service.send_lesson_reminder(
                             user_id=user_id,
                             subject=lesson.subject,
                             teacher=lesson.teacher,
                             room=lesson.audience,
-                            minutes_left=10,
+                            minutes_left=reminder_minutes,
                         )
             except Exception as e:
                 print(f"Error checking schedule for {user_id}: {e}")
@@ -383,6 +671,11 @@ class ScheduledNotifications:
         states = self._load_states()
 
         for user_id, sub_data in self.push_service.subscriptions.items():
+            # Бағалар хабарламасы қосулы ма тексеру
+            settings = sub_data.get("settings", {})
+            if not settings.get("new_grades", True):
+                continue
+                
             univer = await self._get_univer_instance(sub_data)
             if not univer:
                 continue
@@ -436,9 +729,25 @@ class ScheduledNotifications:
     async def _send_tomorrow_schedules(self):
         """Барлық пайдаланушыларға ертеңгі кестені жіберу"""
         now = datetime.now()
+        current_time = now.strftime("%H:%M")
         tomorrow_weekday = (now.weekday() + 1) % 7
 
         for user_id, sub_data in self.push_service.subscriptions.items():
+            # Ертеңгі кесте хабарламасы қосулы ма тексеру
+            settings = sub_data.get("settings", {})
+            if not settings.get("tomorrow_schedule", True):
+                continue
+
+            # Пайдаланушының уақытын тексеру
+            time_settings = sub_data.get("time_settings", {})
+            user_schedule_time = time_settings.get("evening_schedule_time", "22:00")
+
+            # Тек пайдаланушының уақыты келсе жіберу
+            if current_time < user_schedule_time or current_time >= (
+                datetime.strptime(user_schedule_time, "%H:%M") + timedelta(minutes=1)
+            ).strftime("%H:%M"):
+                continue
+
             univer = await self._get_univer_instance(sub_data)
             if not univer:
                 continue

@@ -44,7 +44,7 @@ const desktopScreenshot = (name) => ({
 })
 
 export default {
-    theme_color: "#4f46e5",
+    theme_color: "#3b82f6",  // Көк түс (blue-500)
     background_color: "#fff",
     display: "standalone",
     scope: "/",

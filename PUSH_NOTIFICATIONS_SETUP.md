@@ -1,14 +1,22 @@
 # 🔔 Push Notifications орнату нұсқаулығы
 
-## 🎯 Мәселе шешілді!
+## 🎯 Жаңа мүмкіндіктер!
 
-### Табылған қателер:
+### ✨ Қосылған функциялар:
 
-1. ❌ `request.get("encoded_creds")` - дұрыс емес
-   - ✅ `request.cookies.get("_uc")` - дұрыс
+1. ✅ **Хабарлама параметрлері** - пайдаланушы қандай хабарламаларды алғысы келетінін таңдай алады
+   - Жаңа бағалар туралы хабарламалар
+   - Сабаққа 10 минут қалғанда ескерту
+   - Ертеңгі кесте (кешке 22:00)
+   - Емтихан ескертулері
 
-2. ❌ Тіл параметрі жіберілмеді
-   - ✅ Frontend-тен `?lang=kk` query параметрі қосылды
+2. ✅ **Тестілеу функциясы** - хабарламаларды тестілеу батырмасы
+   - Settings бетінде "Тестілік хабарлама жіберу" батырмасы
+   - Тілге сәйкес хабарлама жіберіледі
+
+3. ✅ **Статус тексеру** - жазылу статусын көру
+   - Пайдаланушы жазылған ба тексеру
+   - Қандай хабарламалар қосулы екенін көру
 
 ---
 
@@ -67,26 +75,91 @@ async def on_startup(app):
 ### 1. Сабаққа ескерту (минут сайын)
 - Сабаққа 10 минут қалғанда хабарлама жіберіледі
 - Тек ағымдағы күнгі сабақтар тексеріледі
+- **Параметр:** `lesson_reminders` (қосулы/өшірулі)
 
 ### 2. Жаңа бағалар (30 минут сайын)
 - Бағалар өзгерсе хабарлама жіберіледі
 - АБ1, АБ2, Емтихан бағалары тексеріледі
+- **Параметр:** `new_grades` (қосулы/өшірулі)
 
 ### 3. Ертеңгі кесте (кешке 22:00)
 - Ертеңгі сабақтар туралы хабарлама
 - Барлық жазылған пайдаланушыларға
+- **Параметр:** `tomorrow_schedule` (қосулы/өшірулі)
+
+### 4. Емтихан ескертулері
+- Емтихан туралы хабарламалар
+- **Параметр:** `exam_reminders` (қосулы/өшірулі)
+
+---
+
+## 🎛️ Жаңа API endpoint-тар:
+
+### 1. Статус тексеру
+```http
+GET /api/push/status
+Response: {
+    "subscribed": true,
+    "settings": {
+        "new_grades": true,
+        "lesson_reminders": true,
+        "tomorrow_schedule": true,
+        "exam_reminders": true
+    }
+}
+```
+
+### 2. Параметрлерді жаңарту
+```http
+POST /api/push/settings
+Body: {
+    "settings": {
+        "new_grades": true,
+        "lesson_reminders": false,
+        "tomorrow_schedule": true,
+        "exam_reminders": true
+    }
+}
+Response: {
+    "status": "ok",
+    "settings": {...}
+}
+```
+
+### 3. Тестілік хабарлама
+```http
+POST /api/push/test?lang=kk
+Response: {
+    "status": "ok"
+}
+```
 
 ---
 
 ## 🧪 Тестілеу:
 
-### 1. Settings бетінде "Сынақ хабарлама" батырмасы
+### 1. Settings бетінде хабарлама параметрлері
 ```typescript
-// Local notification (Service Worker арқылы емес)
-showNotification("Сабаққа 5 минут қалды!", "Бұл сынақ хабарлама")
+// Жазылу статусын тексеру
+const status = await checkSubscriptionStatus()
+console.log(status) // { subscribed: true, settings: {...} }
+
+// Параметрлерді жаңарту
+await updatePushSettings({
+    new_grades: true,
+    lesson_reminders: false,
+    tomorrow_schedule: true,
+    exam_reminders: true
+})
 ```
 
-### 2. Backend-тен қолмен жіберу (тестілеу үшін)
+### 2. Тестілік хабарлама жіберу
+```typescript
+// Settings бетінде "Тестілік хабарлама жіберу" батырмасы
+await sendTestNotification('kk') // тілді көрсету
+```
+
+### 3. Backend-тен қолмен жіберу (тестілеу үшін)
 ```python
 # Python console-де
 from core.push_notifications import push_service
