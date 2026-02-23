@@ -396,11 +396,10 @@ class ScheduledNotifications:
                 for att in attestations:
                     # Пән мен бағаларды жинақтау
                     key = att.subject
-                    current_grades[key] = {
-                        "ab1": att.first_att,
-                        "ab2": att.second_att,
-                        "exam": att.exam,
-                    }
+                    grades_dict = {}
+                    for i, mark in enumerate(att.attestation):
+                        grades_dict[f"att_{i+1}"] = mark.value
+                    current_grades[key] = grades_dict
 
                 last_user_state = states.get(user_id, {})
 
