@@ -14,7 +14,7 @@ COPY core/ core/
 COPY static/ static/
 
 # VAPID кілттерін көшіру (егер бар болса)
-COPY vapid_*.pem ./ 2>/dev/null || true
+COPY server.py vapid_*.pe[m] ./
 
 # Flask/aiohttp портты ашу
 EXPOSE 7435
