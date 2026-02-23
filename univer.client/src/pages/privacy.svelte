@@ -5,14 +5,28 @@
     import AppBar from "$lib/components/app-bar.svelte"
     import Loader from "$lib/components/loader.svelte"
     import { useApi } from "$api"
+    import { ChevronLeft } from "lucide-svelte"
+    import { Button } from "$lib/components/ui/button"
+    import { useRouter } from "$lib/router"
 
     const api = useApi()
     const query = api.fetchPrivacy()
+    const router = useRouter()
 </script>
 
 <Page>
     {#snippet header()}
-        <AppBar title={_("privacy-policy")}></AppBar>
+        <AppBar title={_("privacy-policy")}>
+            {#snippet left()}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onclick={() => router.back()}
+                >
+                    <ChevronLeft />
+                </Button>
+            {/snippet}
+        </AppBar>
     {/snippet}
     <div class="content max-w-3xl mx-auto p-4">
         {#if query.loading}
