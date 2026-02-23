@@ -66,8 +66,10 @@
                     size="icon"
                     variant="ghost"
                     type="button"
-                    onclick={() => app.toggleSidebar()}
-                    on:click={() => app.toggleSidebar()}
+                    on:click={(e) => {
+                        e.stopPropagation()
+                        app.toggleSidebar()
+                    }}
                 >
                     <Menu />
                 </Button>

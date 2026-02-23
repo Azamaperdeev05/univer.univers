@@ -86,7 +86,7 @@ function Sl(t,e){(null==e||e>t.length)&&(e=t.length);for(var n=0,r=Array(e);n<e;
       	 *
       	 * This source code is licensed under the ISC license.
       	 * See the LICENSE file in the root directory of this source tree.
-      	 */Rc(t,vo({name:"arrow-left"},()=>n,{get iconNode(){return r},children:(t,n)=>{var r=Dn();er(ce(r),e,"default",{},null),Rn(t,r)},$$slots:{default:!0}}))}(t,{})},$$slots:{default:!0}})},h=t=>{var e=Dn(),n=ce(e),r=t=>{Pc(t,{size:"icon",variant:"ghost",type:"button",onclick:()=>a.toggleSidebar(),$$events:{click:()=>a.toggleSidebar()},children:(t,e)=>{!function(t,e){const n=po(e,["children","$$slots","$$events","$$legacy"]),r=[["line",{x1:"4",x2:"20",y1:"12",y2:"12"}],["line",{x1:"4",x2:"20",y1:"6",y2:"6"}],["line",{x1:"4",x2:"20",y1:"18",y2:"18"}]];
+      	 */Rc(t,vo({name:"arrow-left"},()=>n,{get iconNode(){return r},children:(t,n)=>{var r=Dn();er(ce(r),e,"default",{},null),Rn(t,r)},$$slots:{default:!0}}))}(t,{})},$$slots:{default:!0}})},h=t=>{var e=Dn(),n=ce(e),r=t=>{Pc(t,{size:"icon",variant:"ghost",type:"button",$$events:{click:t=>{t.stopPropagation(),a.toggleSidebar()}},children:(t,e)=>{!function(t,e){const n=po(e,["children","$$slots","$$events","$$legacy"]),r=[["line",{x1:"4",x2:"20",y1:"12",y2:"12"}],["line",{x1:"4",x2:"20",y1:"6",y2:"6"}],["line",{x1:"4",x2:"20",y1:"18",y2:"18"}]];
 /**
       	 * @license lucide-svelte v0.453.0 - ISC
       	 *
