@@ -61,7 +61,7 @@
                 >
                     <ArrowLeft />
                 </Button>
-            {:else}
+            {:else if app.isAuth}
                 <Button
                     size="icon"
                     variant="ghost"

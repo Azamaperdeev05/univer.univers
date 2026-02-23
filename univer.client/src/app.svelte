@@ -91,7 +91,9 @@
 </svelte:head>
 <Toaster />
 <OfflineIndicator />
-<Sidebar />
+{#if app.isAuth}
+    <Sidebar />
+{/if}
 
 <Wrapper home={routes.home}>
     {#snippet children(router)}

@@ -53,13 +53,13 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
         onclick={close}
         transition:fade={{ duration: 200 }}
     ></div>
 
     <aside
-        class="fixed left-0 top-0 bottom-0 z-50 w-[280px] bg-background border-r flex flex-col shadow-2xl"
+        class="fixed left-0 top-0 bottom-0 z-[101] w-[280px] bg-background border-r flex flex-col shadow-2xl"
         transition:fly={{ x: -280, duration: 300, opacity: 1 }}
     >
         <!-- Header -->
