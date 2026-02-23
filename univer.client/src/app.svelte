@@ -10,9 +10,11 @@
 
         themeColor = $state<string>()
         sidebarOpen = $state(false)
-        toggleSidebar() {
-            this.sidebarOpen = !this.sidebarOpen
-            console.log("Sidebar toggled, new state:", this.sidebarOpen)
+        openSidebar() {
+            this.sidebarOpen = true
+        }
+        closeSidebar() {
+            this.sidebarOpen = false
         }
         updateThemeColor(..._: unknown[]) {
             tick().then(() => {

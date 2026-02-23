@@ -68,7 +68,7 @@
                     type="button"
                     on:click={(e) => {
                         e.stopPropagation()
-                        app.toggleSidebar()
+                        app.openSidebar()
                     }}
                 >
                     <Menu />

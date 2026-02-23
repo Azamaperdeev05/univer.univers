@@ -13,13 +13,11 @@
     import { routes } from "../../pages"
     import { useApp } from "../../app.svelte"
     import { useApi } from "../../api"
-    import { fade, slide, fly } from "svelte/transition"
-    import { useRouter } from "$lib/router"
+    import { fade, fly } from "svelte/transition"
     import Telegram from "$lib/icons/telegram.svelte"
 
     const app = useApp()
     const api = useApi()
-    const router = useRouter()
 
     let query = api.fetchTranscript()
 
@@ -27,12 +25,21 @@
         app.sidebarOpen = false
     }
 
+    // Навигация: мәзірді жауып, replace режимінде бетке өту
     const navigate = (href: string) => {
-        router.navigate(href)
         close()
+        // Кішігірім кідіру — мәзірдің жабылу анимациясын күту
+        setTimeout(() => {
+            app.router?.navigate(href, { mode: "replace" })
+        }, 50)
     }
 
-    const items = [
+    const items: {
+        href: string
+        label: string
+        icon: any
+        external?: boolean
+    }[] = [
         { href: routes.schedule, label: _("schedule"), icon: CalendarDays },
         { href: routes.attestation, label: _("attestation"), icon: BookA },
         { href: routes.calculator, label: _("calculator"), icon: Calculator },
@@ -47,33 +54,31 @@
         },
         { href: routes.settings, label: _("settings"), icon: Settings },
     ]
+
+    // Ағымдағы бетті анықтау
+    const isActive = (href: string) => app.router?.path === href
 </script>
 
 {#if app.sidebarOpen}
+    <!-- Overlay: мәзірден тыс басқанда жабылады -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+        class="overlay"
         onclick={close}
         transition:fade={{ duration: 200 }}
     ></div>
 
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <aside
-        class="fixed left-0 top-0 bottom-0 z-[101] w-[280px] bg-background border-r flex flex-col shadow-2xl"
-        transition:fly={{ x: -280, duration: 300, opacity: 1 }}
+        class="sidebar"
+        transition:fly={{ x: -280, duration: 250, opacity: 1 }}
     >
-        <!-- Header -->
-        <div
-            class="bg-primary p-6 text-primary-foreground relative overflow-hidden"
-        >
-            <div class="absolute right-2 top-2">
-                <button
-                    onclick={close}
-                    class="p-1 hover:bg-white/20 rounded-full transition-colors"
-                >
-                    <X size={20} />
-                </button>
-            </div>
+        <!-- Профиль бөлігі -->
+        <div class="sidebar-header">
+            <button onclick={close} class="close-btn" aria-label="Close menu">
+                <X size={20} />
+            </button>
 
             <div class="mt-4">
                 {#if query.loading}
@@ -84,55 +89,48 @@
                         class="h-4 w-48 bg-white/20 animate-pulse rounded opacity-70"
                     ></div>
                 {:else if query.data}
-                    <h2 class="text-lg font-bold leading-tight mb-1">
-                        {query.data.fullname}
-                    </h2>
-                    <p class="text-xs opacity-80 leading-snug">
+                    <h2 class="sidebar-name">{query.data.fullname}</h2>
+                    <p class="sidebar-program">
                         {query.data.education_program}
                     </p>
                 {:else}
-                    <h2 class="text-lg font-bold mb-1">Univer</h2>
-                    <p class="text-xs opacity-80">Студент портылы</p>
+                    <h2 class="sidebar-name">Univer</h2>
+                    <p class="sidebar-program">Студент порталы</p>
                 {/if}
             </div>
         </div>
 
-        <!-- Navigation items -->
-        <nav class="flex-1 overflow-y-auto py-2">
-            <ul class="space-y-1">
+        <!-- Навигация элементтері -->
+        <nav class="sidebar-nav">
+            <ul>
                 {#each items as item}
                     <li>
                         {#if item.external}
                             <a
                                 href={item.href}
                                 target="_blank"
-                                class="flex items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                                rel="noopener noreferrer"
+                                class="nav-item"
+                                onclick={close}
                             >
-                                <div
-                                    class="w-6 flex justify-center text-primary"
-                                >
+                                <div class="nav-icon">
                                     <item.icon size={22} />
                                 </div>
-                                <span class="flex-1">{item.label}</span>
+                                <span>{item.label}</span>
                             </a>
                         {:else}
                             <button
+                                class="nav-item"
+                                class:active={isActive(item.href)}
                                 onclick={() => navigate(item.href)}
-                                class="w-full flex items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                                class:bg-accent={router.path === item.href}
-                                class:text-primary={router.path === item.href}
-                                class:font-semibold={router.path === item.href}
                             >
                                 <div
-                                    class="w-6 flex justify-center"
-                                    class:text-primary={router.path ===
-                                        item.href}
+                                    class="nav-icon"
+                                    class:active={isActive(item.href)}
                                 >
                                     <item.icon size={22} />
                                 </div>
-                                <span class="flex-1 text-left"
-                                    >{item.label}</span
-                                >
+                                <span>{item.label}</span>
                             </button>
                         {/if}
                     </li>
@@ -140,13 +138,130 @@
             </ul>
         </nav>
 
-        <!-- Footer -->
-        <div class="p-4 border-t opacity-50 text-[10px] text-center">
+        <!-- Төменгі бөлім -->
+        <div class="sidebar-footer">
             Univer v{api.version.client}
         </div>
     </aside>
 {/if}
 
 <style>
-    /* Кез келген қосымша стильдер */
+    .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 101;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        background: hsl(var(--background));
+        border-right: 1px solid hsl(var(--border));
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .sidebar-header {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .close-btn {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+        padding: 0.375rem;
+        border-radius: 9999px;
+        background: transparent;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        transition: background-color 0.15s;
+    }
+    .close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 0.25rem;
+    }
+
+    .sidebar-program {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        line-height: 1.4;
+    }
+
+    .sidebar-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem 0;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        width: 100%;
+        font-size: 0.875rem;
+        background: transparent;
+        border: none;
+        color: hsl(var(--foreground));
+        cursor: pointer;
+        text-decoration: none;
+        text-align: left;
+        transition:
+            background-color 0.15s,
+            color 0.15s;
+    }
+
+    .nav-item:hover {
+        background: hsl(var(--accent));
+        color: hsl(var(--accent-foreground));
+    }
+
+    .nav-item.active {
+        background: hsl(var(--accent));
+        color: hsl(var(--primary));
+        font-weight: 600;
+    }
+
+    .nav-icon {
+        width: 1.5rem;
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .nav-icon.active {
+        color: hsl(var(--primary));
+    }
+
+    .sidebar-footer {
+        padding: 1rem;
+        border-top: 1px solid hsl(var(--border));
+        opacity: 0.5;
+        font-size: 0.625rem;
+        text-align: center;
+    }
 </style>
