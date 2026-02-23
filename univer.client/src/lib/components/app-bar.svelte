@@ -52,7 +52,7 @@
         class:h-12={bottom}
         class:pb-0={bottom}
     >
-        <div>
+        <div class="z-20">
             {#if canBack}
                 <Button
                     size="icon"
@@ -65,7 +65,9 @@
                 <Button
                     size="icon"
                     variant="ghost"
-                    onclick={() => (app.sidebarOpen = true)}
+                    type="button"
+                    onclick={() => app.toggleSidebar()}
+                    on:click={() => app.toggleSidebar()}
                 >
                     <Menu />
                 </Button>

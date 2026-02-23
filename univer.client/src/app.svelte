@@ -10,6 +10,10 @@
 
         themeColor = $state<string>()
         sidebarOpen = $state(false)
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen
+            console.log("Sidebar toggled, new state:", this.sidebarOpen)
+        }
         updateThemeColor(..._: unknown[]) {
             tick().then(() => {
                 const pages = document.querySelectorAll(".page")
