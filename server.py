@@ -149,7 +149,9 @@ async def handle_api_error(e: Exception, request):
 # API middleware - Univer объектісін дайындау және токенді автоматты жаңарту
 async def univer_middleware(app, handler):
     async def middleware_handler(request):
-        if request.path.startswith("/api/"):
+        # Ашық API жолдарын тексеру (middleware-ден аттап өту)
+        public_paths = ["/api/privacy-policy", "/api/version"]
+        if request.path.startswith("/api/") and request.path not in public_paths:
             token = request.cookies.get(".ASPXAUTH")
             session_id = request.cookies.get("ASP.NET_SessionId")
             univer_code = request.cookies.get("univer_code", "kstu")
@@ -317,10 +319,7 @@ async def push_status(request):
     is_subscribed = push_service.is_subscribed(username)
     settings = push_service.get_settings(username) if is_subscribed else None
 
-    return web.json_response({
-        "subscribed": is_subscribed,
-        "settings": settings
-    })
+    return web.json_response({"subscribed": is_subscribed, "settings": settings})
 
 
 @routes.post("/api/push/settings")
@@ -357,33 +356,30 @@ async def push_test(request):
         return web.json_response({"error": "invalid_creds"}, status=401)
 
     username, _ = creds
-    
+
     # Тілді алу
     lang = request.query.get("lang", "kk")
-    
+
     # Тілге сәйкес хабарлама
     messages = {
         "kk": {
             "title": "🎉 Тестілік хабарлама",
-            "body": "Хабарламалар дұрыс жұмыс істеп тұр!"
+            "body": "Хабарламалар дұрыс жұмыс істеп тұр!",
         },
         "ru": {
             "title": "🎉 Тестовое уведомление",
-            "body": "Уведомления работают правильно!"
+            "body": "Уведомления работают правильно!",
         },
         "en": {
             "title": "🎉 Test Notification",
-            "body": "Notifications are working correctly!"
-        }
+            "body": "Notifications are working correctly!",
+        },
     }
-    
+
     msg = messages.get(lang, messages["kk"])
-    
+
     success = await push_service.send_notification(
-        user_id=username,
-        title=msg["title"],
-        body=msg["body"],
-        tag="test-notification"
+        user_id=username, title=msg["title"], body=msg["body"], tag="test-notification"
     )
 
     if success:
