@@ -23,8 +23,8 @@
         --border: 240 5.9% 90%;
         --input: 240 5.9% 90%;
 
-        /* Blue 500 - көк түс */
-        --primary: 217 91% 60%;
+        /* Professional Black - қара түс */
+        --primary: 0 0% 0%;
         --primary-foreground: 0 0% 100%;
 
         --secondary: 240 4.8% 95.9%;
@@ -36,7 +36,7 @@
         --destructive: 0 72.22% 50.59%;
         --destructive-foreground: 0 0% 98%;
 
-        --ring: 217 91% 60%;
+        --ring: 0 0% 0%;
     }
     .dark {
         --background: 240 10% 3.9%;
@@ -54,8 +54,8 @@
         --border: 240 3.7% 15.9%;
         --input: 240 3.7% 15.9%;
 
-        /* Blue 400 - Dark mode үшін ашық нұсқасы */
-        --primary: 213 94% 68%;
+        /* Professional White - ақ түс */
+        --primary: 0 0% 100%;
         --primary-foreground: 240 10% 3.9%;
 
         --secondary: 240 3.7% 15.9%;
@@ -67,7 +67,7 @@
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 85.7% 97.3%;
 
-        --ring: 213 94% 68%;
+        --ring: 0 0% 100%;
     }
     .system {
         @apply light;
