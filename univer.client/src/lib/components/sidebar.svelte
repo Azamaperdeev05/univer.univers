@@ -23,10 +23,6 @@
 
     let query = api.fetchTranscript()
 
-    $effect(() => {
-        console.log("Sidebar rendered, sidebarOpen state:", app.sidebarOpen)
-    })
-
     const close = () => {
         app.sidebarOpen = false
     }

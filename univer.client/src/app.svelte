@@ -95,11 +95,13 @@
 </svelte:head>
 <Toaster />
 <OfflineIndicator />
-{#if app.isAuth}
-    <Sidebar />
-{/if}
 
 <Wrapper home={routes.home}>
+    {#snippet navigation()}
+        {#if app.isAuth}
+            <Sidebar />
+        {/if}
+    {/snippet}
     {#snippet children(router)}
         {@const faqParams = router.pattern(routes.faqItem)}
         {@const filesParams = router.pattern(routes.filesItem)}
