@@ -37,7 +37,7 @@ type Storage<K = IDBValidKey> = {
 }
 const storage: Storage = { get, set, del }
 export class Api {
-    version = new Version("1.01")
+    version = new Version("1.2")
     #queries = new Map<string, Query<any>>()
     notes = $state<Notes["_list"]>({})
     constructor(private app: App) {
