@@ -44,7 +44,6 @@
 
     onMount(() => {
         univer = (localStorage.getItem("univer") as any) ?? "kstu"
-        username = localStorage.getItem("username") ?? ""
     })
 
     const onsubmit = async (event: SubmitEvent) => {
@@ -134,7 +133,7 @@
                 type="text"
                 bind:value={username}
                 name="username"
-                placeholder="azamat.perdeyev"
+                placeholder=""
             />
         </Label>
 
