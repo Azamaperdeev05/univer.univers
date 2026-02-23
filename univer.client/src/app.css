@@ -23,8 +23,8 @@
         --border: 240 5.9% 90%;
         --input: 240 5.9% 90%;
 
-        /* Professional Black - қара түс */
-        --primary: 0 0% 0%;
+        /* Primary Blue - rgba(14, 165, 233, 1) */
+        --primary: 199 89% 48%;
         --primary-foreground: 0 0% 100%;
 
         --secondary: 240 4.8% 95.9%;
@@ -36,27 +36,27 @@
         --destructive: 0 72.22% 50.59%;
         --destructive-foreground: 0 0% 98%;
 
-        --ring: 0 0% 0%;
+        --ring: 199 89% 48%;
     }
     .dark {
-        --background: 240 10% 3.9%;
+        --background: 0 0% 0%;
         --foreground: 0 0% 98%;
 
-        --muted: 240 3.7% 15.9%;
+        --muted: 240 3.7% 10%;
         --muted-foreground: 240 5% 64.9%;
 
-        --popover: 240 10% 3.9%;
+        --popover: 0 0% 0%;
         --popover-foreground: 0 0% 98%;
 
-        --card: 240 10% 3.9%;
+        --card: 0 0% 0%;
         --card-foreground: 0 0% 98%;
 
         --border: 240 3.7% 15.9%;
         --input: 240 3.7% 15.9%;
 
-        /* Professional White - ақ түс */
-        --primary: 0 0% 100%;
-        --primary-foreground: 240 10% 3.9%;
+        /* Primary Blue - rgba(14, 165, 233, 1) */
+        --primary: 199 89% 48%;
+        --primary-foreground: 0 0% 100%;
 
         --secondary: 240 3.7% 15.9%;
         --secondary-foreground: 0 0% 98%;
@@ -67,7 +67,7 @@
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 85.7% 97.3%;
 
-        --ring: 0 0% 100%;
+        --ring: 199 89% 48%;
     }
     .system {
         @apply light;
