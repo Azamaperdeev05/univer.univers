@@ -25,6 +25,10 @@ Thumbs.db
 # Local config
 .env
 .env.local
+credentials.json
+test_credentials.txt
 
 # Test files
 test_*.py
+test_*.html
+TESTING_GUIDE.md

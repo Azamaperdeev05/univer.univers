@@ -39,7 +39,7 @@ export class Query<T> {
     async fetch() {
         if (!this.params.enabled) return
         if (!this.promisify) return Promise.reject()
-        this.state = this.hasData ? "update" : "ready"
+        this.state = this.hasData ? "update" : "load"
         try {
             const data = await this.promisify()
             this.state = "ready"
@@ -48,6 +48,12 @@ export class Query<T> {
             this.hasData = true
             return data
         } catch (error) {
+            // Егер кэште деректер бар болса, қатені жұтып, кэштегі деректерді қолдану
+            if (this.hasData) {
+                this.state = "ready"
+                console.warn("Using cached data due to fetch error:", error)
+                return this.data
+            }
             this.params.onReject?.(error)
             return Promise.reject(error)
         }

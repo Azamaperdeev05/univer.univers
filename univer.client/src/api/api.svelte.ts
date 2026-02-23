@@ -193,7 +193,8 @@ export class Api {
         if (cached) return cached as Query<T>
         const query = new Query(() => fetch(i18n.language), {
             onReject: (error) => {
-                storage?.del(key)
+                // Offline режимде кэшті сақтау (тек қате болса ғана өшіру)
+                // storage?.del(key) - бұл жолды алып тастадық
                 this.#catch(error)
             },
             onResolve: (data) => storage?.set(key, data),
@@ -218,9 +219,15 @@ export class Api {
         } else if (error instanceof NotFound || error instanceof ServerError) {
             toast(_("error.server-error"))
         } else if (error instanceof RequestTimeout) {
-            toast(_("error.univer-error"))
+            // Offline режимде хабарлама көрсетпеу (кэштегі деректер қолданылады)
+            if (navigator.onLine) {
+                toast(_("error.univer-error"))
+            }
         } else if (error instanceof Error) {
-            toast(_("error.unknown-error", error.message))
+            // Offline режимде жалпы қателерді жасыру
+            if (navigator.onLine) {
+                toast(_("error.unknown-error", error.message))
+            }
         }
     }
 }

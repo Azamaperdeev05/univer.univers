@@ -261,7 +261,7 @@ async def get_exams(request):
 @routes.post("/api/push/subscribe")
 async def push_subscribe(request):
     data = await request.json()
-    encoded_creds = request.get("encoded_creds")
+    encoded_creds = request.cookies.get("_uc")  # Cookie-ден оқу
     univer_code = request.cookies.get("univer_code", "kstu")
     lang = request.query.get("lang", "kk")
 
@@ -288,7 +288,7 @@ async def push_subscribe(request):
 
 @routes.post("/api/push/unsubscribe")
 async def push_unsubscribe(request):
-    encoded_creds = request.get("encoded_creds")
+    encoded_creds = request.cookies.get("_uc")  # Cookie-ден оқу
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 

@@ -11,6 +11,7 @@
     "day.5": "Суббота",
     "day.6": "Воскресенье",
     "schedule": "Расписание",
+    "schedule.today": "Сегодня",
     "schedule.current": "(т) ",
     "schedule.current-week": "Номер текущей недели",
     "schedule.no-lessons": "Занятий нет 🎉",

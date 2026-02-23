@@ -44,6 +44,33 @@ class KazNU(Univer):
             storage=storage,
         )
 
+    async def get_schedule(self):
+        """KazNU кестесін алу - тақ/жұп апта жүйесін тексеру"""
+        schedule = await super().get_schedule()
+        
+        # Тақ/жұп апта бар ма тексеру
+        has_factor = any(lesson.factor is not None for lesson in schedule.lessons)
+        
+        if has_factor:
+            # Егер тақ/жұп апта болса, KSTU-дегідей логика қолдану
+            from dataclasses import replace
+            lessons = []
+            for lesson in schedule.lessons:
+                if lesson.factor is None:
+                    # Екі аптаға да қосу
+                    lessons.append(replace(lesson, factor=True))
+                    lessons.append(replace(lesson, factor=False))
+                    continue
+                lessons.append(lesson)
+            
+            schedule.lessons = lessons
+            schedule.factor = schedule.week % 2 == 0
+        else:
+            # Тақ/жұп апта жоқ - factor=None қалдыру
+            schedule.factor = None
+        
+        return schedule.with_id()
+
     async def get_teacher(self, name: str = None):
         if name is None:
             return name, None

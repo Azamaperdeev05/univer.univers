@@ -108,7 +108,10 @@ export async function isPushSubscribed(): Promise<boolean> {
  * Subscription-ды серверге жіберу
  */
 async function sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
-    await fetch('/api/push/subscribe', {
+    // Тілді localStorage-тен алу
+    const lang = localStorage.getItem('lang') || 'kk'
+    
+    await fetch(`/api/push/subscribe?lang=${lang}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

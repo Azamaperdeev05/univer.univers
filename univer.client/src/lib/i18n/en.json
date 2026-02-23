@@ -11,6 +11,7 @@
     "day.5": "Saturday",
     "day.6": "Sunday",
     "schedule": "Schedule",
+    "schedule.today": "Today",
     "schedule.current": "(c) ",
     "schedule.current-week": "Current week number",
     "schedule.no-lessons": "No lessons 🎉",

@@ -57,10 +57,18 @@
     }
 
     const isActiveDay = (day: number, activeWeek: boolean | null) => {
-        const nowDay = Math.max(1, new Date().getDay())
-        const _week =
-            activeWeek === null ? true : nowDay > 5 ? !activeWeek : activeWeek
-        return _week && day === nowDay - 1
+        const nowDay = new Date().getDay() // 0 = Жексенбі, 1 = Дүйсенбі, ..., 6 = Сенбі
+        // Жексенбі (0) → 6-ға айналдыру (біздің массивте 6 = Жексенбі)
+        const adjustedDay = nowDay === 0 ? 6 : nowDay - 1
+        
+        // Егер тақ/жұп апта жоқ болса (activeWeek === null), тек күнді салыстыру
+        if (activeWeek === null) {
+            return day === adjustedDay
+        }
+        
+        // Тақ/жұп апта бар болса, аптаны да тексеру
+        const _week = nowDay === 0 || nowDay > 5 ? !activeWeek : activeWeek
+        return _week && day === adjustedDay
     }
 
     const factors = $derived([
@@ -184,7 +192,12 @@
                 {@const isActive = active(day)}
                 <Card active={isActive} class="p-0" {separator}>
                     {#snippet title()}
-                        <span class="p-2 inline-block">{weekday}</span>
+                        <span class="p-2 inline-block">
+                            {weekday}
+                            {#if isActive}
+                                <span class="text-primary font-bold ml-2">• {_("schedule.today")}</span>
+                            {/if}
+                        </span>
                     {/snippet}
 
                     {#each lessons as lesson, index (lesson.id)}
