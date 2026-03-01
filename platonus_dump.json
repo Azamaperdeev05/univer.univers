@@ -1,0 +1,138 @@
+[
+  {
+    "subjectName": "Сараптамалық және зияткерлік жүйелер(SZZh 4221-3--L)",
+    "tutorList": "Бигалиева А.З, Коздарбекова Д.О",
+    "centerMark": "0.0",
+    "color": "#95a5a6",
+    "totalMark": "0",
+    "box_height": "450px",
+    "subjectID": 1082,
+    "queryID": 128223,
+    "ticketInfoType": 0,
+    "studyGroupId": 21142,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым. 11",
+        "mark": "88.67"
+      },
+      {
+        "name": "Орт.ағым. 22",
+        "mark": "0"
+      },
+      {
+        "name": "АБ 1",
+        "mark": "88.67"
+      },
+      {
+        "name": "АБ 2",
+        "mark": "-"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "44.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "жіберілмеген"
+      }
+    ]
+  },
+  {
+    "subjectName": "IT-жобалар менеджменті(ITZhM 4310-1--L)",
+    "tutorList": "Шодырова Б.Х",
+    "centerMark": "0.0",
+    "color": "#95a5a6",
+    "totalMark": "0",
+    "box_height": "450px",
+    "subjectID": 5572,
+    "queryID": 131630,
+    "ticketInfoType": 0,
+    "studyGroupId": 21694,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым. 11",
+        "mark": "83.60"
+      },
+      {
+        "name": "Орт.ағым. 22",
+        "mark": "0"
+      },
+      {
+        "name": "АБ 1",
+        "mark": "83.60"
+      },
+      {
+        "name": "АБ 2",
+        "mark": "-"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "42.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "жіберілмеген"
+      }
+    ]
+  },
+  {
+    "subjectName": "Web-қосымшаларды әзірлеу және қауіпсіздік(WKAK 4311-1--L)",
+    "tutorList": "Касылкасова К.Н",
+    "centerMark": "0.0",
+    "color": "#95a5a6",
+    "totalMark": "0",
+    "box_height": "450px",
+    "subjectID": 8443,
+    "queryID": 131761,
+    "ticketInfoType": 0,
+    "studyGroupId": 21706,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым. 11",
+        "mark": "100.00"
+      },
+      {
+        "name": "Орт.ағым. 22",
+        "mark": "0"
+      },
+      {
+        "name": "АБ 1",
+        "mark": "-"
+      },
+      {
+        "name": "АБ 2",
+        "mark": "-"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "25.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "жіберілмеген"
+      }
+    ]
+  },
+  {
+    "subjectName": "Диплом алдындағы практика(2014-75-PD)",
+    "tutorList": "Эгамбердиев Э.У",
+    "centerMark": "0.0",
+    "color": "#95a5a6",
+    "totalMark": "-",
+    "box_height": "450px",
+    "subjectID": 751,
+    "queryID": 187214,
+    "ticketInfoType": 0,
+    "studyGroupId": 28177,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Практика",
+        "mark": "0.0"
+      }
+    ]
+  }
+]

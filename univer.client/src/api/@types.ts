@@ -49,6 +49,8 @@ export type Mark = [title: string, value: number | string, active?: boolean]
 
 export type Attestation = {
     subject: string
+    subject_id?: number
+    query_id?: number
     attestation: Mark[]
     attendance: {
         type: string // лекция | срсп
@@ -80,4 +82,29 @@ export type Note = {
     text: string
     date: number
     id: string
+}
+
+export type PlatonusDetailedMarkDate = {
+    Year: number
+    Month: number
+    Day: number
+    Hour: number
+    Minute: number
+    DisplayedValue: string
+}
+
+export type PlatonusDetailedMarkItem = {
+    Mark: number
+    MarkDate: PlatonusDetailedMarkDate
+    MarkName: string
+    MarkType: number
+}
+
+export type PlatonusDetailedClassType = {
+    Name: string
+    Id: number
+    Marks: Record<string, {
+        Marks: Record<string, PlatonusDetailedMarkItem[]>
+    }>
+    TutorFullName: string
 }

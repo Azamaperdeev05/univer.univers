@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru" class="light-style layout-menu-fixed layout-navbar-fixed layout-footer-fixed" dir="ltr" data-theme="plt-theme-default"
+      data-assets-path="/p_v6/" data-template="vertical-menu-template">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <link href="/images/emblem.jpg" rel="shortcut icon">
+    <link href="/favicon.png" rel="shortcut icon">
+    <title>Platonus</title>
+    <!-- Yandex.Metrika counter
+    <script type="text/javascript" >
+        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+        ym(93698137, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+        });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/93698137" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    /Yandex.Metrika counter -->
+    <!-- Favicon -->
+    <link href="/images/emblem.jpg" rel="shortcut icon">
+    <link href="/favicon.png" rel="shortcut icon">
+
+    <!-- Fonts -->
+    <link href="/p_v6/fonts/boxicons.css" rel="stylesheet">
+    <link href="/p_v6/fonts/flag-icons.css" rel="stylesheet">
+    <link href="/p_v6/fonts/fontawesome.css" rel="stylesheet">
+    <link href="/p_v6/fonts/public-sans/public-sans.css" rel="stylesheet">
+
+
+
+    <!-- Core CSS -->
+    <link href="/p_v6/css/core-custom-rules.css" rel="stylesheet">
+    <link href="/p_v6/css/core.css" rel="stylesheet" class="template-customizer-core-css">
+    <link href="/p_v6/css/plt-theme-default.css" rel="stylesheet" class="template-customizer-theme-css">
+    <link rel="stylesheet" href="/p_v6/css/page-auth.css">
+    <link href="/p_v6/libs/toastr/toastr.css" rel="stylesheet">
+
+    <!-- Helpers -->
+<!--    <script src="/p_v6/js/helpers.js"></script>-->
+
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+<!--    <script src="/p_v6/js/template-customizer.js"></script>-->
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="/p_v6/js/config.js"></script>
+
+    <!-- Core JS -->
+    <script src="/p_v6/js/bootstrap.js"></script>
+    <script src="/p_v6/js/dropdown-hover.js"></script>
+    <script src="/p_v6/js/mega-dropdown.js"></script>
+    <script src="/p_v6/libs/popper/popper.js"></script>
+
+    <!-- Vendors JS-->
+    <script src="/p_v6/libs/jquery/jquery.js"></script>
+
+    <script src="jscripts/common.js"></script>
+    <script src="jscripts/title.js"></script>
+    <script src="/p_v6/libs/toastr/toastr.js"></script>
+
+    <script src="jquery/jquery.blockUI.js"></script>
+
+    <!-- this page specific scripts -->
+<!--    <script async src="/p_v6/js/ForVisuallyImpaired.js"></script>-->
+    <!-- theme scripts -->
+    <script src="jscripts/login.js"></script>
+    <script src="js/scripts.js"></script>
+    <style>
+        .store-btn:hover {
+            background-color: #d60435 !important;
+            border: 1px solid #d60435 !important;
+        }
+    </style>
+</head>
+<body id="login-page" onload="doOnLoad()">
+<div class="authentication-wrapper authentication-cover">
+    <input type="hidden" id="storageSelect" name="storageSelect" value="PKCS12">
+    <input type="hidden" id="keyType" name="keyType" value="AUTHENTICATION">
+    <input type="hidden" id="signedXml" name="signedXml" value="">
+    <input type="hidden" id="xmlToSign" name="xmlToSign" value="<login></login>">
+    <input type="hidden" id="edsUsed" name="edsUsed" value="">
+    <input type="hidden" id="subjectCn" name="subjectCn" value="">
+    <input type="hidden" id="subjectDn" name="subjectDn" value="">
+    <input type="hidden" id="notafter" name="notafter" value="">
+    <input type="hidden" id="notbefore" name="notbefore" value="">
+    <input type="hidden" id="authForDeductedStudentsAndGraduates" name="authForDeductedStudentsAndGraduates" value="false">
+    <div class="authentication-inner d-flex m-0">
+        <!-- /Left Text -->
+        <div class="d-none d-xl-flex flex-shrink-1 align-items-center p-5 authentication-bg">
+            <div class="fixed-top">
+                <img src="/images/loginlogo.png" class="ms-5 mt-4" alt="Login logo" data-app-dark-img="/images/loginlogo.png"
+                     data-app-light-img="/images/loginlogo.png">
+            </div>
+            <div class="w-100 d-flex justify-content-center">
+                <img src="/images/login-preview.png" alt="Login image"
+                     width="500" data-app-dark-img="images/login-preview.png"
+                     data-app-light-img="images/login-preview.png">
+            </div>
+        </div>
+        <!-- /Left Text -->
+
+        <!-- Login -->
+        <div class="d-flex w-100 align-items-center p-sm-5 p-4 flex-column justify-content-center">
+            <div class="login-container mx-auto">
+                <div class="d-xl-none w-100">
+                    <!--<div class="d-flex justify-content-center">
+                        <img src="/images/loginlogo.png" class="img-fluid mb-4" alt="Login logo" data-app-dark-img="/images/loginlogo.png"
+                             data-app-light-img="/images/loginlogo.png">
+                    </div>-->
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="login-logo" id="loginLogoImg">
+                        </div>
+                        <div class="d-flex justify-content-end mb-4 me-4" id="specialButtonAddLocation">
+<!--                            <a id="specialButton" href="javascript:void(0)" style="text-align: center; display: block;">Перейти в режим для слабовидящих</a>-->
+                        </div>
+                        <h3 class="mb-2 mt-2" id="login_header">Войти в личный кабинет</h3>
+<!--                        <br>-->
+                        <p class="mb-3"></p>
+
+                        <div class="list-group list-group-horizontal-md text-md-center"><a class="list-group-item list-group-item-action active" id="authenticationTab" data-bs-toggle="list" href="#authentication">Логин и пароль</a></li>
+<a class="list-group-item list-group-item-action" id="edsTab" data-bs-toggle="list" href="#eds">Вход по ЭЦП</a>
+</div><div class="tab-content mt-3">
+<div class="tab-pane fade show active" id="authentication"><select type="language" class="form-control mb-3"name="language" ID="language" onchange='onLanguageSelect()'><option value="1">Русский</option><option value="2">Қазақша</option><option value="3">English</option></select><div class="mb-3" id="login_type"> <label class="form-label" id="login_label"></label>
+ <input class="form-control" type="text" name="login" required
+ ID="login_input">
+</div><div class="mb-3 form-password-toggle">
+   <div class="d-flex justify-content-between">
+       <label class="form-label" for="password" id="password_label">Пароль       </label>
+<a id="forgot_your_password" href='forget.html?language=1'><small>Забыли пароль?</small></a></div>
+   <div class="input-group input-group-merge">
+       <input type="password" class="form-control" required
+           name="password" ID="pass_input"
+           placeholder="Пароль           "
+           aria-describedby="password"/>
+       <span class="input-group-text cursor-pointer"><i class="bx bx-hide" id="pass-status" onClick="viewPassword()"></i></span>
+   </div>
+</div>
+ <button ID="Submit1" NAME="Submit1" onclick="onSubmit()"
+ class="btn btn-primary d-grid w-100">
+ </button>
+ <div class="divider my-4">
+ <div class="divider-text" id="login_divider_text">Дополнительно </div>
+ </div> <div class="col-xs-12"><a style='text-align:center;display:block;' href='/auth' id="authForDeductedStudentsAndGraduatesLabel">Авторизация для отчисленных и выпускников</a> </div> <div class="col-xs-12" id="applicant_registration"><a style='text-align:center;display:block;' href='registration.html'>Регистрация абитуриентов</a> </div></div><div class="tab-pane fade" id="eds"> <input type="button" id="chooseCertificate" onclick="chooseCertificate()"
+ class="btn btn-primary w-100" value="Выбрать сертификат"> </div></div><br>
+
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center flex-column mt-3">
+                <div class="d-flex align-items-center justify-content-center mb-3" id="install-mobile-title">Установите мобильное приложение</div>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                    <a href="https://apps.apple.com/kz/app/platonus-student/id6459790444" target="_blank" class="btn btn-dark store-btn" type="button">
+                        <i class="bx bxl-apple"></i>
+                        App Store
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=com.platonusstudent&pcampaignid=web_share&pli=1" target="_blank" class="btn btn-dark store-btn" type="button">
+                        <i class='bx bxl-play-store'></i>
+                        Google Play
+                    </a>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-center mt-3">
+                <p id="footer-copyright" class="col-xs-12">
+                    &copy;<span id="productName"></span> v<span id="VERSION"></span> (build# <span id="BUILD_NUMBER"></span> ),
+                    2006-<span id="year"> </span> <span id="developerLink"></span>
+                </p>
+            </div>
+        </div>
+        <!-- /Login -->
+    </div>
+</div>
+</body>
+</html>
+
+
+<div class="modal fade" id="selectPersonRole" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 id="personRoleDialogHeader"></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="container">
+                        <div class="form-group col-md-12" id="personRolesBlock">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

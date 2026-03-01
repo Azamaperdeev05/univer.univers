@@ -1,5 +1,6 @@
 from aiohttp import web
 from dataclasses import asdict
+import asyncio
 import json
 import os
 import sys
@@ -17,6 +18,7 @@ from functions.platonus import (
     platonus_login,
     platonus_get_student_info,
     platonus_get_attestation,
+    platonus_get_subject_details,
 )
 
 # Frontend static папкасының жолы
@@ -97,6 +99,9 @@ async def login(request):
 # Helper функция - API қателерін дұрыс handle ету және токенді автоматты жаңарту
 async def handle_api_error(e: Exception, request):
     """API қатесін дұрыс өңдеу - сессия аяқталса қайта кіру"""
+    if isinstance(e, (asyncio.TimeoutError, TimeoutError)):
+        # Univer сервері баяу жауап берді — клиент кэштегі деректерді қолданады
+        return web.json_response({"error": "timeout"}, status=408)
     if isinstance(e, ForbiddenException):
         # Сессия аяқталған - credentials арқылы қайта кіру
         encoded_creds = request.get("encoded_creds")
@@ -224,9 +229,9 @@ async def get_schedule(request):
             asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        if not isinstance(e, (asyncio.TimeoutError, TimeoutError)):
+            import traceback
+            traceback.print_exc()
         return await handle_api_error(e, request)
 
 
@@ -256,6 +261,26 @@ async def get_attestation(request):
         return await handle_api_error(e, request)
 
 
+async def _platonus_refresh_token(pc_cookie: str | None) -> str | None:
+    """Refresh Platonus token using stored credentials (_pc cookie)."""
+    if not pc_cookie:
+        return None
+    try:
+        decoded = base64.b64decode(pc_cookie).decode()
+        u, p = decoded.split(":", 1)
+        return await platonus_login(u, p)
+    except Exception:
+        return None
+
+
+async def _get_pt_cookie(request) -> str | None:
+    """Get existing Platonus token, or refresh if missing."""
+    pt = request.cookies.get("_pt")
+    if not pt:
+        pt = await _platonus_refresh_token(request.cookies.get("_pc"))
+    return pt
+
+
 @routes.post("/auth/platonus-link")
 async def platonus_link(request):
     data = await request.json()
@@ -278,29 +303,70 @@ async def platonus_link(request):
 
 @routes.get("/api/platonus/attestation")
 async def get_platonus_attest(request):
-    pt_cookie = request.cookies.get("_pt")
     pc_cookie = request.cookies.get("_pc")
+    pt_cookie = await _get_pt_cookie(request)
 
     if not pt_cookie:
-        if pc_cookie:
-            try:
-                decoded = base64.b64decode(pc_cookie).decode()
-                u, p = decoded.split(":", 1)
-                pt_cookie = await platonus_login(u, p)
-            except:
-                pass
-
-        if not pt_cookie:
-            return web.json_response({"error": "platonus_unlinked"}, status=401)
+        return web.json_response({"error": "platonus_unlinked"}, status=401)
 
     year = request.query.get("year", "2025")
     semester = request.query.get("term", request.query.get("semester", "2"))
 
     try:
         data = await platonus_get_attestation(pt_cookie, int(year), int(semester))
+
+        # None = token expired → refresh and retry once
+        if data is None:
+            pt_cookie = await _platonus_refresh_token(pc_cookie)
+            if not pt_cookie:
+                return web.json_response({"error": "platonus_unlinked"}, status=401)
+            data = await platonus_get_attestation(pt_cookie, int(year), int(semester))
+            if data is None:
+                return web.json_response({"error": "platonus_unlinked"}, status=401)
+
         resp = web.json_response(data)
-        if pt_cookie != request.cookies.get("_pt"):
-            resp.set_cookie("_pt", pt_cookie, httponly=True)
+        resp.set_cookie("_pt", pt_cookie, httponly=True, max_age=3600 * 24 * 30)
+        return resp
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.get("/api/platonus/subject_details")
+async def get_platonus_subject_details_route(request):
+    pc_cookie = request.cookies.get("_pc")
+    pt_cookie = await _get_pt_cookie(request)
+
+    if not pt_cookie:
+        return web.json_response({"error": "platonus_unlinked"}, status=401)
+
+    year = request.query.get("year", "2025")
+    semester = request.query.get("term", request.query.get("semester", "2"))
+    subject_id = request.query.get("subject_id")
+    query_id = request.query.get("query_id")
+
+    if not subject_id or not query_id:
+        return web.json_response(
+            {"error": "Missing subject_id or query_id"}, status=400
+        )
+
+    try:
+        data = await platonus_get_subject_details(
+            pt_cookie, int(year), int(semester), int(subject_id), int(query_id)
+        )
+
+        # None = token expired → refresh and retry once
+        if data is None:
+            pt_cookie = await _platonus_refresh_token(pc_cookie)
+            if not pt_cookie:
+                return web.json_response({"error": "platonus_unlinked"}, status=401)
+            data = await platonus_get_subject_details(
+                pt_cookie, int(year), int(semester), int(subject_id), int(query_id)
+            )
+            if data is None:
+                return web.json_response({"error": "platonus_unlinked"}, status=401)
+
+        resp = web.json_response(data)
+        resp.set_cookie("_pt", pt_cookie, httponly=True, max_age=3600 * 24 * 30)
         return resp
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)

@@ -1,0 +1,185 @@
+[
+  {
+    "Name": "ITZhM 4310-1--L",
+    "Id": 21694,
+    "Marks": {
+      "2": {
+        "Marks": {
+          "3": [
+            {
+              "Mark": 75.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 3,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "03-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "27": [
+            {
+              "Mark": 83.6,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 27,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "27-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 2,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "84.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Шодырова Б.Х"
+  },
+  {
+    "Name": "ITZhM 4310-2--Lab",
+    "Id": 21697,
+    "Marks": {
+      "2": {
+        "Marks": {
+          "2": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 2,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "02-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "3": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 3,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "03-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "4": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 4,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "04-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Шодырова Б.Х"
+  },
+  {
+    "Name": "ITZhM 4310-3--SRSP",
+    "Id": 34698,
+    "Marks": {
+      "2": {
+        "Marks": {
+          "2": [
+            {
+              "Mark": 73.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 2,
+                "Hour": 1,
+                "Minute": 5,
+                "DisplayedValue": "02-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "73.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Шодырова Б.Х"
+  }
+]

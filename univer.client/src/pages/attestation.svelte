@@ -79,7 +79,7 @@
             : _("calculator.exam")
 
     const onclick = (value: Attestation) => () => {
-        attendance?.open(value)
+        attendance?.open(value, currentTerm)
     }
     let attendance: any
 </script>

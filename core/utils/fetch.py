@@ -1,6 +1,6 @@
 import aiohttp
 
-timeout = aiohttp.ClientTimeout(total=10)
+timeout = aiohttp.ClientTimeout(total=20)
 
 
 async def fetch(
