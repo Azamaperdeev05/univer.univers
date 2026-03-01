@@ -133,5 +133,9 @@
     "cache": "Кэш",
     "cache.clear": "Кэшті тазалау",
     "cache.clear-confirm": "Кэшті тазалап, бетті жаңартасыз ба?",
-    "cache.cleared": "Кэш тазаланды!"
+    "cache.cleared": "Кэш тазаланды!",
+    "platonus.link-title": "Platonus-пен байланыстыру",
+    "platonus.link-description": "Нақты бағаларды көру үшін Platonus логині мен құпия сөзін енгізіңіз. Бұл деректер тек бағаларды алу үшін қолданылады.",
+    "platonus.link-button": "Байланыстыру",
+    "platonus.linked": "Platonus сәтті байланды!"
 }

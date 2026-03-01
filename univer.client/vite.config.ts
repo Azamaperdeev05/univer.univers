@@ -24,6 +24,10 @@ export default defineConfig({
             targets: ["defaults", "not IE 11"],
         }),
     ],
+    build: {
+        outDir: "../static",
+        emptyOutDir: true,
+    },
     resolve: {
         alias: {
             $lib: path.resolve("./src/lib"),

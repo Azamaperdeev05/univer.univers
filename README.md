@@ -5,7 +5,7 @@
 # 🎓 Univer - Студенттерге арналған бірыңғай портал
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-1.01-indigo.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.3-indigo.svg)](#)
 [![Railway](https://img.shields.io/badge/Deploy-Railway-purple.svg)](https://railway.app)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-blue.svg)](https://t.me/univerkstusite)
 
@@ -32,7 +32,7 @@
     - [🔔 Хабарламалар (Push Notifications)](#-хабарламалар-push-notifications)
   - [🛠 Технологиялар](#-технологиялар)
   - [🚀 Орнату](#-орнату)
-  - [📱 PWA және Хабарламалар](#-pwa-және-хабарламалар)М
+  - [📱 PWA және Хабарламалар](#-pwa-және-хабарламалар)
   - [👥 Авторлар](#-авторлар)
   - [📄 Лицензия](#-лицензия)
 

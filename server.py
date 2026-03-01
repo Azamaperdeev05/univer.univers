@@ -13,6 +13,11 @@ from univers.base import Univer
 from functions.login import UserCookies
 from exceptions import ForbiddenException, InvalidCredential
 from push_notifications import push_service, scheduled_notifications
+from functions.platonus import (
+    platonus_login,
+    platonus_get_student_info,
+    platonus_get_attestation,
+)
 
 # Frontend static папкасының жолы
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -219,6 +224,9 @@ async def get_schedule(request):
             asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
         )
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         return await handle_api_error(e, request)
 
 
@@ -246,6 +254,65 @@ async def get_attestation(request):
         )
     except Exception as e:
         return await handle_api_error(e, request)
+
+
+@routes.post("/auth/platonus-link")
+async def platonus_link(request):
+    data = await request.json()
+    username = data.get("username")
+    password = data.get("password")
+
+    pt_token = await platonus_login(username, password)
+    if not pt_token:
+        return web.json_response({"error": "Platonus login failed"}, status=401)
+
+    response = web.json_response({"status": "ok"})
+    response.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
+
+    pc = base64.b64encode(f"{username}:{password}".encode()).decode()
+    response.set_cookie("_pc", pc, httponly=True, max_age=3600 * 24 * 30)
+    response.set_cookie("_pl", "1", max_age=3600 * 24 * 30)
+
+    return response
+
+
+@routes.get("/api/platonus/attestation")
+async def get_platonus_attest(request):
+    pt_cookie = request.cookies.get("_pt")
+    pc_cookie = request.cookies.get("_pc")
+
+    if not pt_cookie:
+        if pc_cookie:
+            try:
+                decoded = base64.b64decode(pc_cookie).decode()
+                u, p = decoded.split(":", 1)
+                pt_cookie = await platonus_login(u, p)
+            except:
+                pass
+
+        if not pt_cookie:
+            return web.json_response({"error": "platonus_unlinked"}, status=401)
+
+    year = request.query.get("year", "2025")
+    semester = request.query.get("term", request.query.get("semester", "2"))
+
+    try:
+        data = await platonus_get_attestation(pt_cookie, int(year), int(semester))
+        resp = web.json_response(data)
+        if pt_cookie != request.cookies.get("_pt"):
+            resp.set_cookie("_pt", pt_cookie, httponly=True)
+        return resp
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@routes.post("/auth/platonus-unlink")
+async def platonus_unlink(request):
+    response = web.json_response({"status": "ok"})
+    response.del_cookie("_pt")
+    response.del_cookie("_pc")
+    response.del_cookie("_pl")
+    return response
 
 
 @routes.get("/api/exams")

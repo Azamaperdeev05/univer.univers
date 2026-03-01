@@ -37,7 +37,7 @@ type Storage<K = IDBValidKey> = {
 }
 const storage: Storage = { get, set, del }
 export class Api {
-    version = new Version("1.2")
+    version = new Version("1.3")
     #queries = new Map<string, Query<any>>()
     notes = $state<Notes["_list"]>({})
     constructor(private app: App) {
@@ -101,6 +101,22 @@ export class Api {
             }
         )
     }
+    fetchPlatonusAttestation(term: number = 2) {
+        return this.#languageQuery(
+            () =>
+                authFetch<Attestation[]>(api(`/api/platonus/attestation?term=${term}`)).then((data) =>
+                    data
+                        .sort(({ subject: a }, { subject: b }) =>
+                            a.localeCompare(b)
+                        )
+                ),
+            {
+                key: `platonus-attestation-${term}`,
+                storage,
+            }
+        )
+    }
+
     fetchSchedule() {
         return this.#languageQuery(
             () => authFetch<Schedule>(api("/api/schedule")),

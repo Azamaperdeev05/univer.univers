@@ -133,5 +133,9 @@
     "cache": "Кэш",
     "cache.clear": "Очистить кэш",
     "cache.clear-confirm": "Очистить кэш и обновить страницу?",
-    "cache.cleared": "Кэш очищен!"
+    "cache.cleared": "Кэш очищен!",
+    "platonus.link-title": "Связь с Platonus",
+    "platonus.link-description": "Для получения актуальных оценок введите логин и пароль от Platonus. Эти данные используются только для загрузки оценок.",
+    "platonus.link-button": "Связать",
+    "platonus.linked": "Platonus успешно привязан!"
 }

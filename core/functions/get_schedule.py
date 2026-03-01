@@ -133,14 +133,32 @@ def get_lessons(row: Tag):
                 else text(denominator).lower() != "числитель"
             )
 
+            subj_text = text(subject_element) or ""
+            subj_text = subj_text.replace("(", " (").replace("  (", " (")
+
+            teacher_text = (
+                text(subject_element.next_sibling)
+                if subject_element and subject_element.next_sibling
+                else ""
+            )
+
+            aud_element = lesson.select_one(".aud_faculty")
+            aud_text = (
+                text(aud_element.next_sibling)
+                if aud_element and aud_element.next_sibling
+                else ""
+            )
+
+            period_text = text(lesson.select_one(".dateStartLbl")) or ""
+
             yield Lesson(
-                subject=text(subject_element).replace("(", " (").replace("  (", " ("),
+                subject=subj_text,
                 day=day,
                 time=time,
                 factor=factor,
-                teacher=text(subject_element.next_sibling),
-                audience=text(lesson.select_one(".aud_faculty").next_sibling),
-                period=text(lesson.select_one(".dateStartLbl")),
+                teacher=teacher_text,
+                audience=aud_text,
+                period=period_text,
             )
 
 

@@ -109,3 +109,21 @@ export const forceLogout = async () => {
     localStorage.removeItem("username")
     localStorage.removeItem("univer")
 }
+
+export const platonusLink = async (user: { username: string, password: string }) => {
+    const res = await fetch(api("/auth/platonus-link"), {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(user),
+    })
+    if (res.ok) {
+        localStorage.setItem("platonus_linked", "1")
+    }
+    return res.status
+}
+
+export const platonusUnlink = async () => {
+    await fetch(api("/auth/platonus-unlink"), { method: "POST", credentials: "include" })
+    localStorage.removeItem("platonus_linked")
+}
+

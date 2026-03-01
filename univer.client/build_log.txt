@@ -1,0 +1,111 @@
+
+> client@1.2 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mтЬУ[39m 18 modules transformed.
+
+PWA v0.20.5
+Building src/sw.ts service worker ("es" format)...
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+23:29:45 [vite-plugin-svelte] src/pages/faq/item.svelte:11:35 This reference only captures the initial value of `id`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+ 9:     let {id}: {id: string} = $props()
+10:     const api = useApi()
+11:     const query = api.fetchFAQItem(id)
+                                         ^
+12: 
+13:     let title = $state(_("loading"))
+23:29:45 [vite-plugin-svelte] src/pages/schedule.svelte:135:8 `indicator` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+133:     })
+134: 
+135:     let indicator: HTMLElement
+                                   ^
+136:     let header: HTMLElement
+137:     let headerHeight = $state(0)
+23:29:45 [vite-plugin-svelte] src/pages/schedule.svelte:136:8 `header` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+134: 
+135:     let indicator: HTMLElement
+136:     let header: HTMLElement
+                                ^
+137:     let headerHeight = $state(0)
+138: 
+23:29:45 [vite-plugin-svelte] src/pages/calculator.svelte:13:36 This reference only captures the initial value of `count`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+11:     let message = $state("")
+12:     let hint = $state("")
+13:     let calculator = new Calculator(count, (type, value) => {
+                                             ^
+14:         message = ""
+15:         hint = ""
+23:29:45 [vite-plugin-svelte] src/pages/files/item.svelte:16:33 This reference only captures the initial value of `id`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+14:     let {id}: {id: string} = $props()
+15:     const api = useApi()
+16:     const query = api.fetchFiles(id)
+                                       ^
+17:     const folders = api.fetchFolders()
+18: 
+23:29:46 [vite-plugin-svelte] src/lib/components/app-bar.svelte:39:32 This reference only captures the initial value of `onTitleClick`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+37:     onMount(() => app.updateThemeColor())
+38: 
+39:     const onTitleElementClick = onTitleClick
+                                                ^
+40:         ? (event: any) => {
+41:               const title = (event.target as HTMLElement)?.closest("h1")
+transforming...
+23:29:46 [vite-plugin-svelte] src/lib/router/router.svelte:23:37 This reference only captures the initial value of `home`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+21:     } = $props()
+22: 
+23:     const router = new HistoryRouter(home)
+                                             ^
+24:     const app = useApp()
+25:     app.router = router
+23:29:48 [vite-plugin-svelte] src/lib/components/ui/hold/hold.svelte:98:0 `<svelte:element>` with a pointerdown handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+ 96: />
+ 97: 
+ 98: <svelte:element
+                     ^
+ 99:     this={tag}
+100:     bind:this={node}
+[32mтЬУ[39m 53 modules transformed.
+rendering chunks...
+computing gzip size...
+[2m../static/[22m[36msw.mjs  [39m[1m[2m17.03 kB[22m[1m[22m[2m тФВ gzip: 5.76 kB[22m
+[32mтЬУ built in 9.53s[39m
+
+PWA v0.20.5
+mode      injectManifest
+format:   es
+precache  41 entries (1922.64 KiB)
+files generated
+  ../static/sw.js
+x Build failed in 12.00s
+error during build:
+[vite-plugin-pwa:build] There was an error during the build:
+  [plugin vite-plugin-svelte] src/pages/attestation.svelte (109:26): C:/Users/Acer/Documents/univer.univers/univer.client/src/pages/attestation.svelte:109:26 Expected 'if', 'each', 'await', 'key' or 'snippet'
+https://svelte.dev/e/expected_block_type
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  [plugin vite-plugin-svelte] src/pages/attestation.svelte (109:26): C:/Users/Acer/Documents/univer.univers/univer.client/src/pages/attestation.svelte:109:26 Expected 'if', 'each', 'await', 'key' or 'snippet'
+https://svelte.dev/e/expected_block_type
+file: C:/Users/Acer/Documents/univer.univers/univer.client/src/pages/attestation.svelte:109:26
+
+ 107 |                          {#snippet title()}
+ 108 |                              <Skeleton symbols={subject()} />
+ 109 |                          {#/snippet}
+                                  ^
+ 110 |                          <ul class="flex gap-1 justify-between">
+ 111 |                              {#each {length: 4} as __}
+
+    at getRollupError (file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/rollup/dist/es/shared/node-entry.js:23444:39
+    at async catchUnfinishedHookActions (file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/rollup/dist/es/shared/node-entry.js:22902:16)
+    at async rollupInternal (file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/rollup/dist/es/shared/node-entry.js:23427:5)
+    at async build (file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:65709:14)
+    at async CAC.<anonymous> (file:///C:/Users/Acer/Documents/univer.univers/univer.client/node_modules/vite/dist/node/cli.js:829:5)
