@@ -3,6 +3,7 @@ from dataclasses import asdict
 import asyncio
 import json
 import os
+import socket
 import sys
 import base64
 
@@ -25,6 +26,55 @@ from functions.platonus import (
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 routes = web.RouteTableDef()
+
+DEFAULT_PORT = 7435
+FALLBACK_PORT_START = 7436
+FALLBACK_PORT_END = 7499
+
+
+def try_bind(port: int) -> socket.socket | None:
+    """Try binding to port and return a listening socket or None."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind(("0.0.0.0", port))
+        sock.listen(128)
+        return sock
+    except OSError:
+        sock.close()
+        return None
+
+
+def resolve_startup_socket() -> tuple[socket.socket, int, str]:
+    """
+    Resolve startup socket with strict behavior:
+    - explicit PORT: strict bind, no fallback
+    - no PORT: default 7435, then fallback 7436..7499
+    """
+    env_port = os.environ.get("PORT")
+    if env_port is not None:
+        try:
+            port = int(env_port)
+        except ValueError as exc:
+            raise ValueError("PORT must be integer") from exc
+
+        sock = try_bind(port)
+        if sock is None:
+            raise OSError(f"Configured PORT={port} is already in use")
+        return sock, port, "env"
+
+    sock = try_bind(DEFAULT_PORT)
+    if sock is not None:
+        return sock, DEFAULT_PORT, "default"
+
+    for port in range(FALLBACK_PORT_START, FALLBACK_PORT_END + 1):
+        sock = try_bind(port)
+        if sock is not None:
+            return sock, port, "fallback"
+
+    raise OSError(
+        f"No free ports in range {DEFAULT_PORT}..{FALLBACK_PORT_END}"
+    )
 
 
 # Credentials шифрлау/дешифрлау функциялары
@@ -1067,5 +1117,14 @@ app.add_routes(routes)
 app.router.add_get("/{path:.*}", frontend_handler)  # Catch-all for frontend
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 7435))
-    web.run_app(app, port=port)
+    try:
+        bound_sock, selected_port, source = resolve_startup_socket()
+    except ValueError as e:
+        print(f"Startup error: {e}")
+        raise SystemExit(1)
+    except OSError as e:
+        print(f"Startup error: {e}")
+        raise SystemExit(1)
+
+    print(f"Starting server on port {selected_port} (source: {source})")
+    web.run_app(app, sock=bound_sock)

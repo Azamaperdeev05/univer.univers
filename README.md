@@ -92,6 +92,10 @@ cd univer.univers
 pip install -r requirements.txt
 python server.py
 
+# Порт логикасы:
+# - PORT берілсе -> тек сол портқа strict bind (fallback жоқ)
+# - PORT берілмесе -> 7435, бос болмаса 7436–7499 auto-fallback
+
 # Frontend орнату (univer.client ішінде)
 cd univer.client
 npm install
