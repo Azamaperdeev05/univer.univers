@@ -7,5 +7,6 @@ venv
 *.pyo
 *.pyd
 .DS_Store
-univer.client
+univer.client/node_modules
+univer.client/dist
 test_*.py
