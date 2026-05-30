@@ -58,20 +58,24 @@
     let showPassword = $state(false)
 </script>
 
-<Page class="grid grid-rows-min-auto-min">
+<Page class="relative flex flex-col justify-between min-h-screen bg-[#07070a] overflow-hidden">
+    <!-- Premium Ambient Glowing Orbs in Background -->
+    <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+
     {#snippet header()}
-        <AppBar>
+        <AppBar class="border-b border-white/5 bg-transparent backdrop-blur-md">
             {#snippet left()}
-                <Button variant="ghost" size="icon" href={routes.faq}
-                    ><CircleHelp /></Button
+                <Button variant="ghost" size="icon" href={routes.faq} class="text-zinc-400 hover:text-white transition-colors duration-300"
+                    ><CircleHelp style="width: 20px; height: 20px;" /></Button
                 >
             {/snippet}
             {#snippet right()}
-                <div class="flex gap-2">
+                <div class="flex gap-1.5">
                     <InstallButton>
                         {#snippet children(onclick)}
-                            <Button variant="ghost" size="icon" {onclick}>
-                                <MonitorDown />
+                            <Button variant="ghost" size="icon" {onclick} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                                <MonitorDown style="width: 20px; height: 20px;" />
                             </Button>
                         {/snippet}
                     </InstallButton>
@@ -80,98 +84,137 @@
                         size="icon"
                         href={routes.telegram}
                         target="_blank"
+                        class="text-zinc-400 hover:text-white transition-colors duration-300"
                     >
-                        <Telegram />
+                        <Telegram style="width: 20px; height: 20px;" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
                         href={routes.github}
                         target="_blank"
+                        class="text-zinc-400 hover:text-white transition-colors duration-300"
                     >
-                        <Github />
+                        <Github style="width: 20px; height: 20px;" />
                     </Button>
-                    <Button variant="ghost" size="icon" href={routes.settings}>
-                        <Settings />
+                    <Button variant="ghost" size="icon" href={routes.settings} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                        <Settings style="width: 20px; height: 20px;" />
                     </Button>
                 </div>
             {/snippet}
         </AppBar>
     {/snippet}
 
-    <form
-        class="w-full max-w-[370px] justify-self-center grid gap-5 self-center px-4"
-        {onsubmit}
-    >
-        <div class="flex flex-col items-center gap-2 p-2">
-            <img
-                src="/images/kstu.png"
-                alt={_("univer.kstu")}
-                class="w-16 h-16 object-contain drop-shadow"
-            />
-            <h2 class="text-xl font-bold tracking-tight text-foreground">{_("univer.kstu")}</h2>
-            <p class="text-xs text-muted-foreground text-center">Студенттерге арналған бірыңғай портал</p>
-        </div>
-
-        <Label class="flex w-full max-w-sm flex-col gap-1.5"
-            >{_("username")}
-            <Input
-                type="text"
-                bind:value={username}
-                name="username"
-                placeholder=""
-            />
-        </Label>
-
-        <Label class="flex w-full max-w-sm flex-col gap-1.5"
-            >{_("password")}
-            <div class="relative">
-                <Input
-                    type={showPassword ? "text" : "password"}
-                    bind:value={password}
-                    name="password"
-                    placeholder={showPassword
-                        ? api.version.client
-                        : "●●●●●●●●●"}
-                />
-                <Button
-                    variant="ghost"
-                    type="button"
-                    size="icon"
-                    class="absolute right-0 top-0"
-                    onclick={() => (showPassword = !showPassword)}
-                >
-                    {#if showPassword}
-                        <EyeOff />
-                    {:else}
-                        <Eye />
-                    {/if}
-                </Button>
-            </div>
-        </Label>
-
-        <Label class="flex items-center gap-2">
-            <Checkbox id="terms" bind:checked={agree} name="agree" />
-            <div class="privacy text-sm">
-                {@html _("privacy-policy.agree", routes.privacy)}
-            </div>
-        </Label>
-        {#if error}
-            <p class="text-destructive">
-                {error}
-            </p>
-        {/if}
-        <Button {disabled} type="submit"
-            >{status === "loading" ? _("loading") : _("login")}</Button
+    <div class="flex-1 flex items-center justify-center px-4 relative z-10 py-10">
+        <form
+            class="w-full max-w-[390px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex flex-col gap-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group hover:border-white/15 transition-all duration-500"
+            {onsubmit}
         >
-    </form>
-    <div class="flex justify-center p-4">
-        <p class="text-muted-foreground">{api.version.client}</p>
+            <!-- Background light flare inside card -->
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/10 transition-all duration-500"></div>
+
+            <div class="flex flex-col items-center gap-3 pb-2">
+                <!-- Pulsing Ambient Glow behind logo -->
+                <div class="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_32px_rgba(255,255,255,0.02)] transition-all duration-300 group-hover:border-white/20">
+                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-emerald-500/10 to-teal-500/10 animate-pulse"></div>
+                    <img
+                        src="/images/kstu.png"
+                        alt={_("univer.kstu")}
+                        class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+                    />
+                </div>
+                <div class="text-center mt-1">
+                    <h2 class="text-2xl font-bold tracking-tight text-white/90">{_("univer.kstu")}</h2>
+                    <p class="text-xs text-zinc-400 mt-1 max-w-[240px]">Студенттерге арналған бірыңғай портал</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase ml-1">{_("username")}</span>
+                <div class="relative">
+                    <Input
+                        type="text"
+                        bind:value={username}
+                        name="username"
+                        placeholder="Логин енгізіңіз..."
+                        class="w-full bg-zinc-900/60 border border-white/5 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 text-white rounded-xl h-11 px-4 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                    />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase ml-1">{_("password")}</span>
+                <div class="relative">
+                    <Input
+                        type={showPassword ? "text" : "password"}
+                        bind:value={password}
+                        name="password"
+                        placeholder={showPassword ? api.version.client : "••••••••••••"}
+                        class="w-full bg-zinc-900/60 border border-white/5 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 text-white rounded-xl h-11 pl-4 pr-11 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                    />
+                    <Button
+                        variant="ghost"
+                        type="button"
+                        size="icon"
+                        class="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors duration-300"
+                        onclick={() => (showPassword = !showPassword)}
+                    >
+                        {#if showPassword}
+                            <EyeOff style="width: 20px; height: 20px;" />
+                        {:else}
+                            <Eye style="width: 20px; height: 20px;" />
+                        {/if}
+                    </Button>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3 my-1">
+                <Checkbox id="terms" bind:checked={agree} name="agree" class="mt-0.5 rounded border-zinc-700 bg-zinc-900/60 text-emerald-500 focus:ring-emerald-500/30" />
+                <Label for="terms" class="privacy text-xs leading-relaxed text-zinc-400 select-none cursor-pointer">
+                    {@html _("privacy-policy.agree", routes.privacy)}
+                </Label>
+            </div>
+
+            {#if error}
+                <p class="text-xs font-medium text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 rounded-xl text-center">
+                    {error}
+                </p>
+            {/if}
+
+            <Button 
+                {disabled} 
+                type="submit"
+                class="w-full rounded-xl h-11 font-semibold tracking-wide text-white transition-all duration-300 active:scale-[0.98] select-none
+                       {disabled 
+                           ? 'bg-zinc-800 text-zinc-500 border border-zinc-700/50 cursor-not-allowed shadow-none' 
+                           : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 border border-emerald-400/20 shadow-[0_8px_24px_rgba(16,185,129,0.2)] hover:shadow-[0_12px_32px_rgba(16,185,129,0.35)]'}"
+            >
+                {#if status === "loading"}
+                    <div class="flex items-center justify-center gap-2">
+                        <!-- Premium loading spinner -->
+                        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>{_("loading")}...</span>
+                    </div>
+                {:else}
+                    <span>{_("login")}</span>
+                {/if}
+            </Button>
+        </form>
+    </div>
+
+    <div class="flex justify-center p-6 relative z-10">
+        <p class="text-xs tracking-wider text-zinc-500 select-none">
+            {_("univer.kstu")} • {api.version.client}
+        </p>
     </div>
 </Page>
 
 <style>
     .privacy :global(a) {
-        @apply text-primary underline hover:no-underline;
+        @apply text-emerald-400 underline hover:no-underline hover:text-emerald-300 transition-colors duration-300;
     }
 </style>
+
