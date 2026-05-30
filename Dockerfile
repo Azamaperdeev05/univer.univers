@@ -12,7 +12,7 @@ WORKDIR /build
 COPY univer.client/package.json univer.client/pnpm-lock.yaml* univer.client/package-lock.json* ./
 
 # Install client packages
-RUN pnpm install --frozen-lockfile || npm install
+RUN pnpm install || npm install
 
 # Copy client codebase
 COPY univer.client/ ./
