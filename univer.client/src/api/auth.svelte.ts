@@ -7,7 +7,6 @@ import { singleFetch } from "./utils"
 interface User {
     username: string
     password: string
-    univer: string
 }
 
 export const checkAuth = () => secureStorage.getItem("password") !== null
@@ -63,11 +62,10 @@ export const authFetch = async <T>(
 
 export const refreshToken = async () => {
     const username = localStorage.getItem("username")
-    const univer = localStorage.getItem("univer")
     const password = secureStorage.getItem("password")
 
-    if (username && univer && password)
-        return await login({ password, username, univer })
+    if (username && password)
+        return await login({ password, username })
     return 401
 }
 
@@ -83,10 +81,9 @@ export const login = (user: User) => {
                 body: JSON.stringify(user),
             })
             if (status === 200) {
-                const { password, username, univer } = user
+                const { password, username } = user
                 secureStorage.setItem("password", password)
                 localStorage.setItem("username", username)
-                localStorage.setItem("univer", univer)
             }
             resolve(status)
         } catch {
@@ -107,23 +104,5 @@ export const forceLogout = async () => {
     await fetch(api(`/auth/logout`), { credentials: "include" })
     secureStorage.removeItem("password")
     localStorage.removeItem("username")
-    localStorage.removeItem("univer")
-}
-
-export const platonusLink = async (user: { username: string, password: string }) => {
-    const res = await fetch(api("/auth/platonus-link"), {
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify(user),
-    })
-    if (res.ok) {
-        localStorage.setItem("platonus_linked", "1")
-    }
-    return res.status
-}
-
-export const platonusUnlink = async () => {
-    await fetch(api("/auth/platonus-unlink"), { method: "POST", credentials: "include" })
-    localStorage.removeItem("platonus_linked")
 }
 

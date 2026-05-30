@@ -34,7 +34,7 @@
     {#snippet header()}
         <AppBar>
             {#snippet title()}
-                Univer
+                Platonus
             {/snippet}
         </AppBar>
     {/snippet}

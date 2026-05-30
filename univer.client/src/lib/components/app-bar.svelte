@@ -61,18 +61,6 @@
                 >
                     <ArrowLeft />
                 </Button>
-            {:else if app.isAuth}
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    type="button"
-                    on:click={(e) => {
-                        e.stopPropagation()
-                        app.openSidebar()
-                    }}
-                >
-                    <Menu />
-                </Button>
             {/if}
             {@render left?.()}
         </div>

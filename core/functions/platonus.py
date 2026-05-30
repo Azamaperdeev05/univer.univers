@@ -97,7 +97,7 @@ async def platonus_get_student_info(pt_cookie: str) -> Optional[dict]:
     return None
 
 
-def transform_marks(marks: List[Dict]) -> List:
+def transform_marks(marks: List[Dict], center_mark: str = None) -> List:
     def parse_mark(val):
         if (
             not val
@@ -127,6 +127,18 @@ def transform_marks(marks: List[Dict]) -> List:
         or 0.0
     )
 
+    # Course Work / Project check as exam grade fallback
+    coursework_val = (
+        m.get("Курс.ж.")
+        or m.get("Курсоваяработа")
+        or m.get("Курсовойпроект")
+        or m.get("Курс.раб.")
+        or m.get("Курс.пр.")
+        or 0.0
+    )
+    if not exam_val and coursework_val:
+        exam_val = coursework_val
+
     # Fallback: scan raw list for any unmatched key variants
     for item in marks:
         if not isinstance(item, dict) or "name" not in item:
@@ -139,10 +151,34 @@ def transform_marks(marks: List[Dict]) -> List:
             ab2_val = mark
         if not exam_val and n in ("Емт.", "Экз.", "Итоговый экзамен", "Итог. экз."):
             exam_val = mark
+        if not exam_val and ("курсов" in n.lower() or "курс.ж" in n.lower() or "курс.р" in n.lower() or "курс.п" in n.lower()):
+            exam_val = mark
+
+    # Custom check for Practice or other non-standard single grades
+    practice_val = 0.0
+    for item in marks:
+        if isinstance(item, dict) and "name" in item:
+            name_lower = item["name"].lower()
+            if "практ" in name_lower or "pract" in name_lower:
+                practice_val = item.get("mark")
+                break
+                
+    if practice_val:
+        if not ab1_val or parse_mark(ab1_val) == 0.0: ab1_val = practice_val
+        if not ab2_val or parse_mark(ab2_val) == 0.0: ab2_val = practice_val
+        if not exam_val or parse_mark(exam_val) == 0.0: exam_val = practice_val
 
     ab1 = parse_mark(ab1_val)
     ab2 = parse_mark(ab2_val)
     exam = parse_mark(exam_val)
+
+    # Fallback to center_mark if everything is 0
+    if ab1 == 0.0 and ab2 == 0.0 and exam == 0.0 and center_mark:
+        c_mark = parse_mark(center_mark)
+        if c_mark > 0.0:
+            ab1 = c_mark
+            ab2 = c_mark
+            exam = c_mark
 
     return [
         ["АБ1", ab1, ab1 == 0],
@@ -156,9 +192,9 @@ async def platonus_get_attestation(
 ) -> Optional[List]:
     """
     Returns:
-        None   — auth token expired / personID unavailable → trigger refresh
-        []     — authenticated but no subjects
-        [...]  — list of subject dicts
+       None   — auth token expired / personID unavailable → trigger refresh
+       []     — authenticated but no subjects
+       [...]  — list of subject dicts
     """
     person_id = await platonus_get_person_id(pt_cookie)
     if not person_id:
@@ -185,7 +221,7 @@ async def platonus_get_attestation(
                             "subject": s.get("subjectName", "").split("(")[0].strip(),
                             "subject_id": s.get("subjectID"),
                             "query_id": s.get("queryID"),
-                            "attestation": transform_marks(exams),
+                            "attestation": transform_marks(exams, s.get("centerMark")),
                             "attendance": [],
                             "sum": ["Барлығы", 0, False],
                         }
@@ -224,3 +260,75 @@ async def platonus_get_subject_details(
     except Exception as e:
         print(f"Platonus subject details error: {e}")
         return []
+
+
+async def platonus_get_transcript(pt_cookie: str) -> Optional[dict]:
+    """
+    POST /rest/transcript/load/ru/0
+    Returns the student transcript data containing profile, GPA, and grade history.
+    """
+    headers, cookies = _pt_headers_and_cookies(pt_cookie)
+    url = f"{PLATONUS_URL}/rest/transcript/load/ru/0"
+    payload = {
+        "includeSubjectUnderStudy": True,
+        "showDeletedRecords": False,
+        "showAllRecords": True,
+        "showRewritableDisciplines": False,
+        "showRetakenRecords": False,
+        "searchText": ""
+    }
+    try:
+        async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
+            async with session.post(url, json=payload, headers=headers) as resp:
+                if resp.status in _AUTH_FAIL_STATUSES:
+                    return None
+                if resp.status != 200:
+                    print(f"Platonus load transcript failed: {resp.status}")
+                    return None
+                return await resp.json()
+    except Exception as e:
+        print(f"Platonus get transcript error: {e}")
+        return None
+
+
+async def platonus_get_umkd_list(pt_cookie: str, year: int, semester: int) -> Optional[dict]:
+    """
+    GET /rest/umkd/studentRecords/{year}/{semester}/ru
+    Returns list of course folders with their methodological package cryptFileId.
+    """
+    headers, cookies = _pt_headers_and_cookies(pt_cookie)
+    url = f"{PLATONUS_URL}/rest/umkd/studentRecords/{year}/{semester}/ru"
+    try:
+        async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
+            async with session.get(url, headers=headers) as resp:
+                if resp.status in _AUTH_FAIL_STATUSES:
+                    return None
+                if resp.status != 200:
+                    print(f"Platonus get studentRecords failed: {resp.status}")
+                    return None
+                return await resp.json()
+    except Exception as e:
+        print(f"Platonus get UMKD list error: {e}")
+        return None
+
+
+async def platonus_get_umkd_files(pt_cookie: str, umkd_id: int) -> Optional[list]:
+    """
+    GET /rest/student/umkd/{umkd_id}/ru
+    Returns the individual requirement folders inside the UMKD.
+    """
+    headers, cookies = _pt_headers_and_cookies(pt_cookie)
+    url = f"{PLATONUS_URL}/rest/student/umkd/{umkd_id}/ru"
+    try:
+        async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
+            async with session.get(url, headers=headers) as resp:
+                if resp.status in _AUTH_FAIL_STATUSES:
+                    return None
+                if resp.status != 200:
+                    print(f"Platonus student UMKD requirements failed: {resp.status}")
+                    return None
+                return await resp.json()
+    except Exception as e:
+        print(f"Platonus get UMKD files error: {e}")
+        return None
+

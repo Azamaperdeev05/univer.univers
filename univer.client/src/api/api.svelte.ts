@@ -73,58 +73,50 @@ export class Api {
         if (!local) return { _list: {} } as Notes
         return JSON.parse(local) as Notes
     }
-    fetchAttestation() {
+    fetchAttestation(term: number = 2) {
         return this.#languageQuery(
             () =>
-                authFetch<Attestation[]>(api("/api/attestation")).then((data) =>
-                    data
-                        .sort(({ subject: a }, { subject: b }) =>
-                            a.localeCompare(b)
-                        )
-                        .map((a) => {
-                            a.attendance.map((v) => {
-                                v.marks = v.marks.filter(
-                                    ([_, value]) =>
-                                        typeof value === "string" || value > 0
-                                )
-                                return v
-                            })
-                            a.attendance = a.attendance.filter(
-                                ({ marks }) => marks.length > 0
-                            )
-                            return a
-                        })
-                ),
-            {
-                key: "attestation",
-                storage,
-            }
-        )
-    }
-    fetchPlatonusAttestation(term: number = 2) {
-        return this.#languageQuery(
-            () =>
-                authFetch<Attestation[]>(api(`/api/platonus/attestation?term=${term}`)).then((data) =>
+                authFetch<Attestation[]>(api(`/api/attestation?term=${term}`)).then((data) =>
                     data
                         .sort(({ subject: a }, { subject: b }) =>
                             a.localeCompare(b)
                         )
                 ),
             {
-                key: `platonus-attestation-${term}`,
+                key: `attestation-${term}`,
                 storage,
             }
         )
     }
 
-    fetchPlatonusSubjectDetails(term: number, subject_id: number, query_id: number) {
+    fetchSubjectDetails(term: number, subject_id: number, query_id: number) {
+        const lastFetchKey = `last_fetch-${subject_id}-${query_id}`
         return this.#languageQuery(
-            () =>
-                authFetch<any>(api(`/api/platonus/subject_details?term=${term}&subject_id=${subject_id}&query_id=${query_id}`)).then((data) =>
-                    data
-                ),
+            () => {
+                const now = Date.now()
+                const lastFetchStr = localStorage.getItem(lastFetchKey)
+                const lastFetch = lastFetchStr ? parseInt(lastFetchStr) : 0
+                const RATE_LIMIT_MS = 60000 // 1 minute
+
+                if (now - lastFetch < RATE_LIMIT_MS) {
+                    return storage.get(`subject-${subject_id}-${query_id}`).then((cachedData) => {
+                        if (cachedData !== undefined) {
+                            return cachedData
+                        }
+                        return authFetch<any>(api(`/api/subject_details?term=${term}&subject_id=${subject_id}&query_id=${query_id}`)).then((data) => {
+                            localStorage.setItem(lastFetchKey, Date.now().toString())
+                            return data
+                        })
+                    })
+                }
+
+                return authFetch<any>(api(`/api/subject_details?term=${term}&subject_id=${subject_id}&query_id=${query_id}`)).then((data) => {
+                    localStorage.setItem(lastFetchKey, Date.now().toString())
+                    return data
+                })
+            },
             {
-                key: `platonus-subject-${subject_id}-${query_id}`,
+                key: `subject-${subject_id}-${query_id}`,
                 storage,
             }
         )
@@ -176,25 +168,27 @@ export class Api {
             }
         )
     }
-    fetchFolders() {
+    fetchFolders(year?: number, semester?: number) {
+        const url = year && semester ? `/api/umkd?year=${year}&semester=${semester}` : "/api/umkd"
         return this.#languageQuery(
             () =>
-                authFetch<Folder[]>(api("/api/umkd")).then((data) =>
+                authFetch<Folder[]>(api(url)).then((data) =>
                     data.sort(({ subject: a }, { subject: b }) =>
                         a.localeCompare(b)
                     )
                 ),
             {
-                key: "files",
+                key: `files-${year ?? "default"}-${semester ?? "default"}`,
                 storage,
             }
         )
     }
-    fetchFiles(id: Folder["id"]) {
+    fetchFiles(id: Folder["id"], year?: number, semester?: number) {
+        const url = year && semester ? `/api/umkd/${id}?year=${year}&semester=${semester}` : `/api/umkd/${id}`
         return this.#languageQuery(
-            () => authFetch<File[]>(api(`/api/umkd/${id}`)),
+            () => authFetch<File[]>(api(url)),
             {
-                key: `files-${id}`,
+                key: `files-${id}-${year ?? "default"}-${semester ?? "default"}`,
                 storage,
             }
         )

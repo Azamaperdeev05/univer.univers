@@ -33,7 +33,7 @@
 <svelte:element
     this={tag}
     {href}
-    class={cn("p-2 border rounded block border-border text-left", class_)}
+    class={cn("p-3.5 border rounded-2xl block border-border text-left bg-neutral-900/10 hover:border-white/15 hover:bg-neutral-900/25 transition-all duration-200 shadow-sm", class_)}
     class:transition-all={href || active || onclick}
     class:hover:bg-border={href || onclick}
     class:active

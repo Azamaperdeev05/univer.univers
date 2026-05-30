@@ -1,267 +1,120 @@
 <script lang="ts">
-    import { _ } from "$lib/i18n"
     import {
         CalendarDays,
         BookA,
-        Calculator,
         Folder,
         CircleUserRound,
-        Settings,
         GraduationCap,
-        X,
     } from "lucide-svelte"
     import { routes } from "../../pages"
     import { useApp } from "../../app.svelte"
-    import { useApi } from "../../api"
-    import { fade, fly } from "svelte/transition"
-    import Telegram from "$lib/icons/telegram.svelte"
+    import { onMount } from "svelte"
 
     const app = useApp()
-    const api = useApi()
 
-    let query = api.fetchTranscript()
+    onMount(() => {
+        app.navigationHeight = 68
+    })
 
-    const close = () => {
-        app.sidebarOpen = false
-    }
-
-    // Навигация: мәзірді жауып, replace режимінде бетке өту
-    const navigate = (href: string) => {
-        close()
-        // Кішігірім кідіру — мәзірдің жабылу анимациясын күту
-        setTimeout(() => {
-            app.router?.navigate(href, { mode: "replace" })
-        }, 50)
-    }
-
-    const items: {
-        href: string
-        label: string
-        icon: any
-        external?: boolean
-    }[] = [
-        { href: routes.schedule, label: _("schedule"), icon: CalendarDays },
-        { href: routes.attestation, label: _("attestation"), icon: BookA },
-        { href: routes.calculator, label: _("calculator"), icon: Calculator },
-        { href: routes.files, label: _("umkd"), icon: Folder },
-        { href: routes.exams, label: _("exams"), icon: GraduationCap },
-        { href: routes.profile, label: _("profile"), icon: CircleUserRound },
-        {
-            href: routes.telegram,
-            label: "Telegram",
-            icon: Telegram,
-            external: true,
-        },
-        { href: routes.settings, label: _("settings"), icon: Settings },
+    const items = [
+        { href: routes.schedule, icon: CalendarDays },
+        { href: routes.attestation, icon: BookA },
+        { href: routes.files, icon: Folder },
+        { href: routes.exams, icon: GraduationCap },
+        { href: routes.profile, icon: CircleUserRound },
     ]
 
-    // Ағымдағы бетті анықтау
     const isActive = (href: string) => app.router?.path === href
+
+    const navigate = (href: string) => {
+        app.router?.navigate(href, { mode: "replace" })
+    }
 </script>
 
-{#if app.sidebarOpen}
-    <!-- Overlay: мәзірден тыс басқанда жабылады -->
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-        class="overlay"
-        onclick={close}
-        transition:fade={{ duration: 200 }}
-    ></div>
-
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <aside
-        class="sidebar"
-        transition:fly={{ x: -280, duration: 250, opacity: 1 }}
-    >
-        <!-- Профиль бөлігі -->
-        <div class="sidebar-header">
-            <button onclick={close} class="close-btn" aria-label="Close menu">
-                <X size={20} />
+<div class="bottom-nav-container">
+    <nav class="bottom-nav">
+        {#each items as item}
+            {@const active = isActive(item.href)}
+            <button
+                class="nav-item"
+                class:active
+                onclick={() => navigate(item.href)}
+            >
+                <div class="icon-wrapper">
+                    <item.icon size={20} strokeWidth={active ? 2.5 : 2} />
+                </div>
             </button>
-
-            <div class="mt-4">
-                {#if query.loading}
-                    <div
-                        class="h-6 w-32 bg-white/20 animate-pulse rounded mb-2"
-                    ></div>
-                    <div
-                        class="h-4 w-48 bg-white/20 animate-pulse rounded opacity-70"
-                    ></div>
-                {:else if query.data}
-                    <h2 class="sidebar-name">{query.data.fullname}</h2>
-                    <p class="sidebar-program">
-                        {query.data.education_program}
-                    </p>
-                {:else}
-                    <h2 class="sidebar-name">Univer</h2>
-                    <p class="sidebar-program">Студент порталы</p>
-                {/if}
-            </div>
-        </div>
-
-        <!-- Навигация элементтері -->
-        <nav class="sidebar-nav">
-            <ul>
-                {#each items as item}
-                    <li>
-                        {#if item.external}
-                            <a
-                                href={item.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="nav-item"
-                                onclick={close}
-                            >
-                                <div class="nav-icon">
-                                    <item.icon size={22} />
-                                </div>
-                                <span>{item.label}</span>
-                            </a>
-                        {:else}
-                            <button
-                                class="nav-item"
-                                class:active={isActive(item.href)}
-                                onclick={() => navigate(item.href)}
-                            >
-                                <div
-                                    class="nav-icon"
-                                    class:active={isActive(item.href)}
-                                >
-                                    <item.icon size={22} />
-                                </div>
-                                <span>{item.label}</span>
-                            </button>
-                        {/if}
-                    </li>
-                {/each}
-            </ul>
-        </nav>
-
-        <!-- Төменгі бөлім -->
-        <div class="sidebar-footer">
-            Univer v{api.version.client}
-        </div>
-    </aside>
-{/if}
+        {/each}
+    </nav>
+</div>
 
 <style>
-    .overlay {
+    .bottom-nav-container {
         position: fixed;
-        inset: 0;
-        z-index: 100;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        width: 90%;
+        max-width: 360px;
+        pointer-events: none;
     }
 
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 101;
-        width: 280px;
+    .bottom-nav {
+        pointer-events: auto;
         display: flex;
-        flex-direction: column;
-        background: hsl(var(--background));
-        border-right: 1px solid hsl(var(--border));
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-
-    .sidebar-header {
-        background: hsl(var(--primary));
-        color: hsl(var(--primary-foreground));
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .close-btn {
-        position: absolute;
-        right: 0.5rem;
-        top: 0.5rem;
-        padding: 0.375rem;
-        border-radius: 9999px;
-        background: transparent;
-        border: none;
-        color: inherit;
-        cursor: pointer;
-        transition: background-color 0.15s;
-    }
-    .close-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .sidebar-name {
-        font-size: 1.125rem;
-        font-weight: 700;
-        line-height: 1.25;
-        margin-bottom: 0.25rem;
-    }
-
-    .sidebar-program {
-        font-size: 0.75rem;
-        opacity: 0.8;
-        line-height: 1.4;
-    }
-
-    .sidebar-nav {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0.5rem 0;
-    }
-
-    .sidebar-nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px;
+        background: rgba(10, 10, 10, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(22px) saturate(190%);
+        -webkit-backdrop-filter: blur(22px) saturate(190%);
+        border-radius: 999px;
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.65),
+            0 1px 2px rgba(255, 255, 255, 0.05) inset;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .nav-item {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 0.75rem 1rem;
-        width: 100%;
-        font-size: 0.875rem;
-        background: transparent;
+        justify-content: center;
+        padding: 9px;
+        border-radius: 999px;
         border: none;
-        color: hsl(var(--foreground));
+        background: transparent;
+        color: #8e8e93;
         cursor: pointer;
-        text-decoration: none;
-        text-align: left;
-        transition:
-            background-color 0.15s,
-            color 0.15s;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        aspect-ratio: 1;
     }
 
     .nav-item:hover {
-        background: hsl(var(--accent));
-        color: hsl(var(--accent-foreground));
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.03);
     }
 
-    .nav-item.active {
-        background: hsl(var(--accent));
-        color: hsl(var(--primary));
-        font-weight: 600;
-    }
-
-    .nav-icon {
-        width: 1.5rem;
+    .icon-wrapper {
         display: flex;
+        align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        transition: transform 0.22s;
     }
 
-    .nav-icon.active {
-        color: hsl(var(--primary));
+    /* Active State: Mockup-Perfect Oval Highlight Capsule */
+    .nav-item.active {
+        background: rgba(255, 255, 255, 0.09);
+        color: #ffffff;
+        padding-left: 18px;
+        padding-right: 18px;
+        aspect-ratio: auto; /* Allow expanding into an oval */
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
-    .sidebar-footer {
-        padding: 1rem;
-        border-top: 1px solid hsl(var(--border));
-        opacity: 0.5;
-        font-size: 0.625rem;
-        text-align: center;
+    .nav-item.active .icon-wrapper {
+        transform: scale(1.06);
     }
 </style>

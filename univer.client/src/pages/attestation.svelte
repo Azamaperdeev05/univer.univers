@@ -12,26 +12,23 @@
     import Attendance from "$lib/components/attendance.svelte"
     import { Skeleton } from "$lib/components/ui/skeleton"
 
-    import PlatonusLink from "./platonus-link.svelte"
-
-    let platonusLinked = $state(localStorage.getItem("platonus_linked") === "1")
-    let isKSTU = localStorage.getItem("univer") === "kstu"
     let currentTerm = $state(2) // 1 or 2
 
     const api = useApi()
 
-    // Derived query only works when linked OR if not KSTU
-    const query = $derived(
-        platonusLinked
-            ? api.fetchPlatonusAttestation(currentTerm)
-            : isKSTU
-              ? null
-              : api.fetchAttestation(),
-    )
+    const query = $derived(api.fetchAttestation(currentTerm))
 
-    const handleLinked = () => {
-        platonusLinked = true
-    }
+    $effect(() => {
+        if (query && query.data && Array.isArray(query.data)) {
+            query.data.forEach((course) => {
+                const subject_id = course.subject_id
+                const query_id = course.query_id
+                if (subject_id && query_id) {
+                    api.fetchSubjectDetails(currentTerm, subject_id, query_id)
+                }
+            })
+        }
+    })
 
     let wish_ = $state("70")
     let wish = $derived(parseFloat(wish_.replaceAll(",", ".")))
@@ -97,33 +94,30 @@
                 {/if}
             {/snippet}
             {#snippet bottom()}
-                {#if platonusLinked || !isKSTU}
                     <div class="flex flex-col gap-2 max-w-sm mx-auto">
-                        {#if platonusLinked}
+                        <div
+                            class="flex relative bg-secondary/30 rounded-2xl p-1"
+                        >
+                            {#each [1, 2] as term}
+                                <button
+                                    class="flex-1 z-10 py-1.5 text-sm font-medium transition-colors {currentTerm ===
+                                    term
+                                        ? 'text-foreground'
+                                        : 'text-muted-foreground hover:text-foreground'}"
+                                    onclick={() => (currentTerm = term)}
+                                >
+                                    {term} Семестр
+                                </button>
+                            {/each}
                             <div
-                                class="flex relative bg-secondary/30 rounded-lg p-1"
-                            >
-                                {#each [1, 2] as term}
-                                    <button
-                                        class="flex-1 z-10 py-1.5 text-sm font-medium transition-colors {currentTerm ===
-                                        term
-                                            ? 'text-foreground'
-                                            : 'text-muted-foreground hover:text-foreground'}"
-                                        onclick={() => (currentTerm = term)}
-                                    >
-                                        {term} Семестр
-                                    </button>
-                                {/each}
-                                <div
-                                    class="bg-background shadow-sm rounded-md absolute top-1 bottom-1 transition-transform duration-300"
-                                    style:width="calc(50% - 4px)"
-                                    style:transform="translateX({currentTerm ===
-                                    1
-                                        ? '0'
-                                        : '100%'})"
-                                ></div>
-                            </div>
-                        {/if}
+                                class="bg-background shadow-sm rounded-xl absolute top-1 bottom-1 transition-transform duration-300"
+                                style:width="calc(50% - 4px)"
+                                style:transform="translateX({currentTerm ===
+                                1
+                                    ? '0'
+                                    : '100%'})"
+                            ></div>
+                        </div>
                         <label
                             class="flex justify-center items-center gap-2 px-4 max-w-md w-full"
                         >
@@ -136,7 +130,6 @@
                             />
                         </label>
                     </div>
-                {/if}
             {/snippet}
             {#snippet right()}
                 <Button size="icon" href={routes.calculator} variant="ghost">
@@ -147,10 +140,7 @@
     {/snippet}
 
     <div class="grid mx-auto p-2 gap-2 max-w-md h-full">
-        {#if isKSTU && !platonusLinked}
-            <!-- Егер ҚарТУ болса және Platonus байланбаса - форманы ғана көрсетеміз -->
-            <PlatonusLink onDone={handleLinked} />
-        {:else if query}
+        {#if query}
             {#if nullish(query.data)}
                 {#each { length: 7 } as __}
                     <Card>

@@ -8,7 +8,6 @@ export const routes = {
     settings: "/settings",
     privacy: "/privacy",
     files: "/files",
-    filesItem: "/files/:id",
     telegram: "https://t.me/univerkstusite",
     github: "https://github.com/Azamaperdeev05/univer.univers",
     faq: "/faq",

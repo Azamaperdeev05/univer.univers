@@ -50,8 +50,8 @@ export default {
     scope: "/",
     start_url: routes.home,
     lang: "kk",
-    name: "Univer",
-    short_name: "Univer",
+    name: "Platonus",
+    short_name: "Platonus",
     description:
         "Бағаларды, сабақ кестесін, емтихандарды және студент туралы басқа да ақпаратты көруге арналған қосымша.",
     icons: [

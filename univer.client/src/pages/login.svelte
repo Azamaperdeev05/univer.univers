@@ -7,7 +7,6 @@
         MonitorDown,
     } from "lucide-svelte"
     import { Button } from "$lib/components/ui/button"
-    import * as Radio from "$lib/components/ui/segmented-radio"
     import { Input } from "$lib/components/ui/input"
     import { Label } from "$lib/components/ui/label"
     import { Checkbox } from "$lib/components/ui/checkbox"
@@ -25,33 +24,23 @@
     import Telegram from "$lib/icons/telegram.svelte"
     import Github from "$lib/icons/github.svelte"
 
-    const univers = {
-        kstu: "univer.kstu",
-        kaznu: "univer.kaznu",
-    }
     const api = useApi()
-    let univer = $state<keyof typeof univers>("kstu")
     let username = $state("")
     let password = $state("")
     let status = $state<"ready" | "loading" | "error">("ready")
     let agree = $state(false)
     let error = $state("")
 
-    let active = $derived(username.length && agree && password.length && univer)
+    let active = $derived(username.length && agree && password.length)
     let disabled = $derived(status == "loading" ? true : !active)
     const router = useRouter()
     const app = useApp()
-
-    onMount(() => {
-        univer = (localStorage.getItem("univer") as any) ?? "kstu"
-    })
 
     const onsubmit = async (event: SubmitEvent) => {
         event.preventDefault()
         status = "loading"
         const s = await api.login({
             password,
-            univer,
             username,
         })
         if (s === 200) {
@@ -114,18 +103,15 @@
         class="w-full max-w-[370px] justify-self-center grid gap-5 self-center px-4"
         {onsubmit}
     >
-        <Radio.Root bind:value={univer} name="univer">
-            {#each Object.entries(univers) as [value, label]}
-                <Radio.Item {value}>
-                    <img
-                        src="/images/{value}.png"
-                        alt={_(label as any)}
-                        class="w-6 h-6 object-contain"
-                    />
-                    {_(label as any)}
-                </Radio.Item>
-            {/each}
-        </Radio.Root>
+        <div class="flex flex-col items-center gap-2 p-2">
+            <img
+                src="/images/kstu.png"
+                alt={_("univer.kstu")}
+                class="w-16 h-16 object-contain drop-shadow"
+            />
+            <h2 class="text-xl font-bold tracking-tight text-foreground">{_("univer.kstu")}</h2>
+            <p class="text-xs text-muted-foreground text-center">Студенттерге арналған бірыңғай портал</p>
+        </div>
 
         <Label class="flex w-full max-w-sm flex-col gap-1.5"
             >{_("username")}

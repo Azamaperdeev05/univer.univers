@@ -281,6 +281,68 @@
             {/each}
         </div>
     </Page>
+{:else if query.data.finished}
+    <Page>
+        {#snippet header()}
+            <AppBar title={_("academic-calendar") ?? "Академиялық күнтізбе"} />
+        {/snippet}
+        <div class="mx-auto p-3 max-w-md w-full flex flex-col pb-6">
+            <!-- Classes Conclusion Banner -->
+            <div class="p-6 rounded-2xl bg-card border border-border flex flex-col items-center text-center gap-2 shadow-sm mb-4">
+                <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-full text-primary text-xl font-bold">🎓</div>
+                <h2 class="text-base font-extrabold text-foreground mt-2">{_("schedule.finished") ?? "Сабақтар аяқталды!"}</h2>
+                <p class="text-xs opacity-75 leading-relaxed">
+                    {query.data.semester_name} теориялық оқу апталары сәтті аяқталды. Қазіргі уақытта сессия немесе практика кезеңі жүріп жатыр.
+                </p>
+            </div>
+
+            <!-- Calendar section -->
+            <h3 class="text-xs font-extrabold opacity-75 px-1 mb-2">📅 {_("academic-calendar") ?? "Академиялық күнтізбе"} ({query.data.semester_name})</h3>
+            <div class="flex flex-col gap-2">
+                {#if query.data.calendar}
+                    {@const cal = query.data.calendar}
+                    <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                        <span class="opacity-75 font-semibold">{_("calendar.start") ?? "Семестрдің басы"}</span>
+                        <span class="font-bold text-foreground">{cal.start}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                        <span class="opacity-75 font-semibold">{_("calendar.end") ?? "Семестрдің соңы"}</span>
+                        <span class="font-bold text-foreground">{cal.end} ({cal.weeks} апта)</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                        <span class="opacity-75 font-semibold">{_("calendar.rk1") ?? "Рубеж бақылауы 1"}</span>
+                        <span class="font-bold text-foreground">{cal.attestation1}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                        <span class="opacity-75 font-semibold">{_("calendar.rk2") ?? "Рубеж бақылауы 2"}</span>
+                        <span class="font-bold text-foreground">{cal.attestation2}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                        <span class="opacity-75 font-semibold">{_("calendar.exams") ?? "Емтихан сессиясы"}</span>
+                        <span class="font-bold text-primary">{cal.exams}</span>
+                    </div>
+                    {#if cal.practice}
+                        <div class="p-4 rounded-2xl bg-card border border-border flex flex-col gap-1 text-xs text-left">
+                            <span class="opacity-75 font-semibold">{_("calendar.practice") ?? "Диплом алдындағы практика"}</span>
+                            <span class="font-bold text-primary">{cal.practice}</span>
+                        </div>
+                    {/if}
+                    {#if cal.thesis}
+                        <div class="p-4 rounded-2xl bg-card border border-border flex flex-col gap-1 text-xs text-left">
+                            <span class="opacity-75 font-semibold">{_("calendar.thesis") ?? "Дипломдық жұмысты қорғау"}</span>
+                            <span class="font-bold text-primary">{cal.thesis}</span>
+                        </div>
+                    {/if}
+                    {#if cal.holidays}
+                        <div class="p-4 rounded-2xl bg-card border border-border flex justify-between items-center text-xs">
+                            <span class="opacity-75 font-semibold">{_("calendar.holidays") ?? "Каникул кезеңі"}</span>
+                            <span class="font-bold text-green-500">{cal.holidays}</span>
+                        </div>
+                    {/if}
+                {/if}
+            </div>
+        </div>
+    </Page>
 {:else if isSingle}
     {#snippet header()}
         <AppBar {title} {right} />

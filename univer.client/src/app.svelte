@@ -63,7 +63,6 @@
     import Calculator from "./pages/calculator.svelte"
     import Exams from "./pages/exams.svelte"
     import Files from "./pages/files/index.svelte"
-    import FilesItem from "./pages/files/item.svelte"
     import Menu from "./pages/menu.svelte"
     import OfflineIndicator from "$lib/components/offline-indicator.svelte"
 
@@ -106,7 +105,6 @@
     {/snippet}
     {#snippet children(router)}
         {@const faqParams = router.pattern(routes.faqItem)}
-        {@const filesParams = router.pattern(routes.filesItem)}
         {#if router.pattern(routes.login) && !isAuth(router, true)}
             <Login />
         {:else if router.pattern(routes.settings)}
@@ -123,8 +121,6 @@
             <Calculator />
         {:else if router.pattern(routes.files) && isAuth(router)}
             <Files />
-        {:else if filesParams && isAuth(router)}
-            <FilesItem id={filesParams.id} />
         {:else if router.pattern(routes.faq)}
             <Faq />
         {:else if router.pattern(routes.exams)}

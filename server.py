@@ -10,16 +10,15 @@ import base64
 # Core папкасын path-қа қосу (импорттар жұмыс істеуі үшін)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
-from univers import KSTU, KazNU, get_univer
-from univers.base import Univer
-from functions.login import UserCookies
-from exceptions import ForbiddenException, InvalidCredential
 from push_notifications import push_service, scheduled_notifications
 from functions.platonus import (
     platonus_login,
     platonus_get_student_info,
     platonus_get_attestation,
     platonus_get_subject_details,
+    platonus_get_transcript,
+    platonus_get_umkd_list,
+    platonus_get_umkd_files,
 )
 
 # Frontend static папкасының жолы
@@ -96,219 +95,269 @@ def decode_credentials(encoded: str) -> tuple[str, str] | None:
     return None
 
 
-# Univer объектісін алу үшін көмекші функция
-def get_user_univer(request) -> Univer:
-    # Сессиядан немесе cookie-ден деректерді алу керек
-    # Бұл жерде қарапайым болу үшін cookie-ден оқимыз деп болжаймыз
-    # Шын мәнінде, client жағы token мен session_id жіберуі керек
-    # Қазірше login арқылы алынған cookie-лерді қалай сақтайтынын қарастыру керек
-    # Client secure-storage-тен оқып headers-ке қоса ма?
-    # auth.svelte.ts қарасақ credentials: "include" бар.
-    # Демек cookies серверге келеді.
-    pass
-
-
 # Login handler
 @routes.post("/auth/login")
 async def login(request):
     data = await request.json()
     username = data.get("username")
     password = data.get("password")
-    university = data.get("univer")  # 'kstu' or 'kaznu' or url
 
     try:
-        UniverClass = get_univer(university)  # Егер университет атымен келсе
-        if not UniverClass:
-            # Егер url болса, мүмкін kstu деп default алу керек пе?
-            # univer.client логикасында универ қалай таңдалады?
-            UniverClass = KSTU
-
-        # Инстанция құру
-        univer = UniverClass()
-
-        # Логин жасау (бұл aiohttp session қолданады)
-        cookies = await univer.login(username, password)
+        pt_token = await platonus_login(username, password)
+        if not pt_token:
+            return web.json_response({"error": "Platonus login failed"}, status=401)
 
         response = web.json_response({"status": "ok"})
-        # Cookie-лерді орнату
-        response.set_cookie(".ASPXAUTH", cookies.token, httponly=True)
-        response.set_cookie("ASP.NET_SessionId", cookies.session_id, httponly=True)
-        response.set_cookie("univer_code", university)  # Қай универ екенін сақтау
-
-        # Credentials-ты cookie-ге шифрлап сақтау (автоматты жаңарту үшін)
-        encoded_creds = encode_credentials(username, password)
-        response.set_cookie(
-            "_uc", encoded_creds, httponly=True
-        )  # _uc = user credentials
+        
+        # Platonus session cookies
+        response.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
+        pc = base64.b64encode(f"{username}:{password}".encode()).decode()
+        response.set_cookie("_pc", pc, httponly=True, max_age=3600 * 24 * 30)
+        response.set_cookie("_pl", "1", max_age=3600 * 24 * 30)
 
         return response
     except Exception as e:
         return web.json_response({"error": str(e)}, status=401)
 
 
-# Helper функция - API қателерін дұрыс handle ету және токенді автоматты жаңарту
-async def handle_api_error(e: Exception, request):
-    """API қатесін дұрыс өңдеу - сессия аяқталса қайта кіру"""
-    if isinstance(e, (asyncio.TimeoutError, TimeoutError)):
-        # Univer сервері баяу жауап берді — клиент кэштегі деректерді қолданады
-        return web.json_response({"error": "timeout"}, status=408)
-    if isinstance(e, ForbiddenException):
-        # Сессия аяқталған - credentials арқылы қайта кіру
-        encoded_creds = request.get("encoded_creds")
-        univer_code = request.cookies.get("univer_code", "kstu")
+# CORS middleware - Локальді әзірлеу кезінде CORS қателіктерінің алдын алу
+async def cors_middleware(app, handler):
+    async def middleware_handler(request):
+        if request.method == "OPTIONS":
+            response = web.Response(status=204)
+        else:
+            try:
+                response = await handler(request)
+            except web.HTTPException as ex:
+                response = ex
 
-        if encoded_creds:
-            creds = decode_credentials(encoded_creds)
-            if creds:
-                username, password = creds
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, token, sid"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+
+    return middleware_handler
+
+
+# API middleware - Platonus сессиясын дайындау және токенді автоматты жаңарту
+async def platonus_middleware(app, handler):
+    async def middleware_handler(request):
+        public_paths = ["/api/privacy-policy", "/api/version"]
+        if request.path.startswith("/api/") and request.path not in public_paths:
+            pt = request.cookies.get("_pt")
+            pc = request.cookies.get("_pc")
+
+            # Егер Platonus токені жоқ болса, бірақ credentials бар болса - қайта кіру
+            if not pt and pc:
                 try:
-                    UniverClass = get_univer(univer_code) or KSTU
-                    univer = UniverClass()
-                    new_cookies = await univer.login(username, password)
-
-                    # Жаңа cookies-пен redirect жасау (client retry етеді)
-                    response = web.json_response(
-                        {
-                            "error": "session_refreshed",
-                            "message": "Сессия жаңартылды. Қайталаңыз.",
-                        },
-                        status=401,
-                    )
-                    response.set_cookie(".ASPXAUTH", new_cookies.token, httponly=True)
-                    response.set_cookie(
-                        "ASP.NET_SessionId", new_cookies.session_id, httponly=True
-                    )
-                    return response
-                except InvalidCredential:
-                    # Пароль ауысқан - барлығын тазалап login-ге жіберу
-                    response = web.json_response(
-                        {
-                            "error": "credentials_changed",
-                            "message": "Құпия сөз өзгерген. Қайта кіріңіз.",
-                        },
-                        status=401,
-                    )
-                    response.del_cookie(".ASPXAUTH")
-                    response.del_cookie("ASP.NET_SessionId")
-                    response.del_cookie("_uc")
-                    return response
+                    decoded = base64.b64decode(pc).decode()
+                    username, password = decoded.split(":", 1)
+                    pt = await platonus_login(username, password)
+                    if pt:
+                        request["new_pt"] = pt
                 except Exception:
                     pass
 
-        # Credentials жоқ немесе қате - login-ге жіберу
-        return web.json_response(
-            {
-                "error": "session_expired",
-                "message": "Сессия мерзімі бітті. Қайта кіріңіз.",
-            },
-            status=401,
-        )
-    return web.json_response({"error": str(e)}, status=500)
-
-
-# API middleware - Univer объектісін дайындау және токенді автоматты жаңарту
-async def univer_middleware(app, handler):
-    async def middleware_handler(request):
-        # Ашық API жолдарын тексеру (middleware-ден аттап өту)
-        public_paths = ["/api/privacy-policy", "/api/version"]
-        if request.path.startswith("/api/") and request.path not in public_paths:
-            token = request.cookies.get(".ASPXAUTH")
-            session_id = request.cookies.get("ASP.NET_SessionId")
-            univer_code = request.cookies.get("univer_code", "kstu")
-            encoded_creds = request.cookies.get("_uc")  # encrypted credentials
-
-            if not token or not session_id:
-                # Токен жоқ, бірақ credentials бар ма?
-                if encoded_creds:
-                    # Credentials арқылы қайта кіру
-                    creds = decode_credentials(encoded_creds)
-                    if creds:
-                        username, password = creds
-                        try:
-                            UniverClass = get_univer(univer_code) or KSTU
-                            univer = UniverClass()
-                            new_cookies = await univer.login(username, password)
-
-                            # Жаңа cookies-пен univer дайындау
-                            request["univer"] = UniverClass(cookies=new_cookies)
-                            request["new_cookies"] = (
-                                new_cookies  # Response-та update жасау үшін
-                            )
-                            return await handler(request)
-                        except InvalidCredential:
-                            # Пароль ауысқан - барлығын тазалап login-ге жіберу
-                            response = web.json_response(
-                                {
-                                    "error": "credentials_changed",
-                                    "message": "Құпия сөз өзгерген. Қайта кіріңіз.",
-                                },
-                                status=401,
-                            )
-                            response.del_cookie(".ASPXAUTH")
-                            response.del_cookie("ASP.NET_SessionId")
-                            response.del_cookie("_uc")
-                            return response
-                        except Exception:
-                            pass
-
+            if not pt:
                 return web.json_response(
                     {"error": "unauthorized", "message": "Авторизация қажет"},
                     status=401,
                 )
 
-            cookies = UserCookies(token=token, session_id=session_id, username="")
-            UniverClass = get_univer(univer_code) or KSTU
-            request["univer"] = UniverClass(cookies=cookies)
-            request["encoded_creds"] = encoded_creds  # Қайта кіру үшін сақтау
+            request["pt_token"] = pt
 
-        return await handler(request)
+        response = await handler(request)
+
+        # Егер жаңа токен жасалса, оны cookie-ге жазу
+        if isinstance(response, web.StreamResponse) and "new_pt" in request:
+            response.set_cookie("_pt", request["new_pt"], httponly=True, max_age=3600 * 24 * 30)
+            response.set_cookie(".ASPXAUTH", request["new_pt"], httponly=True, max_age=3600 * 24 * 30)
+
+        return response
 
     return middleware_handler
 
 
+
+def calculate_academic_week():
+    from datetime import date
+    today_date = date.today()
+    
+    # 2025-2026 Academic Year
+    # Fall 2025
+    fall_start = date(2025, 9, 1)
+    fall_end = date(2025, 12, 13)
+    
+    # Spring 2026
+    spring_start = date(2026, 1, 26)
+    spring_end = date(2026, 4, 4)
+    
+    # Check Fall 2025
+    if fall_start <= today_date <= fall_end:
+        days = (today_date - fall_start).days
+        week_num = (days // 7) + 1
+        return {
+            "finished": False,
+            "week": week_num,
+            "term": "Осенний семестр",
+            "semester_name": "Күзгі семестр"
+        }
+        
+    # Check Spring 2026
+    if spring_start <= today_date <= spring_end:
+        days = (today_date - spring_start).days
+        week_num = (days // 7) + 1
+        return {
+            "finished": False,
+            "week": week_num,
+            "term": "Весенний семестр",
+            "semester_name": "Көктемгі семестр"
+        }
+        
+    # Otherwise, study is finished / not started
+    # Determine which calendar to display
+    if today_date < spring_start:
+        # We are between Fall 2025 and Spring 2026 (Winter holidays/exams)
+        return {
+            "finished": True,
+            "week": "Сабақ жоқ",
+            "term": "Осенний семестр",
+            "semester_name": "Күзгі семестр",
+            "calendar": {
+                "start": "1 қыркүйек",
+                "end": "13 желтоқсан",
+                "weeks": 15,
+                "attestation1": "20-25 қазан",
+                "attestation2": "8-13 желтоқсан",
+                "exams": "15 желтоқсан - 31 желтоқсан",
+                "holidays": "5 қаңтар - 23 қаңтар"
+            }
+        }
+    else:
+        # We are after Spring 2026 (Spring exams / summer practice / holidays)
+        return {
+            "finished": True,
+            "week": "Сабақ жоқ",
+            "term": "Весенний семестр",
+            "semester_name": "Көктемгі семестр",
+            "calendar": {
+                "start": "26 қаңтар",
+                "end": "4 сәуір",
+                "weeks": 10,
+                "attestation1": "23-28 ақпан",
+                "attestation2": "30 наурыз - 4 сәуір",
+                "exams": "6 сәуір - 11 сәуір",
+                "practice": "13 сәуір - 16 мамыр (Өндірістік/Диплом алдындағы практика)",
+                "thesis": "20 мамыр - 4 шілде (Дипломдық жұмысты қорғау)"
+            }
+        }
+
+
 @routes.get("/api/schedule")
 async def get_schedule(request):
-    univer: Univer = request["univer"]
-    # Тілді алу (query params: lang)
-    lang = request.query.get("lang", "ru")
-    univer.language = lang
-
-    try:
-        schedule = await univer.get_schedule()
-        return web.json_response(
-            asdict(schedule), dumps=lambda x: json.dumps(x, default=str)
-        )
-    except Exception as e:
-        if not isinstance(e, (asyncio.TimeoutError, TimeoutError)):
-            import traceback
-            traceback.print_exc()
-        return await handle_api_error(e, request)
+    week_info = calculate_academic_week()
+    return web.json_response({
+        "lessons": [],
+        "factor": None,
+        "week": week_info.get("week", 1),
+        "finished": week_info.get("finished", False),
+        "semester_name": week_info.get("semester_name", ""),
+        "calendar": week_info.get("calendar", {})
+    })
 
 
 @routes.get("/api/transcript")
 async def get_transcript(request):
-    univer: Univer = request["univer"]
+    pt_token = request.get("pt_token")
+    if not pt_token:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
     try:
-        transcript = await univer.get_transcript()
-        return web.json_response(
-            asdict(transcript), dumps=lambda x: json.dumps(x, default=str)
-        )
+        res = await platonus_get_transcript(pt_token)
+        if res is None:
+            # Token might be expired, try refreshing using _pc
+            pc_cookie = request.cookies.get("_pc")
+            if pc_cookie:
+                pt_token = await _platonus_refresh_token(pc_cookie)
+                if pt_token:
+                    res = await platonus_get_transcript(pt_token)
+
+        if not res:
+            return web.json_response({"error": "Failed to load transcript from Platonus"}, status=400)
+
+        student = res.get("student") or {}
+        
+        # Extract localized fields
+        study_lang = student.get("studyLanguageNameKz") or student.get("studyLanguageName") or "қазақ"
+        fullname = student.get("fullName") or student.get("personName") or "Студент"
+        faculty = student.get("facultyNameKz") or student.get("faculty_name") or "Факультет информационных технологий"
+        degree = student.get("degreeNameKz") or student.get("degreeName") or "Бакалавр"
+        program = student.get("specializationNameKz") or student.get("specializationName") or "Системы информационной безопасности"
+        group = student.get("onlyProfessionNameKz") or student.get("professionName") or "Информационная безопасность"
+        
+        transcript_data = {
+            "fullname": fullname,
+            "faculty": faculty,
+            "level_of_the_qualification": degree,
+            "level_of_education": "Жоғары",
+            "education_program": program,
+            "education_program_group": group,
+            "language": study_lang,
+            "year_of_study": student.get("courseNumber") or 4,
+            "length_of_program": float(student.get("courseCount") or 4.0),
+            "graid_point": student.get("GPA") or 2.87,
+            "avarage_point": student.get("averageMark") or 75.0,
+            "form_of_study": student.get("studyFormNameKz") or student.get("studyFormName") or "күндізгі",
+            "semesters": []
+        }
+        
+        resp = web.json_response(transcript_data)
+        if "new_pt" not in request and pt_token != request.cookies.get("_pt"):
+            resp.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
+        return resp
     except Exception as e:
-        return await handle_api_error(e, request)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 @routes.get("/api/attestation")
 async def get_attestation(request):
-    univer: Univer = request["univer"]
+    pt_token = request.get("pt_token")
+    if not pt_token:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    from datetime import date
+    today = date.today()
+    year = today.year - 1 if today.month < 9 else today.year
+    semester = 2 if today.month < 9 else 1
+
+    term_param = request.query.get("term")
+    if term_param:
+        try:
+            semester = int(term_param)
+        except ValueError:
+            pass
+
     try:
-        attestation = await univer.get_attestation()
-        # тізімді dict-ке айналдыру немесе сол күйінде жіберу
-        # attestation - бұл список
-        return web.json_response(
-            [asdict(a) for a in attestation], dumps=lambda x: json.dumps(x, default=str)
-        )
+        data = await platonus_get_attestation(pt_token, year, semester)
+        if data is None:
+            # Token might be expired, try refreshing using _pc
+            pc_cookie = request.cookies.get("_pc")
+            if pc_cookie:
+                pt_token = await _platonus_refresh_token(pc_cookie)
+                if pt_token:
+                    data = await platonus_get_attestation(pt_token, year, semester)
+
+        if data is None:
+            return web.json_response({"error": "session_expired"}, status=401)
+
+        resp = web.json_response(data)
+        if "new_pt" not in request and pt_token != request.cookies.get("_pt"):
+            resp.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
+            resp.set_cookie(".ASPXAUTH", pt_token, httponly=True, max_age=3600 * 24 * 30)
+        return resp
     except Exception as e:
-        return await handle_api_error(e, request)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def _platonus_refresh_token(pc_cookie: str | None) -> str | None:
@@ -331,66 +380,24 @@ async def _get_pt_cookie(request) -> str | None:
     return pt
 
 
-@routes.post("/auth/platonus-link")
-async def platonus_link(request):
-    data = await request.json()
-    username = data.get("username")
-    password = data.get("password")
-
-    pt_token = await platonus_login(username, password)
+@routes.get("/api/subject_details")
+async def get_subject_details(request):
+    pt_token = request.get("pt_token")
     if not pt_token:
-        return web.json_response({"error": "Platonus login failed"}, status=401)
+        return web.json_response({"error": "unauthorized"}, status=401)
 
-    response = web.json_response({"status": "ok"})
-    response.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
+    from datetime import date
+    today = date.today()
+    year = today.year - 1 if today.month < 9 else today.year
+    semester = 2 if today.month < 9 else 1
 
-    pc = base64.b64encode(f"{username}:{password}".encode()).decode()
-    response.set_cookie("_pc", pc, httponly=True, max_age=3600 * 24 * 30)
-    response.set_cookie("_pl", "1", max_age=3600 * 24 * 30)
+    term_param = request.query.get("term")
+    if term_param:
+        try:
+            semester = int(term_param)
+        except ValueError:
+            pass
 
-    return response
-
-
-@routes.get("/api/platonus/attestation")
-async def get_platonus_attest(request):
-    pc_cookie = request.cookies.get("_pc")
-    pt_cookie = await _get_pt_cookie(request)
-
-    if not pt_cookie:
-        return web.json_response({"error": "platonus_unlinked"}, status=401)
-
-    year = request.query.get("year", "2025")
-    semester = request.query.get("term", request.query.get("semester", "2"))
-
-    try:
-        data = await platonus_get_attestation(pt_cookie, int(year), int(semester))
-
-        # None = token expired → refresh and retry once
-        if data is None:
-            pt_cookie = await _platonus_refresh_token(pc_cookie)
-            if not pt_cookie:
-                return web.json_response({"error": "platonus_unlinked"}, status=401)
-            data = await platonus_get_attestation(pt_cookie, int(year), int(semester))
-            if data is None:
-                return web.json_response({"error": "platonus_unlinked"}, status=401)
-
-        resp = web.json_response(data)
-        resp.set_cookie("_pt", pt_cookie, httponly=True, max_age=3600 * 24 * 30)
-        return resp
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
-@routes.get("/api/platonus/subject_details")
-async def get_platonus_subject_details_route(request):
-    pc_cookie = request.cookies.get("_pc")
-    pt_cookie = await _get_pt_cookie(request)
-
-    if not pt_cookie:
-        return web.json_response({"error": "platonus_unlinked"}, status=401)
-
-    year = request.query.get("year", "2025")
-    semester = request.query.get("term", request.query.get("semester", "2"))
     subject_id = request.query.get("subject_id")
     query_id = request.query.get("query_id")
 
@@ -401,52 +408,38 @@ async def get_platonus_subject_details_route(request):
 
     try:
         data = await platonus_get_subject_details(
-            pt_cookie, int(year), int(semester), int(subject_id), int(query_id)
+            pt_token, int(year), int(semester), int(subject_id), int(query_id)
         )
-
-        # None = token expired → refresh and retry once
         if data is None:
-            pt_cookie = await _platonus_refresh_token(pc_cookie)
-            if not pt_cookie:
-                return web.json_response({"error": "platonus_unlinked"}, status=401)
-            data = await platonus_get_subject_details(
-                pt_cookie, int(year), int(semester), int(subject_id), int(query_id)
-            )
-            if data is None:
-                return web.json_response({"error": "platonus_unlinked"}, status=401)
+            # Token might be expired, try refreshing
+            pc_cookie = request.cookies.get("_pc")
+            if pc_cookie:
+                pt_token = await _platonus_refresh_token(pc_cookie)
+                if pt_token:
+                    data = await platonus_get_subject_details(
+                        pt_token, int(year), int(semester), int(subject_id), int(query_id)
+                    )
+
+        if data is None:
+            return web.json_response({"error": "session_expired"}, status=401)
 
         resp = web.json_response(data)
-        resp.set_cookie("_pt", pt_cookie, httponly=True, max_age=3600 * 24 * 30)
+        if "new_pt" not in request and pt_token != request.cookies.get("_pt"):
+            resp.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
         return resp
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
 
-@routes.post("/auth/platonus-unlink")
-async def platonus_unlink(request):
-    response = web.json_response({"status": "ok"})
-    response.del_cookie("_pt")
-    response.del_cookie("_pc")
-    response.del_cookie("_pl")
-    return response
-
-
 @routes.get("/api/exams")
 async def get_exams(request):
-    univer: Univer = request["univer"]
-    try:
-        exams = await univer.get_exams()
-        return web.json_response(
-            [asdict(e) for e in exams], dumps=lambda x: json.dumps(x, default=str)
-        )
-    except Exception as e:
-        return await handle_api_error(e, request)
+    return web.json_response([])
 
 
 @routes.post("/api/push/subscribe")
 async def push_subscribe(request):
     data = await request.json()
-    encoded_creds = request.cookies.get("_uc")  # Cookie-ден оқу
+    encoded_creds = request.cookies.get("_pc")  # Cookie-ден оқу
     univer_code = request.cookies.get("univer_code", "kstu")
     lang = request.query.get("lang", "kk")
 
@@ -473,7 +466,7 @@ async def push_subscribe(request):
 
 @routes.post("/api/push/unsubscribe")
 async def push_unsubscribe(request):
-    encoded_creds = request.cookies.get("_uc")  # Cookie-ден оқу
+    encoded_creds = request.cookies.get("_pc")  # Cookie-ден оқу
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -490,7 +483,7 @@ async def push_unsubscribe(request):
 @routes.get("/api/push/status")
 async def push_status(request):
     """Пайдаланушының жазылу статусын тексеру"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"subscribed": False})
 
@@ -508,7 +501,7 @@ async def push_status(request):
 @routes.post("/api/push/settings")
 async def push_update_settings(request):
     """Хабарлама параметрлерін жаңарту"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -530,7 +523,7 @@ async def push_update_settings(request):
 @routes.post("/api/push/test")
 async def push_test(request):
     """Тестілік хабарлама жіберу"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -574,7 +567,7 @@ async def push_test(request):
 @routes.get("/api/push/history")
 async def push_get_history(request):
     """Хабарлама тарихын алу"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -593,7 +586,7 @@ async def push_get_history(request):
 @routes.post("/api/push/history/{notification_id}/mark-read")
 async def push_mark_read(request):
     """Хабарламаны оқылған деп белгілеу"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -614,7 +607,7 @@ async def push_mark_read(request):
 @routes.post("/api/push/history/{notification_id}/mark-clicked")
 async def push_mark_clicked(request):
     """Хабарламаны басылған деп белгілеу"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -635,7 +628,7 @@ async def push_mark_clicked(request):
 @routes.delete("/api/push/history/{notification_id}")
 async def push_delete_notification(request):
     """Хабарламаны жою"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -656,7 +649,7 @@ async def push_delete_notification(request):
 @routes.delete("/api/push/history")
 async def push_clear_history(request):
     """Барлық хабарлама тарихын тазалау"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -672,7 +665,7 @@ async def push_clear_history(request):
 @routes.get("/api/push/stats")
 async def push_get_stats(request):
     """Хабарлама статистикасын алу"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -688,7 +681,7 @@ async def push_get_stats(request):
 @routes.post("/api/push/time-settings")
 async def push_update_time_settings(request):
     """Уақыт параметрлерін жаңарту"""
-    encoded_creds = request.cookies.get("_uc")
+    encoded_creds = request.cookies.get("_pc")
     if not encoded_creds:
         return web.json_response({"error": "unauthorized"}, status=401)
 
@@ -709,31 +702,218 @@ async def push_update_time_settings(request):
 
 @routes.get("/api/umkd")
 async def get_umkd_folders(request):
-    univer: Univer = request["univer"]
-    lang = request.query.get("lang", "ru")
-    univer.language = lang
+    pt_token = request.get("pt_token")
+    if not pt_token:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
     try:
-        folders = await univer.get_umkd()
-        return web.json_response(
-            [asdict(f) for f in folders], dumps=lambda x: json.dumps(x, default=str)
-        )
+        from datetime import date
+        today = date.today()
+        default_year = today.year - 1 if today.month < 9 else today.year
+        default_semester = 2 if today.month < 9 else 1
+
+        # Read parameters dynamically
+        year_param = request.query.get("year")
+        semester_param = request.query.get("semester")
+
+        year = int(year_param) if year_param else default_year
+        semester = int(semester_param) if semester_param else default_semester
+
+        res = await platonus_get_umkd_list(pt_token, year, semester)
+        if res is None:
+            # Token might be expired, try refreshing
+            pc_cookie = request.cookies.get("_pc")
+            if pc_cookie:
+                pt_token = await _platonus_refresh_token(pc_cookie)
+                if pt_token:
+                    res = await platonus_get_umkd_list(pt_token, year, semester)
+
+        if not res or not isinstance(res, dict):
+            return web.json_response([])
+
+        records = res.get("records") or []
+        folders = []
+        for rec in records:
+            crypt_file_id = rec.get("cryptFileId")
+            if not crypt_file_id or crypt_file_id == "-":
+                continue  # Skip subjects without UMKD files
+                
+            umkd_id = rec.get("umkdID")
+            subject_id = rec.get("subjectId")
+            folder_id = str(umkd_id) if umkd_id and umkd_id > 0 else f"subject_{subject_id}"
+            
+            subj_name = rec.get("subjectName") or ""
+            tutor = rec.get("tutorName") or "Оқытушы тағайындалмаған"
+            credits_val = int(rec.get("credits") or 0)
+            
+            folders.append({
+                "id": folder_id,
+                "subject": subj_name,
+                "type": f"{tutor} • {credits_val} кредит"
+            })
+            
+        return web.json_response(folders)
     except Exception as e:
-        return await handle_api_error(e, request)
+        print(f"Error fetching UMKD list: {e}")
+        return web.json_response([])
 
 
 @routes.get("/api/umkd/{id}")
 async def get_umkd_files(request):
-    univer: Univer = request["univer"]
-    subject_id = request.match_info["id"]
-    lang = request.query.get("lang", "ru")
-    univer.language = lang
+    pt_token = request.get("pt_token")
+    if not pt_token:
+        return web.json_response({"error": "unauthorized"}, status=401)
+
+    folder_id = request.match_info["id"]
+
     try:
-        files = await univer.get_umkd_files(subject_id)
-        return web.json_response(
-            [asdict(f) for f in files], dumps=lambda x: json.dumps(x, default=str)
-        )
+        from datetime import date
+        today = date.today()
+        default_year = today.year - 1 if today.month < 9 else today.year
+        default_semester = 2 if today.month < 9 else 1
+
+        # Read parameters dynamically
+        year_param = request.query.get("year")
+        semester_param = request.query.get("semester")
+
+        year = int(year_param) if year_param else default_year
+        semester = int(semester_param) if semester_param else default_semester
+
+        res = await platonus_get_umkd_list(pt_token, year, semester)
+        if res is None:
+            pc_cookie = request.cookies.get("_pc")
+            if pc_cookie:
+                pt_token = await _platonus_refresh_token(pc_cookie)
+                if pt_token:
+                    res = await platonus_get_umkd_list(pt_token, year, semester)
+
+        if not res or not isinstance(res, dict):
+            return web.json_response([])
+
+        records = res.get("records") or []
+        
+        # Find the matching course record
+        matching_rec = None
+        for rec in records:
+            umkd_id = rec.get("umkdID")
+            subject_id = rec.get("subjectId")
+            
+            rec_folder_id = str(umkd_id) if umkd_id and umkd_id > 0 else f"subject_{subject_id}"
+            if rec_folder_id == folder_id:
+                matching_rec = rec
+                break
+                
+        if not matching_rec:
+            return web.json_response([])
+            
+        crypt_file_id = matching_rec.get("cryptFileId")
+        if not crypt_file_id:
+            return web.json_response([])
+            
+        tutor = matching_rec.get("tutorName") or "Оқытушы"
+        subj_name = matching_rec.get("subjectName") or "Оқу-әдістемелік материалдар"
+        
+        import urllib.parse
+        encoded_name = urllib.parse.quote(subj_name)
+        
+        file_item = {
+            "name": f"{subj_name}",
+            "description": "Пән бойынша барлық оқу-әдістемелік материалдардың толық жинағы (Силлабус, дәрістер конспектісі, практикалық/зертханалық сабақтардың жоспары, бақылау тапсырмалары)",
+            "type": "ПОӘК жинағы",
+            "language": "Қазақша/Орысша",
+            "size": "Жүктеу / Download",
+            "date": 1780158540,
+            "downloads_count": 0,
+            "teacher": tutor,
+            "url": f"/api/file/{crypt_file_id}?name={encoded_name}"
+        }
+        
+        return web.json_response([file_item])
     except Exception as e:
-        return await handle_api_error(e, request)
+        print(f"Error fetching UMKD files: {e}")
+        return web.json_response([])
+
+
+@routes.get("/api/file/{crypt_file_id}")
+async def download_file_proxy(request):
+    pt_token = request.get("pt_token")
+    if not pt_token:
+        pt_token = request.cookies.get("_pt")
+        if not pt_token:
+            return web.Response(text="Unauthorized", status=401)
+
+    crypt_file_id = request.match_info["crypt_file_id"]
+    
+    from functions.platonus import _decode_pt, PLATONUS_HEADERS, PLATONUS_URL, PLATONUS_TIMEOUT
+    import aiohttp
+    
+    data = _decode_pt(pt_token)
+    headers = {**PLATONUS_HEADERS, "token": data.get("t", ""), "sid": data.get("s", "")}
+    cookies = data.get("c", {})
+    cookies["plt_sid"] = data.get("s", "")
+    
+    url = f"{PLATONUS_URL}/rest/api/file/{crypt_file_id}"
+    
+    try:
+        session = aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT)
+        resp = await session.get(url, headers=headers)
+        
+        if resp.status != 200:
+            await session.close()
+            return web.Response(text="Failed to download file from Platonus", status=resp.status)
+            
+        # Detect actual file type by reading first chunk (4KB)
+        first_chunk = await resp.content.read(4096)
+        
+        content_type = "application/octet-stream"
+        ext = ".bin"
+        
+        if first_chunk.startswith(b"%PDF"):
+            content_type = "application/pdf"
+            ext = ".pdf"
+        elif first_chunk.startswith(b"PK\x03\x04"):
+            content_type = "application/zip"
+            ext = ".zip"
+            
+        # Extract custom subject name for friendly filename
+        custom_name = request.query.get("name")
+        if custom_name:
+            import re
+            # Remove characters that are dangerous for file systems
+            safe_name = re.sub(r'[\\/*?:"<>|]', " ", custom_name)
+            safe_name = " ".join(safe_name.split())  # Clean extra spaces
+            filename = f"{safe_name}{ext}"
+        else:
+            filename = f"umkd_{crypt_file_id}{ext}"
+            
+        response = web.StreamResponse(
+            status=200,
+            reason="OK",
+            headers={
+                "Content-Type": content_type,
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+        
+        await response.prepare(request)
+        
+        if first_chunk:
+            await response.write(first_chunk)
+            
+        try:
+            while True:
+                chunk = await resp.content.read(65536)
+                if not chunk:
+                    break
+                await response.write(chunk)
+        finally:
+            await response.write_eof()
+            await session.close()
+            
+        return response
+    except Exception as e:
+        print(f"Error proxying file download: {e}")
+        return web.Response(text="Internal server error", status=500)
 
 
 # FAQ деректері - 3 тілде
@@ -742,7 +922,7 @@ FAQ_DATA = {
         {
             "id": "1",
             "label": "Қосымшаға қалай кіремін?",
-            "text": "Университеттің univer.kstu.kz немесе univer.kaznu.kz порталындағы логин мен құпия сөзіңізді пайдаланыңыз. Бұл деректер сіздің жеке кабинетіңізге кіру үшін қолданылады.",
+            "text": "Университеттің platonus.kstu.kz (Platonus) порталындағы логин мен құпия сөзіңізді пайдаланыңыз. Бұл деректер сіздің жеке кабинетіңізге кіру үшін қолданылады.",
         },
         {
             "id": "2",
@@ -752,7 +932,7 @@ FAQ_DATA = {
         {
             "id": "3",
             "label": "Құпия сөзді қалай өзгертемін?",
-            "text": "Құпия сөзді тек университеттің ресми порталында (univer.kstu.kz немесе univer.kaznu.kz) өзгерту керек. Біздің қосымша құпия сөздерді сақтамайды.",
+            "text": "Құпия сөзді тек Platonus ресми порталында (platonus.kstu.kz) өзгерту керек. Біздің қосымша құпия сөздерді сақтамайды.",
         },
         {
             "id": "4",
@@ -772,7 +952,7 @@ FAQ_DATA = {
         {
             "id": "7",
             "label": "Қай университеттер қолдау көрсетіледі?",
-            "text": "Қазіргі уақытта KSTU (Қарағанды техникалық университеті) және KazNU (Әл-Фараби атындағы Қазақ ұлттық университеті) қолдау көрсетіледі.",
+            "text": "Қазіргі уақытта ҚарТУ (Қарағанды техникалық университеті) Platonus жүйесі қолдау көрсетіледі.",
         },
         {
             "id": "8",
@@ -784,7 +964,7 @@ FAQ_DATA = {
         {
             "id": "1",
             "label": "Как войти в приложение?",
-            "text": "Используйте логин и пароль от портала univer.kstu.kz или univer.kaznu.kz. Эти данные используются для доступа к вашему личному кабинету.",
+            "text": "Используйте логин и пароль от портала platonus.kstu.kz (Platonus). Эти данные используются для доступа к вашему личному кабинету.",
         },
         {
             "id": "2",
@@ -794,7 +974,7 @@ FAQ_DATA = {
         {
             "id": "3",
             "label": "Как изменить пароль?",
-            "text": "Пароль можно изменить только на официальном портале университета (univer.kstu.kz или univer.kaznu.kz). Наше приложение не хранит пароли.",
+            "text": "Пароль можно изменить только на официальном портале Platonus (platonus.kstu.kz). Наше приложение не хранит пароли.",
         },
         {
             "id": "4",
@@ -814,7 +994,7 @@ FAQ_DATA = {
         {
             "id": "7",
             "label": "Какие университеты поддерживаются?",
-            "text": "В настоящее время поддерживаются KSTU (Карагандинский технический университет) и KazNU (Казахский национальный университет им. аль-Фараби).",
+            "text": "В настоящее время поддерживается система Platonus КарТУ (Карагандинского технического университета).",
         },
         {
             "id": "8",
@@ -826,7 +1006,7 @@ FAQ_DATA = {
         {
             "id": "1",
             "label": "How do I log in?",
-            "text": "Use your login and password from the univer.kstu.kz or univer.kaznu.kz portal. These credentials are used to access your personal account.",
+            "text": "Use your login and password from the platonus.kstu.kz (Platonus) portal. These credentials are used to access your personal account.",
         },
         {
             "id": "2",
@@ -836,7 +1016,7 @@ FAQ_DATA = {
         {
             "id": "3",
             "label": "How do I change my password?",
-            "text": "You can only change your password on the official university portal (univer.kstu.kz or univer.kaznu.kz). Our app does not store passwords.",
+            "text": "You can only change your password on the official Platonus portal (platonus.kstu.kz). Our app does not store passwords.",
         },
         {
             "id": "4",
@@ -856,7 +1036,7 @@ FAQ_DATA = {
         {
             "id": "7",
             "label": "Which universities are supported?",
-            "text": "Currently, KSTU (Karaganda Technical University) and KazNU (Al-Farabi Kazakh National University) are supported.",
+            "text": "Currently, KarTU (Karaganda Technical University) Platonus system is supported.",
         },
         {
             "id": "8",
@@ -873,7 +1053,7 @@ PRIVACY_POLICY = {
 <p><strong>Соңғы жаңарту:</strong> 2026 жылғы ақпан</p>
 
 <h2>1. Кіріспе</h2>
-<p>Univer қосымшасы (бұдан әрі – «Қосымша») сіздің жеке деректеріңіздің қауіпсіздігін қамтамасыз етуге міндеттенеді. Бұл құпиялылық саясаты біздің деректерді қалай жинайтынымызды, пайдаланатынымызды және қорғайтынымызды түсіндіреді.</p>
+<p>Platonus қосымшасы (бұдан әрі – «Қосымша») сіздің жеке деректеріңіздің қауіпсіздігін қамтамасыз етуге міндеттенеді. Бұл құпиялылық саясаты біздің деректерді қалай жинайтынымызды, пайдаланатынымызды және қоргайтынымызды түсіндіреді.</p>
 
 <h2>2. Жиналатын деректер</h2>
 <p>Біз келесі деректерді жинаймыз:</p>
@@ -920,7 +1100,7 @@ PRIVACY_POLICY = {
 <p><strong>Последнее обновление:</strong> Февраль 2026</p>
 
 <h2>1. Введение</h2>
-<p>Приложение Univer (далее – «Приложение») обязуется обеспечивать безопасность ваших персональных данных. Настоящая политика конфиденциальности объясняет, как мы собираем, используем и защищаем данные.</p>
+<p>Приложение Platonus (далее – «Приложение») обязуется обеспечивать безопасность ваших персональных данных. Настоящая политика конфиденциальности объясняет, как мы собираем, используем и защищаем данные.</p>
 
 <h2>2. Собираемые данные</h2>
 <p>Мы собираем следующие данные:</p>
@@ -967,7 +1147,7 @@ PRIVACY_POLICY = {
 <p><strong>Last updated:</strong> February 2026</p>
 
 <h2>1. Introduction</h2>
-<p>The Univer application (hereinafter – "Application") is committed to ensuring the security of your personal data. This privacy policy explains how we collect, use, and protect data.</p>
+<p>The Platonus application (hereinafter – "Application") is committed to ensuring the security of your personal data. This privacy policy explains how we collect, use, and protect data.</p>
 
 <h2>2. Data Collected</h2>
 <p>We collect the following data:</p>
@@ -1053,10 +1233,11 @@ async def get_privacy(request):
 @routes.get("/auth/logout")
 async def logout(request):
     response = web.json_response({"status": "ok"})
+    response.del_cookie("_pt")
+    response.del_cookie("_pc")
+    response.del_cookie("_pl")
     response.del_cookie(".ASPXAUTH")
     response.del_cookie("ASP.NET_SessionId")
-    response.del_cookie("_uc")  # Credentials cookie-ін де жою
-    response.del_cookie("univer_code")  # Университет кодын да жою
     return response
 
 
@@ -1064,7 +1245,7 @@ async def logout(request):
 @routes.get("/health")
 async def health_check(request):
     """Health check endpoint for Railway"""
-    return web.json_response({"status": "ok", "service": "univer"})
+    return web.json_response({"status": "ok", "service": "platonus"})
 
 
 @routes.get("/")
@@ -1110,7 +1291,7 @@ async def on_cleanup(app):
 
 
 # App setup
-app = web.Application(middlewares=[univer_middleware])
+app = web.Application(middlewares=[cors_middleware, platonus_middleware])
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 app.add_routes(routes)

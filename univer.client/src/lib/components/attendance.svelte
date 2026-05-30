@@ -11,13 +11,12 @@
 
     let attestation = $state<Attestation>()
     let currentTerm = $state(2)
-    let platonusLinked = $state(localStorage.getItem("platonus_linked") === "1")
+    const platonusLinked = true
     let isOpen = $state(false)
 
     export function open(value: Attestation, term: number = 2) {
         attestation = value
         currentTerm = term
-        platonusLinked = localStorage.getItem("platonus_linked") === "1"
         isOpen = true
     }
     export function close() {
@@ -39,11 +38,10 @@
 
     const api = useApi()
     const platonusQuery = $derived(
-        platonusLinked &&
-            isOpen &&
+        isOpen &&
             attestation?.subject_id &&
             attestation?.query_id
-            ? api.fetchPlatonusSubjectDetails(
+            ? api.fetchSubjectDetails(
                   currentTerm,
                   attestation.subject_id,
                   attestation.query_id,
@@ -124,124 +122,147 @@
     }
 
     let flattenedMarks = $derived(getFlattenedMarks(platonusQuery?.data))
+
+    const getShortMonth = (name: string) => {
+        if (!name) return ""
+        const mappings: Record<string, string> = {
+            "Қаңтар": "ҚАҢ",
+            "Ақпан": "АҚП",
+            "Наурыз": "НАУ",
+            "Сәуір": "СӘУ",
+            "Мамыр": "МАМ",
+            "Маусым": "МАУ",
+            "Шілде": "ШІЛ",
+            "Тамыз": "ТАМ",
+            "Қыркүйек": "ҚЫР",
+            "Қазан": "ҚАЗ",
+            "Қараша": "ҚАР",
+            "Желтоқсан": "ЖЕЛ"
+        }
+        return mappings[name] || name.substring(0, 3).toUpperCase()
+    }
+
+    const getChronologicalDays = (months: any[]) => {
+        let list: { monthName: string; day: number; mark: number }[] = []
+        if (!months || !Array.isArray(months)) return list
+        for (let m of months) {
+            if (m && m.days) {
+                for (let d of m.days) {
+                    list.push({
+                        monthName: m.name || "",
+                        day: d.day,
+                        mark: d.mark
+                    })
+                }
+            }
+        }
+        return list
+    }
 </script>
 
 <Drawer.Root onClose={close} bind:open={isOpen}>
-    <Drawer.Content class="mx-auto w-[90%] max-h-[96%] max-w-2xl">
+    <Drawer.Content class="mx-auto w-[90%] max-h-[96%] max-w-2xl bg-neutral-950 border border-white/10 rounded-t-3xl shadow-2xl">
         {#if attestation}
-            <Drawer.Header class="px-4 pb-2">
-                <Drawer.Title class="text-balance text-left"
+            <Drawer.Header class="px-5 pb-3 pt-5">
+                <Drawer.Title class="text-left bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent font-extrabold tracking-tight text-xl md:text-2xl"
                     >{attestation.subject}</Drawer.Title
                 >
-                <div class="flex gap-2 mt-2 border-b pb-4 overflow-x-auto">
+                <div class="flex gap-3 mt-4 border-b border-white/5 pb-5 overflow-x-auto scroll-container">
                     {#each attestation.attestation as [label, value]}
                         <div
-                            class="flex flex-col items-center bg-secondary/50 rounded-md px-3 py-1.5 min-w-[60px]"
+                            class="flex flex-col items-start bg-neutral-900/40 border border-white/[0.04] backdrop-blur-md rounded-2xl px-4 py-2.5 min-w-[90px] flex-1 relative overflow-hidden group hover:border-white/[0.08] transition-all duration-300"
                         >
-                            <span
-                                class="text-[10px] uppercase text-muted-foreground font-semibold"
-                                >{label}</span
-                            >
-                            <span class="text-sm font-bold">{value}</span>
+                            <!-- Color-coded Progress Indicator bar under the card -->
+                            <div 
+                                class="absolute bottom-0 left-0 h-[3px] rounded-full transition-all duration-500 ease-out" 
+                                style="width: {value}%; background: {value >= 90 ? 'linear-gradient(90deg, #10b981, #34d399)' : value >= 75 ? 'linear-gradient(90deg, #06b6d4, #22d3ee)' : value >= 50 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #f43f5e, #fb7185)'}"
+                            ></div>
+                            <span class="text-[9px] uppercase text-muted-foreground font-bold tracking-wider">{label}</span>
+                            <span class="text-lg font-extrabold mt-1 text-foreground transition-transform group-hover:scale-105 duration-200"
+                                class:text-emerald-400={value >= 90}
+                                class:text-cyan-400={value >= 75 && value < 90}
+                                class:text-amber-400={value >= 50 && value < 75}
+                                class:text-rose-400={value < 50}
+                            >{value}</span>
                         </div>
                     {/each}
                 </div>
             </Drawer.Header>
 
-            {#snippet content(attendance: Attestation["attendance"])}
-                <div class="space-y-2">
-                    {#each attendance as { marks, type }}
-                        <div>
-                            <p class="px-4">{type}</p>
-                            <p class="px-4">
-                                {_("sum")}: <b>{getSum(marks)}</b>
-                            </p>
-                            <Marks class="pb-2" {marks} />
-                        </div>
-                    {/each}
-                </div>
-            {/snippet}
-
-            {#if platonusLinked && attestation.subject_id}
-                <div class="overflow-y-auto px-4 pb-4 space-y-6 min-h-[100px]">
+            {#if attestation.subject_id}
+                <div class="overflow-y-auto px-5 pb-5 space-y-5 min-h-[120px] scroll-container">
                     {#if platonusQuery?.state === "load" || platonusQuery?.state === "update"}
                         <div class="space-y-4">
-                            <Skeleton class="h-32 w-full rounded-xl" />
-                            <Skeleton class="h-32 w-full rounded-xl" />
+                            <Skeleton class="h-28 w-full rounded-2xl bg-neutral-900/50" />
+                            <Skeleton class="h-28 w-full rounded-2xl bg-neutral-900/50" />
                         </div>
                     {:else if platonusQuery?.data && flattenedMarks.length > 0}
                         {#each flattenedMarks as category}
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                                        {category.name.split("--")[1] ?? category.name}
-                                    </span>
-                                    <span class="text-sm font-medium text-foreground truncate">
-                                        {category.name.split("--")[0]}
+                            {@const dayList = getChronologicalDays(category.months)}
+                            {@const classType = category.name.split("--")[1] ?? category.name}
+                            <div class="bg-neutral-900/25 border border-white/[0.04] backdrop-blur-md rounded-2xl p-4 space-y-3.5 hover:border-white/[0.07] transition-all duration-300 shadow-md">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <!-- Sleek Class Type Badge -->
+                                        <span 
+                                            class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider
+                                                {classType.toLowerCase() === 'l' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_12px_rgba(99,102,241,0.1)]' : 
+                                                 classType.toLowerCase() === 'lab' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]' : 
+                                                 'bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-[0_0_12px_rgba(139,92,246,0.1)]'}"
+                                        >
+                                            {classType}
+                                        </span>
+                                        <span class="text-sm font-bold text-foreground">
+                                            {category.name.split("--")[0]}
+                                        </span>
+                                    </div>
+                                    <!-- count indicators -->
+                                    <span class="text-[10px] text-muted-foreground bg-white/5 rounded-full px-2.5 py-0.5 font-bold">
+                                        {dayList.length} баға
                                     </span>
                                 </div>
                                 {#if category.tutor}
-                                    <p class="text-xs text-muted-foreground -mt-1 pl-1">{category.tutor}</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-muted-foreground pl-0.5">
+                                        <svg class="w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <span class="font-medium">{category.tutor}</span>
+                                    </div>
                                 {/if}
 
-                                {#if category.months.length > 0}
-                                    <div
-                                        class="overflow-x-auto w-full border border-blue-500/20 rounded-xl shadow-sm"
-                                    >
-                                        <table
-                                            class="w-full text-center text-sm table-fixed min-w-[280px]"
-                                        >
-                                            <tbody>
-                                                <tr class="bg-blue-500/10 dark:bg-blue-500/15">
-                                                    <td
-                                                        class="font-semibold border-r border-blue-500/20 text-left px-3 py-2 text-blue-700 dark:text-blue-300 w-[72px] text-xs uppercase tracking-wide"
-                                                        >Айы</td
+                                {#if dayList.length > 0}
+                                    <!-- Horizontal Timeline -->
+                                    <div class="overflow-x-auto w-full py-1 scroll-container">
+                                        <div class="flex gap-2.5 min-w-full">
+                                            {#each dayList as item}
+                                                <div 
+                                                    class="w-14 h-[76px] flex flex-col justify-between items-center p-2 rounded-xl bg-neutral-950/50 border border-white/[0.03] backdrop-blur-sm relative overflow-hidden group hover:bg-neutral-900/70 hover:scale-105 transition-all duration-200 flex-shrink-0 cursor-default
+                                                        {item.mark >= 90 ? 'hover:shadow-[0_0_15px_rgba(16,185,129,0.12)] hover:border-emerald-500/35' : 
+                                                         item.mark >= 75 ? 'hover:shadow-[0_0_15px_rgba(6,182,212,0.12)] hover:border-cyan-500/35' : 
+                                                         item.mark >= 50 ? 'hover:shadow-[0_0_15px_rgba(245,158,11,0.12)] hover:border-amber-500/35' : 
+                                                         'hover:shadow-[0_0_15px_rgba(244,63,94,0.12)] hover:border-rose-500/35'}"
+                                                >
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="text-[8px] font-extrabold text-muted-foreground opacity-85 tracking-widest">{getShortMonth(item.monthName)}</span>
+                                                        <span class="text-xs font-bold text-foreground -mt-0.5">{item.day}</span>
+                                                    </div>
+                                                    
+                                                    <!-- Grade display -->
+                                                    <span 
+                                                        class="text-xs font-extrabold tracking-tight px-1.5 py-0.5 rounded-md w-full text-center transition-all duration-300
+                                                            {item.mark >= 90 ? 'text-emerald-400 bg-emerald-500/5 group-hover:bg-emerald-500/10' : 
+                                                             item.mark >= 75 ? 'text-cyan-400 bg-cyan-500/5 group-hover:bg-cyan-500/10' : 
+                                                             item.mark >= 50 ? 'text-amber-400 bg-amber-500/5 group-hover:bg-amber-500/10' : 
+                                                             'text-rose-400 bg-rose-500/5 group-hover:bg-rose-500/10'}"
                                                     >
-                                                    {#each category.months as month}
-                                                        <td
-                                                            colspan={month.days.length}
-                                                            class="border-x border-blue-500/20 px-2 py-2 font-medium text-blue-700 dark:text-blue-300"
-                                                        >
-                                                            {month.name}
-                                                        </td>
-                                                    {/each}
-                                                </tr>
-                                                <tr class="bg-blue-500/5 dark:bg-blue-500/8">
-                                                    <td
-                                                        class="font-semibold border-r border-blue-500/20 text-left px-3 py-1.5 text-muted-foreground w-[72px] text-xs uppercase tracking-wide"
-                                                        >Күн</td
-                                                    >
-                                                    {#each category.months as month}
-                                                        {#each month.days as day}
-                                                            <td
-                                                                class="border-x border-blue-500/15 px-1 py-1.5 text-xs text-muted-foreground"
-                                                                >{day.day}</td
-                                                            >
-                                                        {/each}
-                                                    {/each}
-                                                </tr>
-                                                <tr class="bg-background">
-                                                    <td
-                                                        class="font-semibold border-r border-blue-500/20 text-left px-3 py-2 text-muted-foreground w-[72px] text-xs uppercase tracking-wide"
-                                                        >Баға</td
-                                                    >
-                                                    {#each category.months as month}
-                                                        {#each month.days as day}
-                                                            <td
-                                                                class="border-x border-blue-500/15 px-1 py-2 font-bold text-blue-600 dark:text-blue-400"
-                                                            >
-                                                                {day.mark}
-                                                            </td>
-                                                        {/each}
-                                                    {/each}
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                                        {item.mark}
+                                                    </span>
+                                                </div>
+                                            {/each}
+                                        </div>
                                     </div>
                                 {:else}
-                                    <div
-                                        class="text-xs text-muted-foreground italic bg-secondary/10 p-3 rounded-lg text-center"
-                                    >
+                                    <div class="text-xs text-muted-foreground italic bg-neutral-950/20 p-4 rounded-xl text-center border border-white/[0.02]">
                                         {_("no-data")}
                                     </div>
                                 {/if}
@@ -249,50 +270,41 @@
                         {/each}
                     {:else if platonusQuery?.state === "ready" && flattenedMarks.length === 0}
                         <div
-                            class="flex flex-col items-center justify-center py-10 text-muted-foreground"
+                            class="flex flex-col items-center justify-center py-12 text-muted-foreground"
                         >
-                            <p>{_("no-data")}</p>
+                            <p class="font-medium text-sm">{_("no-data")}</p>
                         </div>
                     {:else}
                         <div class="space-y-4">
-                            <Skeleton class="h-32 w-full rounded-xl" />
-                            <Skeleton class="h-32 w-full rounded-xl" />
+                            <Skeleton class="h-28 w-full rounded-2xl bg-neutral-900/50" />
+                            <Skeleton class="h-28 w-full rounded-2xl bg-neutral-900/50" />
                         </div>
                     {/if}
                 </div>
-            {:else if groups.size > 1}
-                <Tabs.Root class="overflow-y-auto" value={activeTab}>
-                    {#each groups.entries() as [key, value]}
-                        <Tabs.Content class="mt-0" value={key}>
-                            {@render content(value)}
-                        </Tabs.Content>
-                    {/each}
-                    <Drawer.Footer class="px-4 pt-2">
-                        <Tabs.List>
-                            {#each groups as [key]}
-                                <Tabs.Trigger class="flex-1" value={key}
-                                    >{key}</Tabs.Trigger
-                                >
-                            {/each}
-                        </Tabs.List>
-                    </Drawer.Footer>
-                </Tabs.Root>
-            {:else}
-                <div class="overflow-y-auto">
-                    {#each groups as [_, value]}
-                        {@render content(value)}
-                    {/each}
-                    <div
-                        class="mx-4 mb-4 mt-2 bg-foreground text-background flex h-10 items-center justify-center rounded-md p-1"
-                    >
-                        {#each groups as [key]}
-                            {key}
-                        {/each}
-                    </div>
-                </div>
             {/if}
         {:else}
-            {_("no-data")}
+            <div class="p-6 text-center text-muted-foreground">{_("no-data")}</div>
         {/if}
     </Drawer.Content>
 </Drawer.Root>
+
+<style>
+    .scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+    }
+    .scroll-container::-webkit-scrollbar {
+        height: 5px;
+        width: 5px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 99px;
+    }
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.16);
+    }
+</style>

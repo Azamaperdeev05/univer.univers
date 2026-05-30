@@ -589,71 +589,9 @@ class ScheduledNotifications:
                 # Келесі күнді күту үшін сәл кідіріс
                 await asyncio.sleep(60)
 
-    async def _get_univer_instance(self, sub_data: Dict[str, Any]):
-        """Пайдаланушыға сәйкес Univer инстанциясын алу"""
-        from univers import get_univer, KSTU
-
-        univer_code = sub_data.get("univer_code", "kstu")
-        creds = decode_credentials(sub_data.get("creds", ""))
-
-        if not creds:
-            return None
-
-        username, password = creds
-        UniverClass = get_univer(univer_code) or KSTU
-        univer = UniverClass()
-        try:
-            await univer.login(username, password)
-            return univer
-        except Exception:
-            return None
-
     async def _check_upcoming_lessons(self):
-        """Жақын сабақтарды тексеру"""
-        now = datetime.now()
-        weekday = now.weekday()  # 0-6 (Дүйсенбі-Жексенбі)
-
-        for user_id, sub_data in self.push_service.subscriptions.items():
-            # Сабаққа хабарлама қосулы ма тексеру
-            settings = sub_data.get("settings", {})
-            if not settings.get("lesson_reminders", True):
-                continue
-
-            # Икемді уақытты алу
-            time_settings = sub_data.get("time_settings", {})
-            reminder_minutes = time_settings.get("lesson_reminder_minutes", 10)
-
-            univer = await self._get_univer_instance(sub_data)
-            if not univer:
-                continue
-
-            try:
-                # Кестені алу
-                schedule_data = await univer.get_schedule()
-                # Бүгінгі сабақтар
-                today_lessons = [l for l in schedule_data.lessons if l.day == weekday]
-
-                for lesson in today_lessons:
-                    # Сабақтың басталу уақыты
-                    l_start = lesson.time.split("-")[0].strip()
-                    l_time = datetime.strptime(l_start, "%H:%M")
-                    l_datetime = now.replace(
-                        hour=l_time.hour, minute=l_time.minute, second=0, microsecond=0
-                    )
-
-                    diff = (l_datetime - now).total_seconds() / 60
-
-                    # Икемді уақытпен тексеру (мысалы 10 минут ± 0.5)
-                    if (reminder_minutes - 0.5) <= diff <= (reminder_minutes + 0.5):
-                        await self.push_service.send_lesson_reminder(
-                            user_id=user_id,
-                            subject=lesson.subject,
-                            teacher=lesson.teacher,
-                            room=lesson.audience,
-                            minutes_left=reminder_minutes,
-                        )
-            except Exception as e:
-                print(f"Error checking schedule for {user_id}: {e}")
+        """Жақын сабақтарды тексеру (Platonus-та кесте жоқ)"""
+        pass
 
     async def _check_new_grades(self):
         """Жаңа бағаларды тексеру"""
@@ -665,22 +603,38 @@ class ScheduledNotifications:
             if not settings.get("new_grades", True):
                 continue
 
-            univer = await self._get_univer_instance(sub_data)
-            if not univer:
+            creds = decode_credentials(sub_data.get("creds", ""))
+            if not creds:
                 continue
-
-            univer.language = sub_data.get("lang", "kk")
+            username, password = creds
 
             try:
-                attestations = await univer.get_attestation()
-                current_grades = {}
+                # Platonus-қа логин жасау
+                from functions.platonus import platonus_login, platonus_get_attestation
+                pt_token = await platonus_login(username, password)
+                if not pt_token:
+                    continue
 
+                # Бағаларды алу
+                from datetime import date
+                today = date.today()
+                year = today.year - 1 if today.month < 9 else today.year
+                semester = 2 if today.month < 9 else 1
+
+                attestations = await platonus_get_attestation(pt_token, year, semester)
+                if attestations is None:
+                    continue
+
+                current_grades = {}
                 for att in attestations:
-                    # Пән мен бағаларды жинақтау
-                    key = att.subject
+                    key = att["subject"]
                     grades_dict = {}
-                    for i, mark in enumerate(att.attestation):
-                        grades_dict[f"att_{i+1}"] = mark.value
+                    # attestation is a list of [name, value, active]
+                    # e.g. [["АБ1", 88.67, False], ["АБ2", 0, True], ["АА", 0, True]]
+                    marks = {m[0]: m[1] for m in att["attestation"]}
+                    grades_dict["ab1"] = marks.get("АБ1", 0.0)
+                    grades_dict["ab2"] = marks.get("АБ2", 0.0)
+                    grades_dict["exam"] = marks.get("АА", 0.0)
                     current_grades[key] = grades_dict
 
                 last_user_state = states.get(user_id, {})
@@ -716,44 +670,8 @@ class ScheduledNotifications:
         self._save_states(states)
 
     async def _send_tomorrow_schedules(self):
-        """Барлық пайдаланушыларға ертеңгі кестені жіберу"""
-        now = datetime.now()
-        current_time = now.strftime("%H:%M")
-        tomorrow_weekday = (now.weekday() + 1) % 7
-
-        for user_id, sub_data in self.push_service.subscriptions.items():
-            # Ертеңгі кесте хабарламасы қосулы ма тексеру
-            settings = sub_data.get("settings", {})
-            if not settings.get("tomorrow_schedule", True):
-                continue
-
-            # Пайдаланушының уақытын тексеру
-            time_settings = sub_data.get("time_settings", {})
-            user_schedule_time = time_settings.get("evening_schedule_time", "22:00")
-
-            # Тек пайдаланушының уақыты келсе жіберу
-            if current_time < user_schedule_time or current_time >= (
-                datetime.strptime(user_schedule_time, "%H:%M") + timedelta(minutes=1)
-            ).strftime("%H:%M"):
-                continue
-
-            univer = await self._get_univer_instance(sub_data)
-            if not univer:
-                continue
-
-            try:
-                schedule_data = await univer.get_schedule()
-                tomorrow_lessons = [
-                    {"time": l.time, "subject": l.subject}
-                    for l in schedule_data.lessons
-                    if l.day == tomorrow_weekday
-                ]
-
-                await self.push_service.send_tomorrow_schedule(
-                    user_id, tomorrow_lessons
-                )
-            except Exception as e:
-                print(f"Error sending tomorrow schedule for {user_id}: {e}")
+        """Ертеңгі кестені жіберу (Platonus-та кесте жоқ)"""
+        pass
 
     def _load_states(self) -> Dict[str, Any]:
         """Соңғы күйлерді (бағаларды) файлдан жүктеу"""
