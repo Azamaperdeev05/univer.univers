@@ -347,8 +347,8 @@ def transform_marks(marks: List[Dict], center_mark: str = None) -> List:
             m[item["name"].strip().replace(" ", "")] = item.get("mark")
 
     # Kazakh keys: АБ 1, АБ 2, Емт.  |  Russian keys: РК 1, РК 2, Экз.
-    ab1_val = m.get("АБ1") or m.get("РК1") or m.get("Аттестация1") or 0.0
-    ab2_val = m.get("АБ2") or m.get("РК2") or m.get("Аттестация2") or 0.0
+    ab1_val = m.get("АБ1") or m.get("РК1") or m.get("Аттестация1") or m.get("Аралықбақылау1") or 0.0
+    ab2_val = m.get("АБ2") or m.get("РК2") or m.get("Аттестация2") or m.get("Аралықбақылау2") or 0.0
     exam_val = (
         m.get("Емт.")
         or m.get("Экз.")
@@ -375,9 +375,9 @@ def transform_marks(marks: List[Dict], center_mark: str = None) -> List:
             continue
         n = item["name"].strip()
         mark = item.get("mark")
-        if not ab1_val and n in ("АБ 1", "РК 1", "Аттестация 1"):
+        if not ab1_val and n in ("АБ 1", "РК 1", "Аттестация 1", "Аралық бақылау 1"):
             ab1_val = mark
-        if not ab2_val and n in ("АБ 2", "РК 2", "Аттестация 2"):
+        if not ab2_val and n in ("АБ 2", "РК 2", "Аттестация 2", "Аралық бақылау 2"):
             ab2_val = mark
         if not exam_val and n in ("Емт.", "Экз.", "Итоговый экзамен", "Итог. экз."):
             exam_val = mark

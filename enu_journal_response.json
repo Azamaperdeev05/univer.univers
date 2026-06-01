@@ -1,0 +1,237 @@
+[
+  {
+    "subjectName": "Дене шынықтыру(DSh 2401 (2)-2437--P)",
+    "tutorList": "Тасмаганбетов С.С",
+    "centerMark": "89.0",
+    "color": "#3498db",
+    "totalMark": "89.00",
+    "box_height": "450px",
+    "subjectID": 46729,
+    "queryID": 4984224,
+    "ticketInfoType": 0,
+    "studyGroupId": 1251267,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "90.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "100.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "82.00"
+      },
+      {
+        "name": "ДС",
+        "mark": "100.00"
+      },
+      {}
+    ]
+  },
+  {
+    "subjectName": "Математикалық және компьютерлік модельдеу(MKM 2301-25-L)",
+    "tutorList": "Оспанова Т.Т",
+    "centerMark": "81.0",
+    "color": "#3498db",
+    "totalMark": "81.00",
+    "box_height": "450px",
+    "subjectID": 50777,
+    "queryID": 4984229,
+    "ticketInfoType": 0,
+    "studyGroupId": 1224237,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "90.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "85.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "81.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "80.00"
+      },
+      {}
+    ]
+  },
+  {
+    "subjectName": "Математикалық статистика(MS 112152-24-L)",
+    "tutorList": "Алимагамбетова А.З, Адалбек А.",
+    "centerMark": "74.0",
+    "color": "#3498db",
+    "totalMark": "74.00",
+    "box_height": "450px",
+    "subjectID": 57042,
+    "queryID": 4984230,
+    "ticketInfoType": 0,
+    "studyGroupId": 1224240,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "50.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "75.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "67.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "85.00"
+      },
+      {}
+    ]
+  },
+  {
+    "subjectName": "Ақпараттық жүйелерді жобалау(PIS 113152-6-L)",
+    "tutorList": "Әбжанова А.Е",
+    "centerMark": "80.0",
+    "color": "#3498db",
+    "totalMark": "80.00",
+    "box_height": "450px",
+    "subjectID": 71379,
+    "queryID": 4984231,
+    "ticketInfoType": 0,
+    "studyGroupId": 1224243,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "80.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "85.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "80.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "80.00"
+      },
+      {}
+    ]
+  },
+  {
+    "subjectName": "Кәсіпкерлік және бизнес(KB 2106-432--L)",
+    "tutorList": "Карипова А.Т",
+    "centerMark": "80.0",
+    "color": "#3498db",
+    "totalMark": "80.00",
+    "box_height": "450px",
+    "subjectID": 46705,
+    "queryID": 4984236,
+    "ticketInfoType": 0,
+    "studyGroupId": 1294901,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "91.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "69.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "80.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "80.00"
+      },
+      {}
+    ]
+  },
+  {
+    "subjectName": "Өндірістік(Pro 11122-165-PP)",
+    "tutorList": "Айтқожа Ж.Ж",
+    "centerMark": "0.0",
+    "color": "#95a5a6",
+    "totalMark": "-",
+    "box_height": "450px",
+    "subjectID": 57052,
+    "queryID": 4984237,
+    "ticketInfoType": 0,
+    "studyGroupId": 1341576,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Практика",
+        "mark": "0.0"
+      }
+    ]
+  },
+  {
+    "subjectName": "Визуалды бағдарламалау(VB.2212-8-L)",
+    "tutorList": "Омарова Г.С, Амирбай А.А",
+    "centerMark": "85.0",
+    "color": "#3498db",
+    "totalMark": "85.00",
+    "box_height": "450px",
+    "subjectID": 50885,
+    "queryID": 5187972,
+    "ticketInfoType": 0,
+    "studyGroupId": 1224595,
+    "absencePercentageInfo": null,
+    "exams": [
+      {
+        "name": "Орт.ағым.",
+        "mark": "0"
+      },
+      {
+        "name": "Аралық бақылау 1",
+        "mark": "95.00"
+      },
+      {
+        "name": "Аралық бақылау 2",
+        "mark": "90.00"
+      },
+      {
+        "name": "Рейтинг",
+        "mark": "84.00"
+      },
+      {
+        "name": "Емт.",
+        "mark": "86.00"
+      },
+      {}
+    ]
+  }
+]

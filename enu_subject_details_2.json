@@ -1,0 +1,1321 @@
+[
+  {
+    "Name": "MS 112152-24-L",
+    "Id": 1224240,
+    "Marks": {
+      "1": {
+        "Marks": {
+          "26": [
+            {
+              "Mark": -1.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 26,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "26-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "к.ж.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "2": {
+        "Marks": {
+          "16": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 16,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "16-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "22": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 22,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "22-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "9": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 9,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "09-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "27": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 27,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "27-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "3": {
+        "Marks": {
+          "16": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 16,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "16-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "19": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 19,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "19-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "4": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 4,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "04-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "9": [
+            {
+              "Mark": 50.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 9,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "09-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 13,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "50.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            },
+            {
+              "Mark": 58.93333333333333,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 9,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "09-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 2,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "59.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "27": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 27,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "27-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "4": {
+        "Marks": {
+          "2": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 2,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "02-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "21": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 21,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "21-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "28": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 28,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "28-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "14": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 14,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "14-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "5": {
+        "Marks": {
+          "1": [
+            {
+              "Mark": 75.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 5,
+                "Day": 1,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "01-05-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 13,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            },
+            {
+              "Mark": 75.16071428571428,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 5,
+                "Day": 1,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "01-05-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 2,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "26": [
+            {
+              "Mark": 85.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 5,
+                "Day": 26,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "26-05-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 3,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 0,
+              "Comment": null,
+              "MarkName": "85.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Алимагамбетова А.З"
+  },
+  {
+    "Name": "MS 112152-57-Lab",
+    "Id": 1224241,
+    "Marks": {
+      "1": {
+        "Marks": {
+          "23": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 23,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "23-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "2": {
+        "Marks": {
+          "20": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 20,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "20-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "6": [
+            {
+              "Mark": 75.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 6,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "06-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "27": [
+            {
+              "Mark": 95.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 27,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "27-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "95.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "13": [
+            {
+              "Mark": -1.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 13,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "13-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "к.ж.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "3": {
+        "Marks": {
+          "20": [
+            {
+              "Mark": 75.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 20,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "20-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "6": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 6,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "06-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "27": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 27,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "27-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "13": [
+            {
+              "Mark": -1.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 13,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "13-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "к.ж.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "4": {
+        "Marks": {
+          "17": [
+            {
+              "Mark": 95.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 17,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "17-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "95.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "3": [
+            {
+              "Mark": 95.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 3,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "03-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "95.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "24": [
+            {
+              "Mark": 75.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 24,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "24-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "75.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "10": [
+            {
+              "Mark": 95.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 10,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "10-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "95.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Адалбек А."
+  },
+  {
+    "Name": "MS 112152-33-SRO",
+    "Id": 1224242,
+    "Marks": {
+      "1": {
+        "Marks": {
+          "23": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 23,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "23-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 1,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-01-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "2": {
+        "Marks": {
+          "17": [
+            {
+              "Mark": 0.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 17,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "17-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "0",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "22": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 22,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "22-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "10": [
+            {
+              "Mark": 0.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 2,
+                "Day": 10,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "10-02-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "0",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "3": {
+        "Marks": {
+          "1": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 1,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "01-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "20": [
+            {
+              "Mark": 90.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 20,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "20-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "90.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "5": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 5,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "05-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 1,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "11": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 3,
+                "Day": 11,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "11-03-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      },
+      "4": {
+        "Marks": {
+          "1": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 1,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "01-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "2": [
+            {
+              "Mark": 80.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 2,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "02-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "80.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "22": [
+            {
+              "Mark": 70.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 22,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "22-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "70.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "28": [
+            {
+              "Mark": 60.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 28,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "28-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "60.00",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "30": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 30,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "30-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ],
+          "15": [
+            {
+              "Mark": -6.0,
+              "MarkDate": {
+                "Year": 2026,
+                "Month": 4,
+                "Day": 15,
+                "Hour": 21,
+                "Minute": 37,
+                "DisplayedValue": "15-04-2026"
+              },
+              "StudentID": 0,
+              "StudentName": null,
+              "CicleID": 0,
+              "MarkType": 1,
+              "AddMarkTypeID": 0,
+              "StudyGroupID": 0,
+              "RatingNumber": 2,
+              "Comment": null,
+              "MarkName": "е.а.",
+              "Week": 0,
+              "ScheduleNumber": 0,
+              "Ordinal": 0
+            }
+          ]
+        }
+      }
+    },
+    "TutorFullName": "Алимагамбетова А.З"
+  }
+]

@@ -93,12 +93,17 @@
                                     days: [],
                                 })
                             }
+                            // Егер баға теріс сан болса (мысалы, -1 "к.ж." немесе -6 "е.а.") немесе сан емес болса
+                            let displayMark = m.MarkName || String(m.Mark);
+                            // Егер сандық оң баға болса, дөңгелектейміз (мысалы, 77.5 -> 78)
+                            if (typeof m.Mark === "number" && m.Mark >= 0) {
+                                displayMark = String(Math.round(m.Mark));
+                            }
+
                             monthsMap.get(mMonth).days.push({
                                 day: mDay,
-                                mark:
-                                    typeof m.Mark === "number"
-                                        ? Math.round(m.Mark)
-                                        : m.Mark,
+                                mark: typeof m.Mark === "number" ? m.Mark : 0,
+                                displayMark: displayMark
                             })
                         }
                     }
