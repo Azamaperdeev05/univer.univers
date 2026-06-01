@@ -1,145 +1,78 @@
 <script lang="ts">
-    import { subject, teacher, useApi } from "$api"
+    import { useApi } from "$api"
     import AppBar from "$lib/components/app-bar.svelte"
-    import TeacherLink from "$lib/components/teacher-link.svelte"
-    import Card from "$lib/components/ui/card"
-    import { Skeleton } from "$lib/components/ui/skeleton"
-    import { _, i18n } from "$lib/i18n"
+    import Loader from "$lib/components/loader.svelte"
     import Page from "$lib/layouts/page.svelte"
-    import { nullish, randInt } from "$lib/utils"
-    import { onMount } from "svelte"
+    import { _ } from "$lib/i18n"
 
     const api = useApi()
-    const query = api.fetchExams()
-
-    // Intl үшін locale кодын дұрыстау (kk → kk-KZ)
-    const getLocale = (lang: string) => {
-        const localeMap: Record<string, string> = {
-            kk: "kk-KZ",
-            ru: "ru-RU",
-            en: "en-US",
-        }
-        return localeMap[lang] || lang
-    }
-
-    let rtf = $derived(
-        new Intl.RelativeTimeFormat(getLocale(i18n.language), {
-            style: "long",
-        }),
-    )
-
-    const SECOND = 1000
-    const MINUTE = 60 * SECOND
-    const HOUR = 60 * MINUTE
-    const DAY = 24 * HOUR
-
-    let dtf = $derived(
-        new Intl.DateTimeFormat(getLocale(i18n.language), {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        }),
-    )
-
-    const getDelta = (timestamp: number, now: number) =>
-        timestamp * SECOND - now
-    const getDate = (timestamp: number) => {
-        const date = new Date(timestamp * 1000)
-        return dtf.format(date)
-    }
-
-    const isActive = (timestamp: number, now: number) => {
-        const delta = getDelta(timestamp, now)
-        if (delta < 0) return -delta <= 5 * HOUR
-        return delta <= 24 * HOUR
-    }
-
-    const isNear = (timestamp: number, now: number) => {
-        const delta = getDelta(timestamp, now)
-        return delta > -HOUR && delta <= HOUR * 1.5
-    }
-
-    const relativeTime = (timestamp: number, now: number) => {
-        const delta = getDelta(timestamp, now)
-        if (delta <= -HOUR) return _("exams.ended")
-        if (delta <= 0) return _("exams.now")
-
-        if (delta < MINUTE)
-            return rtf.format(Math.floor(delta / SECOND), "seconds")
-        if (delta < HOUR)
-            return rtf.format(Math.floor(delta / MINUTE), "minutes")
-        if (delta < 2 * DAY)
-            return rtf.format(Math.round(delta / HOUR), "hours")
-        return rtf.format(Math.round(delta / DAY), "days")
-    }
-
-    let now = $state(Date.now())
-
-    onMount(() => {
-        const loop = () => {
-            now = Date.now()
-            setTimeout(() => {
-                frame = requestAnimationFrame(loop)
-            }, 1000)
-        }
-        let frame = requestAnimationFrame(loop)
-        return () => cancelAnimationFrame(frame)
-    })
+    const query = api.fetchTranscript()
 </script>
 
 <Page>
     {#snippet header()}
-        <AppBar>
-            {#snippet title()}
-                {#if query.state === "ready"}
-                    {_("exams")}
-                {:else if query.state === "update"}
-                    {_("updating")}
-                {:else if query.state === "load"}
-                    {_("loading")}
-                {/if}
-            {/snippet}
-        </AppBar>
+        <AppBar title={_("exams")} />
     {/snippet}
-    <div class="grid mx-auto p-2 gap-2 max-w-md">
-        {#if nullish(query.data)}
-            {#each { length: 6 } as _}
-                <Card>
-                    {#snippet title()}
-                        <Skeleton symbols={randInt(40, 60)} />
-                    {/snippet}
-                    <p><Skeleton symbols={subject()} /></p>
-                    <p><Skeleton symbols={5} /></p>
-                    <p><Skeleton symbols={teacher()} class="bg-primary" /></p>
-                    <p class="text-right">
-                        <Skeleton symbols={randInt(5, 15)} />
-                    </p>
-                </Card>
-            {/each}
+    
+    <div class="grid mx-auto p-3 gap-4 max-w-md w-full pb-20">
+        {#if query.loading}
+            <Loader />
+        {:else if query.data}
+            {@const { semesters, overall_gpa, min_gpa, year_of_study } = query.data}
+            
+            {#if semesters && semesters.length > 0}
+                {#each semesters as semester}
+                    <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg backdrop-blur-md flex flex-col gap-0">
+                        <!-- Semester Header -->
+                        <div class="bg-white/5 px-4 py-3 border-b border-white/10 flex justify-between items-center">
+                            <span class="font-bold text-white text-sm">{semester.name}</span>
+                            <span class="bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-lg text-xs font-semibold">
+                                GPA: {semester.gpa}
+                            </span>
+                        </div>
+                        
+                        <!-- Subjects Table -->
+                        <div class="divide-y divide-white/5">
+                            {#each semester.subjects as subject}
+                                <div class="px-4 py-3 flex items-center justify-between text-xs xs:text-sm hover:bg-white/[0.02] transition-colors">
+                                    <div class="flex items-start gap-2.5 max-w-[65%]">
+                                        <span class="text-white/40 font-mono select-none w-4">{subject.number}</span>
+                                        <span class="text-white/90 font-medium leading-relaxed">{subject.name}</span>
+                                    </div>
+                                    <div class="flex items-center gap-4 text-right">
+                                        <div class="flex flex-col">
+                                            <span class="text-white/80 font-bold">{subject.percent}%</span>
+                                            <span class="text-[10px] text-white/40">Пайыз</span>
+                                        </div>
+                                        <div class="flex flex-col min-w-[32px]">
+                                            <span class="text-primary font-bold">{subject.points}</span>
+                                            <span class="text-[10px] text-white/40">Балл</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {/each}
+                        </div>
+                    </div>
+                {/each}
+            {/if}
+            
+            <!-- Overall Course GPA Summary Card -->
+            <div class="bg-primary/10 border border-primary/20 rounded-2xl p-5 flex flex-col gap-2 shadow-lg backdrop-blur-md">
+                <div class="flex justify-between items-center border-b border-primary/10 pb-2">
+                    <span class="text-sm font-bold text-white">{year_of_study} Курс қорытындысы</span>
+                    <span class="bg-primary text-white px-3 py-1 rounded-xl text-sm font-black">
+                        GPA: {overall_gpa}
+                    </span>
+                </div>
+                <p class="text-xs text-white/70 leading-relaxed mt-1">
+                    Курстан курсқа ауыстыру үшін минималды GPA : <span class="font-bold text-primary">{min_gpa}</span>
+                </p>
+            </div>
         {:else}
-            {#each query.data as { audience, date, subject, teacher, type, teacher_link }}
-                {@const delta = relativeTime(date, now)}
-                <Card title={getDate(date)} active={isActive(date, now)}>
-                    <p>{subject}</p>
-                    <p class="font-bold">{audience}</p>
-                    <p><TeacherLink {teacher} {teacher_link} /></p>
-                    {#if type === "consultation"}
-                        <p class="text-right">{_("exams.consultation")}</p>
-                    {/if}
-                    {#if type === "exam" && delta}
-                        <p
-                            class="text-right"
-                            class:text-destructive={isNear(date, now)}
-                        >
-                            {delta}
-                        </p>
-                    {/if}
-                </Card>
-            {:else}
+            <div class="text-center text-white/50 py-8">
                 {_("no-data")}
-            {/each}
+            </div>
         {/if}
     </div>
 </Page>
+

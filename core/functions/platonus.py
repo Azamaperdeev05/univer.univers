@@ -3,7 +3,10 @@ import json
 import aiohttp
 from typing import Dict, List, Optional
 
-PLATONUS_URL = "https://platonus.kstu.kz"
+UNIVERSITIES = {
+    "kstu": "https://platonus.kstu.kz",
+    "buketov": "https://platonus.buketov.edu.kz"
+}
 PLATONUS_TIMEOUT = aiohttp.ClientTimeout(total=15)
 PLATONUS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -14,8 +17,8 @@ PLATONUS_HEADERS = {
 _AUTH_FAIL_STATUSES = (401, 403)
 
 
-def _encode_pt(auth_token: str, sid: str, cookies: dict) -> str:
-    data = {"t": auth_token, "s": sid, "c": cookies}
+def _encode_pt(auth_token: str, sid: str, cookies: dict, platonus_url: str) -> str:
+    data = {"t": auth_token, "s": sid, "c": cookies, "url": platonus_url}
     return base64.b64encode(json.dumps(data).encode()).decode()
 
 
@@ -30,6 +33,11 @@ def _decode_pt(pt_cookie: str) -> dict:
         return {}
 
 
+def _pt_url(pt_cookie: str, default: str = "https://platonus.kstu.kz") -> str:
+    data = _decode_pt(pt_cookie)
+    return data.get("url") or default
+
+
 def _pt_headers_and_cookies(pt_cookie: str):
     """Return (headers, cookies) ready for Platonus API calls."""
     data = _decode_pt(pt_cookie)
@@ -39,8 +47,9 @@ def _pt_headers_and_cookies(pt_cookie: str):
     return headers, cookies
 
 
-async def platonus_login(username: str, password: str) -> Optional[str]:
-    login_url = f"{PLATONUS_URL}/rest/api/login"
+async def platonus_login(username: str, password: str, univer_code: str = "kstu") -> Optional[str]:
+    platonus_url = UNIVERSITIES.get(univer_code, "https://platonus.kstu.kz")
+    login_url = f"{platonus_url}/rest/api/login"
     login_data = {
         "login": username,
         "password": password,
@@ -65,14 +74,15 @@ async def platonus_login(username: str, password: str) -> Optional[str]:
                     for name, morsel in resp.cookies.items()
                     if name != "plt_sid"
                 }
-                return _encode_pt(auth_token, sid, extra_cookies)
+                return _encode_pt(auth_token, sid, extra_cookies, platonus_url)
     except Exception:
         return None
 
 
 async def platonus_get_person_id(pt_cookie: str) -> Optional[int]:
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/rest/api/person/personID"
+    url = f"{platonus_url}/rest/api/person/personID"
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
             async with session.get(url, headers=headers) as resp:
@@ -85,8 +95,9 @@ async def platonus_get_person_id(pt_cookie: str) -> Optional[int]:
 
 
 async def platonus_get_student_info(pt_cookie: str) -> Optional[dict]:
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/rest/api/person/personName"
+    url = f"{platonus_url}/rest/api/person/personName"
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
             async with session.get(url, headers=headers) as resp:
@@ -200,8 +211,9 @@ async def platonus_get_attestation(
     if not person_id:
         return None
 
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/journal/{year}/{semester}/{person_id}"
+    url = f"{platonus_url}/journal/{year}/{semester}/{person_id}"
 
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
@@ -245,8 +257,9 @@ async def platonus_get_subject_details(
     if not person_id:
         return None
 
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/subject/{year}/{semester}/{subject_id}/{person_id}?queryID={query_id}"
+    url = f"{platonus_url}/subject/{year}/{semester}/{subject_id}/{person_id}?queryID={query_id}"
 
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
@@ -267,8 +280,9 @@ async def platonus_get_transcript(pt_cookie: str) -> Optional[dict]:
     POST /rest/transcript/load/ru/0
     Returns the student transcript data containing profile, GPA, and grade history.
     """
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/rest/transcript/load/ru/0"
+    url = f"{platonus_url}/rest/transcript/load/ru/0"
     payload = {
         "includeSubjectUnderStudy": True,
         "showDeletedRecords": False,
@@ -296,8 +310,9 @@ async def platonus_get_umkd_list(pt_cookie: str, year: int, semester: int) -> Op
     GET /rest/umkd/studentRecords/{year}/{semester}/ru
     Returns list of course folders with their methodological package cryptFileId.
     """
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/rest/umkd/studentRecords/{year}/{semester}/ru"
+    url = f"{platonus_url}/rest/umkd/studentRecords/{year}/{semester}/ru"
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
             async with session.get(url, headers=headers) as resp:
@@ -317,8 +332,9 @@ async def platonus_get_umkd_files(pt_cookie: str, umkd_id: int) -> Optional[list
     GET /rest/student/umkd/{umkd_id}/ru
     Returns the individual requirement folders inside the UMKD.
     """
+    platonus_url = _pt_url(pt_cookie)
     headers, cookies = _pt_headers_and_cookies(pt_cookie)
-    url = f"{PLATONUS_URL}/rest/student/umkd/{umkd_id}/ru"
+    url = f"{platonus_url}/rest/student/umkd/{umkd_id}/ru"
     try:
         async with aiohttp.ClientSession(cookies=cookies, timeout=PLATONUS_TIMEOUT) as session:
             async with session.get(url, headers=headers) as resp:

@@ -27,6 +27,7 @@
     const api = useApi()
     let username = $state("")
     let password = $state("")
+    let univer_code = $state("auto")
     let status = $state<"ready" | "loading" | "error">("ready")
     let agree = $state(false)
     let error = $state("")
@@ -42,6 +43,7 @@
         const s = await api.login({
             password,
             username,
+            univer_code,
         })
         if (s === 200) {
             router.navigate(routes.home, { mode: "replace" })
@@ -110,18 +112,20 @@
             <div class="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-sky-500/10 transition-all duration-500"></div>
 
             <div class="flex flex-col items-center gap-3 pb-2">
-                <!-- Pulsing Ambient Glow behind logo with Blue theme -->
+                <!-- Pulsing Ambient Glow behind logo with dynamic theme -->
                 <div class="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_32px_rgba(255,255,255,0.02)] transition-all duration-300 group-hover:border-white/20">
                     <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-sky-500/10 to-blue-500/10 animate-pulse"></div>
                     <img
-                        src="/images/kstu.png"
-                        alt={_("univer.kstu")}
+                        src="/images/logo.svg"
+                        alt="Platonus Logo"
                         class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                     />
                 </div>
                 <div class="text-center mt-1">
-                    <h2 class="text-2xl font-bold tracking-tight text-white/90">{_("univer.kstu")}</h2>
-                    <p class="text-xs text-zinc-400 mt-1 max-w-[240px]">Студенттерге арналған бірыңғай портал</p>
+                    <h2 class="text-2xl font-bold tracking-tight text-white/90">
+                        Platonus
+                    </h2>
+                    <p class="text-xs text-zinc-400 mt-1 max-w-[240px]">Бірыңғай студенттік портал</p>
                 </div>
             </div>
 
@@ -203,7 +207,7 @@
 
     <div class="flex justify-center p-6 relative z-10">
         <p class="text-xs tracking-wider text-zinc-500 select-none">
-            {_("univer.kstu")} • {api.version.client}
+            Platonus • Бірыңғай Портал • {api.version.client}
         </p>
     </div>
 </Page>

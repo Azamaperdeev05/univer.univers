@@ -7,6 +7,7 @@ import { singleFetch } from "./utils"
 interface User {
     username: string
     password: string
+    univer_code?: string
 }
 
 export const checkAuth = () => secureStorage.getItem("password") !== null
@@ -63,9 +64,10 @@ export const authFetch = async <T>(
 export const refreshToken = async () => {
     const username = localStorage.getItem("username")
     const password = secureStorage.getItem("password")
+    const univer_code = localStorage.getItem("univer_code") || "kstu"
 
     if (username && password)
-        return await login({ password, username })
+        return await login({ password, username, univer_code })
     return 401
 }
 
@@ -81,9 +83,10 @@ export const login = (user: User) => {
                 body: JSON.stringify(user),
             })
             if (status === 200) {
-                const { password, username } = user
+                const { password, username, univer_code = "kstu" } = user
                 secureStorage.setItem("password", password)
                 localStorage.setItem("username", username)
+                localStorage.setItem("univer_code", univer_code)
             }
             resolve(status)
         } catch {
@@ -104,5 +107,6 @@ export const forceLogout = async () => {
     await fetch(api(`/auth/logout`), { credentials: "include" })
     secureStorage.removeItem("password")
     localStorage.removeItem("username")
+    localStorage.removeItem("univer_code")
 }
 

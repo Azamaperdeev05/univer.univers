@@ -19,6 +19,7 @@ from functions.platonus import (
     platonus_get_transcript,
     platonus_get_umkd_list,
     platonus_get_umkd_files,
+    UNIVERSITIES,
 )
 
 # Frontend static папкасының жолы
@@ -101,11 +102,29 @@ async def login(request):
     data = await request.json()
     username = data.get("username")
     password = data.get("password")
+    univer_code = data.get("univer_code", "auto")
 
     try:
-        pt_token = await platonus_login(username, password)
-        if not pt_token:
-            return web.json_response({"error": "Platonus login failed"}, status=401)
+        if univer_code == "auto":
+            codes = list(UNIVERSITIES.keys())
+            tasks = [platonus_login(username, password, code) for code in codes]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            successful_idx = -1
+            for idx, pt_token in enumerate(results):
+                if pt_token and not isinstance(pt_token, Exception):
+                    successful_idx = idx
+                    break
+            
+            if successful_idx == -1:
+                return web.json_response({"error": "Platonus login failed"}, status=401)
+                
+            pt_token = results[successful_idx]
+            univer_code = codes[successful_idx]
+        else:
+            pt_token = await platonus_login(username, password, univer_code)
+            if not pt_token:
+                return web.json_response({"error": "Platonus login failed"}, status=401)
 
         response = web.json_response({"status": "ok"})
         
@@ -114,6 +133,7 @@ async def login(request):
         pc = base64.b64encode(f"{username}:{password}".encode()).decode()
         response.set_cookie("_pc", pc, httponly=True, max_age=3600 * 24 * 30)
         response.set_cookie("_pl", "1", max_age=3600 * 24 * 30)
+        response.set_cookie("univer_code", univer_code, max_age=3600 * 24 * 30)
 
         return response
     except Exception as e:
@@ -153,7 +173,8 @@ async def platonus_middleware(app, handler):
                 try:
                     decoded = base64.b64decode(pc).decode()
                     username, password = decoded.split(":", 1)
-                    pt = await platonus_login(username, password)
+                    univer_code = request.cookies.get("univer_code", "kstu")
+                    pt = await platonus_login(username, password, univer_code)
                     if pt:
                         request["new_pt"] = pt
                 except Exception:
@@ -279,7 +300,8 @@ async def get_transcript(request):
             # Token might be expired, try refreshing using _pc
             pc_cookie = request.cookies.get("_pc")
             if pc_cookie:
-                pt_token = await _platonus_refresh_token(pc_cookie)
+                univer_code = request.cookies.get("univer_code", "kstu")
+                pt_token = await _platonus_refresh_token(pc_cookie, univer_code)
                 if pt_token:
                     res = await platonus_get_transcript(pt_token)
 
@@ -291,11 +313,67 @@ async def get_transcript(request):
         # Extract localized fields
         study_lang = student.get("studyLanguageNameKz") or student.get("studyLanguageName") or "қазақ"
         fullname = student.get("fullName") or student.get("personName") or "Студент"
-        faculty = student.get("facultyNameKz") or student.get("faculty_name") or "Факультет информационных технологий"
-        degree = student.get("degreeNameKz") or student.get("degreeName") or "Бакалавр"
-        program = student.get("specializationNameKz") or student.get("specializationName") or "Системы информационной безопасности"
-        group = student.get("onlyProfessionNameKz") or student.get("professionName") or "Информационная безопасность"
+        faculty = student.get("facultyNameKz") or student.get("faculty_name") or "Факультет"
+        degree = student.get("professionDegreeKZ") or student.get("professionDegree") or student.get("degreeNameKz") or student.get("degreeName") or "Бакалавр"
+        program = student.get("specializationNameKz") or student.get("specializationName") or "Білім беру бағдарламасы"
+        group = student.get("onlyProfessionNameKz") or student.get("professionName") or "Мамандық тобы"
         
+        # Try to parse real semesters dynamically from the Platonus response if available
+        semesters_data = []
+        course_data = res.get("courseData") or {}
+        term_gpa_map = res.get("termGpaMap") or {}
+        
+        if isinstance(course_data, dict) and len(course_data) > 0:
+            course_keys = sorted([k for k in course_data.keys() if k.isdigit()], key=int)
+            for c_key in course_keys:
+                courses_list = course_data[c_key].get("courses") or []
+                if not courses_list:
+                    continue
+                
+                term_subjects = {}
+                for c in courses_list:
+                    term = c.get("term") or 1
+                    if term not in term_subjects:
+                        term_subjects[term] = []
+                    
+                    subj_name = c.get("courseNameKZ") or c.get("courseNameRU") or c.get("courseNameEN") or "Белгісіз пән"
+                    percent = float(c.get("percentMark") or 0.0)
+                    points = float(c.get("markInPoints") or 0.0)
+                    
+                    term_subjects[term].append({
+                        "name": subj_name,
+                        "percent": percent,
+                        "points": points
+                    })
+                
+                sorted_terms = sorted(term_subjects.keys(), key=int)
+                for term in sorted_terms:
+                    subjects = term_subjects[term]
+                    
+                    formatted_subjects = []
+                    for idx, sub in enumerate(subjects, 1):
+                        formatted_subjects.append({
+                            "number": idx,
+                            "name": sub["name"],
+                            "percent": sub["percent"],
+                            "points": sub["points"]
+                        })
+                    
+                    gpa_key = f"{c_key}_{term}"
+                    term_gpa = term_gpa_map.get(gpa_key) or 0.0
+                    
+                    if term_gpa == 0.0:
+                        total_pts = sum(s["points"] for s in subjects)
+                        term_gpa = round(total_pts / len(subjects), 2) if subjects else 0.0
+                    
+                    term_name = f"Академиялық кезең {term}" if c_key == "1" else f"{c_key} Курс • Академиялық кезең {term}"
+                    semesters_data.append({
+                        "name": term_name,
+                        "gpa": term_gpa,
+                        "subjects": formatted_subjects
+                    })
+        
+
         transcript_data = {
             "fullname": fullname,
             "faculty": faculty,
@@ -309,7 +387,9 @@ async def get_transcript(request):
             "graid_point": student.get("GPA") or 2.87,
             "avarage_point": student.get("averageMark") or 75.0,
             "form_of_study": student.get("studyFormNameKz") or student.get("studyFormName") or "күндізгі",
-            "semesters": []
+            "semesters": semesters_data,
+            "overall_gpa": student.get("GPA") or 2.87,
+            "min_gpa": 1.0
         }
         
         resp = web.json_response(transcript_data)
@@ -344,7 +424,8 @@ async def get_attestation(request):
             # Token might be expired, try refreshing using _pc
             pc_cookie = request.cookies.get("_pc")
             if pc_cookie:
-                pt_token = await _platonus_refresh_token(pc_cookie)
+                univer_code = request.cookies.get("univer_code", "kstu")
+                pt_token = await _platonus_refresh_token(pc_cookie, univer_code)
                 if pt_token:
                     data = await platonus_get_attestation(pt_token, year, semester)
 
@@ -360,14 +441,14 @@ async def get_attestation(request):
         return web.json_response({"error": str(e)}, status=500)
 
 
-async def _platonus_refresh_token(pc_cookie: str | None) -> str | None:
+async def _platonus_refresh_token(pc_cookie: str | None, univer_code: str = "kstu") -> str | None:
     """Refresh Platonus token using stored credentials (_pc cookie)."""
     if not pc_cookie:
         return None
     try:
         decoded = base64.b64decode(pc_cookie).decode()
         u, p = decoded.split(":", 1)
-        return await platonus_login(u, p)
+        return await platonus_login(u, p, univer_code)
     except Exception:
         return None
 
@@ -376,7 +457,8 @@ async def _get_pt_cookie(request) -> str | None:
     """Get existing Platonus token, or refresh if missing."""
     pt = request.cookies.get("_pt")
     if not pt:
-        pt = await _platonus_refresh_token(request.cookies.get("_pc"))
+        univer_code = request.cookies.get("univer_code", "kstu")
+        pt = await _platonus_refresh_token(request.cookies.get("_pc"), univer_code)
     return pt
 
 
@@ -414,7 +496,8 @@ async def get_subject_details(request):
             # Token might be expired, try refreshing
             pc_cookie = request.cookies.get("_pc")
             if pc_cookie:
-                pt_token = await _platonus_refresh_token(pc_cookie)
+                univer_code = request.cookies.get("univer_code", "kstu")
+                pt_token = await _platonus_refresh_token(pc_cookie, univer_code)
                 if pt_token:
                     data = await platonus_get_subject_details(
                         pt_token, int(year), int(semester), int(subject_id), int(query_id)
@@ -724,7 +807,8 @@ async def get_umkd_folders(request):
             # Token might be expired, try refreshing
             pc_cookie = request.cookies.get("_pc")
             if pc_cookie:
-                pt_token = await _platonus_refresh_token(pc_cookie)
+                univer_code = request.cookies.get("univer_code", "kstu")
+                pt_token = await _platonus_refresh_token(pc_cookie, univer_code)
                 if pt_token:
                     res = await platonus_get_umkd_list(pt_token, year, semester)
 
@@ -783,7 +867,8 @@ async def get_umkd_files(request):
         if res is None:
             pc_cookie = request.cookies.get("_pc")
             if pc_cookie:
-                pt_token = await _platonus_refresh_token(pc_cookie)
+                univer_code = request.cookies.get("univer_code", "kstu")
+                pt_token = await _platonus_refresh_token(pc_cookie, univer_code)
                 if pt_token:
                     res = await platonus_get_umkd_list(pt_token, year, semester)
 
