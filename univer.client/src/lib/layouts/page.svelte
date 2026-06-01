@@ -28,7 +28,7 @@
         "page h-screen overflow-y-auto w-screen overflow-x-hidden bg-background grow-0 shrink-0 basis-[100vw]",
         class_
     )}
-    style:padding-bottom="{app.navigationHeight ?? 0}px"
+    style:padding-bottom="calc({app.navigationHeight ?? 0}px + env(safe-area-inset-bottom))"
     style:scroll-padding-block="{headerHeight}px"
     data-vaul-drawer-wrapper
     {...props}

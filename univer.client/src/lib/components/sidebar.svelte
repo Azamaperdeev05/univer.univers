@@ -8,12 +8,18 @@
     } from "lucide-svelte"
     import { routes } from "../../pages"
     import { useApp } from "../../app.svelte"
-    import { onMount } from "svelte"
+    import { onDestroy } from "svelte"
 
     const app = useApp()
 
-    onMount(() => {
-        app.navigationHeight = 68
+    let bottomNavHeight = $state(0)
+
+    $effect(() => {
+        app.navigationHeight = bottomNavHeight + 40
+    })
+
+    onDestroy(() => {
+        app.navigationHeight = 0
     })
 
     const items = [
@@ -31,7 +37,7 @@
     }
 </script>
 
-<div class="bottom-nav-container">
+<div class="bottom-nav-container" bind:clientHeight={bottomNavHeight}>
     <nav class="bottom-nav">
         {#each items as item}
             {@const active = isActive(item.href)}
