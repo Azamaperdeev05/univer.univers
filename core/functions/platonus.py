@@ -352,6 +352,12 @@ def transform_marks(marks: List[Dict], center_mark: str = None) -> List:
     exam_val = (
         m.get("Емт.")
         or m.get("Экз.")
+        or m.get("ДС")
+        or m.get("Диф.сынақ")
+        or m.get("Диф.зачет")
+        or m.get("Диф.зачёт")
+        or m.get("Дифференцированныйзачет")
+        or m.get("Дифференцированныйзачёт")
         or m.get("Итоговыйэкзамен")
         or m.get("Итог.экз.")
         or 0.0
@@ -379,7 +385,18 @@ def transform_marks(marks: List[Dict], center_mark: str = None) -> List:
             ab1_val = mark
         if not ab2_val and n in ("АБ 2", "РК 2", "Аттестация 2", "Аралық бақылау 2"):
             ab2_val = mark
-        if not exam_val and n in ("Емт.", "Экз.", "Итоговый экзамен", "Итог. экз."):
+        if not exam_val and n in (
+            "Емт.",
+            "Экз.",
+            "ДС",
+            "Диф. сынақ",
+            "Диф. зачет",
+            "Диф. зачёт",
+            "Дифференцированный зачет",
+            "Дифференцированный зачёт",
+            "Итоговый экзамен",
+            "Итог. экз.",
+        ):
             exam_val = mark
         if not exam_val and ("курсов" in n.lower() or "курс.ж" in n.lower() or "курс.р" in n.lower() or "курс.п" in n.lower()):
             exam_val = mark
@@ -566,4 +583,3 @@ async def platonus_get_umkd_files(pt_cookie: str, umkd_id: int) -> Optional[list
     except Exception as e:
         print(f"Platonus get UMKD files error: {e}")
         return None
-
