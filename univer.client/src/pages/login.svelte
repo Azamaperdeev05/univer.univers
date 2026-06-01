@@ -12,6 +12,7 @@
 
     import { routes } from "./url"
     import { useApi } from "../api"
+    import { api as apiUrl } from "$api/config"
 
     import { _ } from "$lib/i18n"
     import Page from "$lib/layouts/page.svelte"
@@ -33,6 +34,15 @@
     let error = $state("")
     let successUniver = $state<Univer | null>(null)
 
+    // Университеттер тізімі (тасма үшін)
+    let univers = $state<Univer[]>([])
+    onMount(async () => {
+        try {
+            const res = await fetch(apiUrl("/api/universities"))
+            if (res.ok) univers = await res.json()
+        } catch {}
+    })
+
     let active = $derived(username.length && agree && password.length)
     let disabled = $derived(status === "loading" ? true : !active)
     const router = useRouter()
@@ -42,16 +52,10 @@
         event.preventDefault()
         status = "loading"
         error = ""
-        const result = await api.login({
-            password,
-            username,
-            univer_code,
-        })
+        const result = await api.login({ password, username, univer_code })
         if (result.status === 200) {
-            // Университет деректерін сақтап, success экранын көрсетеміз
             successUniver = result.univer ?? null
             status = "success"
-            // Қысқа анимациядан кейін негізгі бетке өтеміз
             setTimeout(() => {
                 router.navigate(routes.home, { mode: "replace" })
                 app.isAuth = true
@@ -72,9 +76,9 @@
     {#snippet header()}
         <AppBar class="border-b border-white/5 bg-transparent backdrop-blur-md">
             {#snippet left()}
-                <Button variant="ghost" size="icon" href={routes.faq} class="text-zinc-400 hover:text-white transition-colors duration-300"
-                    ><CircleHelp style="width: 20px; height: 20px;" /></Button
-                >
+                <Button variant="ghost" size="icon" href={routes.faq} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                    <CircleHelp style="width: 20px; height: 20px;" />
+                </Button>
             {/snippet}
             {#snippet right()}
                 <div class="flex gap-1.5">
@@ -85,22 +89,10 @@
                             </Button>
                         {/snippet}
                     </InstallButton>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        href={routes.telegram}
-                        target="_blank"
-                        class="text-zinc-400 hover:text-white transition-colors duration-300"
-                    >
+                    <Button variant="ghost" size="icon" href={routes.telegram} target="_blank" class="text-zinc-400 hover:text-white transition-colors duration-300">
                         <Telegram style="width: 20px; height: 20px;" />
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        href={routes.github}
-                        target="_blank"
-                        class="text-zinc-400 hover:text-white transition-colors duration-300"
-                    >
+                    <Button variant="ghost" size="icon" href={routes.github} target="_blank" class="text-zinc-400 hover:text-white transition-colors duration-300">
                         <Github style="width: 20px; height: 20px;" />
                     </Button>
                     <Button variant="ghost" size="icon" href={routes.settings} class="text-zinc-400 hover:text-white transition-colors duration-300">
@@ -116,29 +108,18 @@
         <!-- ── Сәтті кіру анимациясы ── -->
         {#if status === "success"}
             <div class="success-screen flex flex-col items-center gap-5 text-center">
-                <!-- Университет логотипі -->
                 <div class="logo-ring">
                     <div class="logo-glow"></div>
                     {#if successUniver?.logo}
-                        <img
-                            src={successUniver.logo}
-                            alt={successUniver.name}
-                            class="w-16 h-16 object-contain relative z-10 rounded-xl"
-                        />
+                        <img src={successUniver.logo} alt={successUniver.name} class="w-16 h-16 object-contain relative z-10 rounded-xl" />
                     {:else}
-                        <img
-                            src="/images/logo.svg"
-                            alt="Platonus"
-                            class="w-12 h-12 object-contain relative z-10"
-                        />
+                        <img src="/images/logo.svg" alt="Platonus" class="w-12 h-12 object-contain relative z-10" />
                     {/if}
-                    <!-- Checkmark шеңбері -->
                     <svg class="checkmark" viewBox="0 0 52 52">
                         <circle class="checkmark__circle" cx="26" cy="26" r="24" fill="none"/>
                         <path class="checkmark__check" fill="none" d="M14 26l8 9 16-18"/>
                     </svg>
                 </div>
-
                 {#if successUniver?.name}
                     <div class="flex flex-col gap-1">
                         <p class="text-white/50 text-xs uppercase tracking-widest font-semibold">Сәтті кірдіңіз</p>
@@ -155,38 +136,28 @@
                 class="w-full max-w-[390px] bg-[#0c0c12]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex flex-col gap-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group hover:border-white/15 transition-all duration-500"
                 {onsubmit}
             >
-                <!-- Background light flare inside card -->
                 <div class="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-sky-500/10 transition-all duration-500"></div>
 
                 <div class="flex flex-col items-center gap-3 pb-2">
-                    <!-- Pulsing Ambient Glow behind logo with dynamic theme -->
                     <div class="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_32px_rgba(255,255,255,0.02)] transition-all duration-300 group-hover:border-white/20">
                         <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-sky-500/10 to-blue-500/10 animate-pulse"></div>
-                        <img
-                            src="/images/logo.svg"
-                            alt="Platonus Logo"
-                            class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
-                        />
+                        <img src="/images/logo.svg" alt="Platonus Logo" class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" />
                     </div>
                     <div class="text-center mt-1">
-                        <h2 class="text-2xl font-bold tracking-tight text-white/90">
-                            Platonus
-                        </h2>
+                        <h2 class="text-2xl font-bold tracking-tight text-white/90">Platonus</h2>
                         <p class="text-xs text-zinc-400 mt-1 max-w-[240px]">Бірыңғай студенттік портал</p>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase ml-1">{_("username")}</span>
-                    <div class="relative">
-                        <Input
-                            type="text"
-                            bind:value={username}
-                            name="username"
-                            placeholder="Логин енгізіңіз..."
-                            class="w-full bg-zinc-900/60 border border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-white rounded-xl h-11 px-4 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
-                        />
-                    </div>
+                    <Input
+                        type="text"
+                        bind:value={username}
+                        name="username"
+                        placeholder="Логин немесе ЖСН..."
+                        class="w-full bg-zinc-900/60 border border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-white rounded-xl h-11 px-4 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                    />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
@@ -199,18 +170,11 @@
                             placeholder={showPassword ? api.version.client : "••••••••••••"}
                             class="w-full bg-zinc-900/60 border border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-white rounded-xl h-11 pl-4 pr-11 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
                         />
-                        <Button
-                            variant="ghost"
-                            type="button"
-                            size="icon"
+                        <Button variant="ghost" type="button" size="icon"
                             class="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors duration-300"
                             onclick={() => (showPassword = !showPassword)}
                         >
-                            {#if showPassword}
-                                <EyeOff style="width: 20px; height: 20px;" />
-                            {:else}
-                                <Eye style="width: 20px; height: 20px;" />
-                            {/if}
+                            {#if showPassword}<EyeOff style="width: 20px; height: 20px;" />{:else}<Eye style="width: 20px; height: 20px;" />{/if}
                         </Button>
                     </div>
                 </div>
@@ -223,14 +187,10 @@
                 </label>
 
                 {#if error}
-                    <p class="text-xs font-medium text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 rounded-xl text-center">
-                        {error}
-                    </p>
+                    <p class="text-xs font-medium text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 rounded-xl text-center">{error}</p>
                 {/if}
 
-                <Button
-                    {disabled}
-                    type="submit"
+                <Button {disabled} type="submit"
                     class="w-full rounded-xl h-11 font-semibold tracking-wide text-white transition-all duration-300 active:scale-[0.98] select-none
                            {disabled
                                ? 'bg-zinc-800 text-zinc-500 border border-zinc-700/50 cursor-not-allowed shadow-none'
@@ -238,7 +198,6 @@
                 >
                     {#if status === "loading"}
                         <div class="flex items-center justify-center gap-2">
-                            <!-- Premium loading spinner -->
                             <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -253,7 +212,40 @@
         {/if}
     </div>
 
-    <div class="flex justify-center p-6 relative z-10">
+    <!-- ── Университеттер логотип тасмасы ── -->
+    {#if univers.length > 0}
+        <div class="ticker-wrapper relative z-10 mb-4 overflow-hidden">
+            <!-- Сол жақ fade -->
+            <div class="ticker-fade ticker-fade-left"></div>
+            <!-- Оң жақ fade -->
+            <div class="ticker-fade ticker-fade-right"></div>
+
+            <div class="ticker-track">
+                <!-- 3× қайталаймыз — шексіз айналым үшін -->
+                {#each [0, 1, 2] as _}
+                    {#each univers as univer}
+                        <a
+                            href={univer.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="ticker-item"
+                            title={univer.name}
+                        >
+                            <img
+                                src={univer.logo}
+                                alt={univer.name}
+                                class="ticker-logo"
+                                loading="lazy"
+                                onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                            />
+                        </a>
+                    {/each}
+                {/each}
+            </div>
+        </div>
+    {/if}
+
+    <div class="flex justify-center pb-4 relative z-10">
         <p class="text-xs tracking-wider text-zinc-500 select-none">
             Platonus • Бірыңғай Портал • {api.version.client}
         </p>
@@ -265,17 +257,14 @@
         @apply text-sky-400 underline hover:no-underline hover:text-sky-300 transition-colors duration-300;
     }
 
-    /* ── Success screen анимациясы ── */
+    /* ── Success screen ── */
     .success-screen {
         animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
-
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(24px) scale(0.95); }
         to   { opacity: 1; transform: translateY(0)    scale(1); }
     }
-
-    /* Логотип шеңбері */
     .logo-ring {
         position: relative;
         width: 96px;
@@ -288,12 +277,10 @@
         border: 1px solid rgba(255,255,255,0.12);
         animation: logoPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
     }
-
     @keyframes logoPop {
         from { transform: scale(0.5); opacity: 0; }
         to   { transform: scale(1);   opacity: 1; }
     }
-
     .logo-glow {
         position: absolute;
         inset: 0;
@@ -301,13 +288,10 @@
         background: radial-gradient(circle at center, rgba(34,197,94,0.18) 0%, transparent 70%);
         animation: glowPulse 1.4s ease-in-out infinite alternate;
     }
-
     @keyframes glowPulse {
         from { opacity: 0.6; }
         to   { opacity: 1.0; }
     }
-
-    /* SVG checkmark */
     .checkmark {
         position: absolute;
         bottom: -8px;
@@ -319,17 +303,14 @@
         box-shadow: 0 0 12px rgba(22,163,74,0.5);
         animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
     }
-
     @keyframes checkPop {
         from { transform: scale(0); opacity: 0; }
         to   { transform: scale(1); opacity: 1; }
     }
-
     .checkmark__circle {
         stroke: rgba(255,255,255,0.3);
         stroke-width: 1;
     }
-
     .checkmark__check {
         stroke: white;
         stroke-width: 3.5;
@@ -339,8 +320,79 @@
         stroke-dashoffset: 48;
         animation: drawCheck 0.4s ease 0.5s forwards;
     }
-
     @keyframes drawCheck {
         to { stroke-dashoffset: 0; }
+    }
+
+    /* ── Логотип тасмасы (ticker) ── */
+    .ticker-wrapper {
+        width: 100%;
+        height: 52px;
+    }
+
+    .ticker-fade {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .ticker-fade-left {
+        left: 0;
+        background: linear-gradient(to right, #07070a 0%, transparent 100%);
+    }
+    .ticker-fade-right {
+        right: 0;
+        background: linear-gradient(to left, #07070a 0%, transparent 100%);
+    }
+
+    .ticker-track {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        /* 3 блок × 25 универ × 64px (item) = ~4800px */
+        width: max-content;
+        animation: ticker-scroll 40s linear infinite;
+    }
+    .ticker-track:hover {
+        animation-play-state: paused;
+    }
+
+    @keyframes ticker-scroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(calc(-100% / 3)); }
+    }
+
+    .ticker-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        margin: 0 10px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        flex-shrink: 0;
+        text-decoration: none;
+    }
+    .ticker-item:hover {
+        background: rgba(255, 255, 255, 0.09);
+        border-color: rgba(255, 255, 255, 0.18);
+        transform: scale(1.12);
+    }
+
+    .ticker-logo {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        border-radius: 6px;
+        filter: brightness(0.9) saturate(0.85);
+        transition: filter 0.2s;
+    }
+    .ticker-item:hover .ticker-logo {
+        filter: brightness(1.1) saturate(1.1);
     }
 </style>
