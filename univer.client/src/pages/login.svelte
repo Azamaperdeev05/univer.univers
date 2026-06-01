@@ -34,13 +34,26 @@
     let error = $state("")
     let successUniver = $state<Univer | null>(null)
 
-    // Университеттер тізімі (тасма үшін)
+    // Университеттер тізімі
     let univers = $state<Univer[]>([])
+    let showDropdown = $state(false)
+    let selectedUniver = $derived(univers.find(u => u.code === univer_code))
+
     onMount(async () => {
         try {
             const res = await fetch(apiUrl("/api/universities"))
             if (res.ok) univers = await res.json()
         } catch {}
+
+        // Dropdown сыртынан басқанда жабылу логикасы
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement
+            if (!target.closest('.dropdown-container')) {
+                showDropdown = false
+            }
+        }
+        window.addEventListener('click', handleClick)
+        return () => window.removeEventListener('click', handleClick)
     })
 
     let active = $derived(username.length && agree && password.length)
@@ -72,11 +85,11 @@
     let showPassword = $state(false)
 </script>
 
-<Page class="relative flex flex-col justify-between min-h-screen bg-[#07070a] overflow-hidden">
+<Page class="relative flex flex-col justify-between min-h-screen bg-[#fafafa] dark:bg-[#07070a] text-zinc-900 dark:text-white transition-colors duration-500 overflow-hidden">
     {#snippet header()}
-        <AppBar class="border-b border-white/5 bg-transparent backdrop-blur-md">
+        <AppBar class="border-b border-zinc-200 dark:border-white/5 bg-transparent backdrop-blur-md">
             {#snippet left()}
-                <Button variant="ghost" size="icon" href={routes.faq} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                <Button variant="ghost" size="icon" href={routes.faq} class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300">
                     <CircleHelp style="width: 20px; height: 20px;" />
                 </Button>
             {/snippet}
@@ -84,18 +97,18 @@
                 <div class="flex gap-1.5">
                     <InstallButton>
                         {#snippet children(onclick)}
-                            <Button variant="ghost" size="icon" {onclick} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                            <Button variant="ghost" size="icon" {onclick} class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300">
                                 <MonitorDown style="width: 20px; height: 20px;" />
                             </Button>
                         {/snippet}
                     </InstallButton>
-                    <Button variant="ghost" size="icon" href={routes.telegram} target="_blank" class="text-zinc-400 hover:text-white transition-colors duration-300">
+                    <Button variant="ghost" size="icon" href={routes.telegram} target="_blank" class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300">
                         <Telegram style="width: 20px; height: 20px;" />
                     </Button>
-                    <Button variant="ghost" size="icon" href={routes.github} target="_blank" class="text-zinc-400 hover:text-white transition-colors duration-300">
+                    <Button variant="ghost" size="icon" href={routes.github} target="_blank" class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300">
                         <Github style="width: 20px; height: 20px;" />
                     </Button>
-                    <Button variant="ghost" size="icon" href={routes.settings} class="text-zinc-400 hover:text-white transition-colors duration-300">
+                    <Button variant="ghost" size="icon" href={routes.settings} class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300">
                         <Settings style="width: 20px; height: 20px;" />
                     </Button>
                 </div>
@@ -122,56 +135,127 @@
                 </div>
                 {#if successUniver?.name}
                     <div class="flex flex-col gap-1">
-                        <p class="text-white/50 text-xs uppercase tracking-widest font-semibold">Сәтті кірдіңіз</p>
-                        <p class="text-white font-bold text-base leading-snug max-w-[260px]">{successUniver.name}</p>
+                        <p class="text-zinc-500 dark:text-white/50 text-xs uppercase tracking-widest font-semibold">Сәтті кірдіңіз</p>
+                        <p class="text-zinc-900 dark:text-white font-bold text-base leading-snug max-w-[260px]">{successUniver.name}</p>
                     </div>
                 {:else}
-                    <p class="text-white/50 text-sm">Кіріп жатырмыз...</p>
+                    <p class="text-zinc-500 dark:text-white/50 text-sm">Кіріп жатырмыз...</p>
                 {/if}
             </div>
 
         <!-- ── Логин формасы ── -->
         {:else}
             <form
-                class="w-full max-w-[390px] bg-[#0c0c12]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex flex-col gap-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group hover:border-white/15 transition-all duration-500"
+                class="w-full max-w-[390px] bg-white/90 dark:bg-[#0c0c12]/80 backdrop-blur-2xl border border-zinc-200 dark:border-white/10 rounded-3xl p-8 flex flex-col gap-6 shadow-[0_24px_64px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group hover:border-zinc-300 dark:hover:border-white/15 transition-all duration-500"
                 {onsubmit}
             >
                 <div class="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-sky-500/10 transition-all duration-500"></div>
 
                 <div class="flex flex-col items-center gap-3 pb-2">
-                    <div class="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_32px_rgba(255,255,255,0.02)] transition-all duration-300 group-hover:border-white/20">
+                    <div class="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(255,255,255,0.02)] transition-all duration-300 group-hover:border-zinc-300 dark:group-hover:border-white/20">
                         <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-sky-500/10 to-blue-500/10 animate-pulse"></div>
-                        <img src="/images/logo.svg" alt="Platonus Logo" class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" />
+                        <img src="/images/logo.svg" alt="Platonus Logo" class="w-12 h-12 object-contain relative z-10 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" />
                     </div>
                     <div class="text-center mt-1">
-                        <h2 class="text-2xl font-bold tracking-tight text-white/90">Platonus</h2>
-                        <p class="text-xs text-zinc-400 mt-1 max-w-[240px]">Бірыңғай студенттік портал</p>
+                        <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white/90">Platonus</h2>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-[240px]">Бірыңғай студенттік портал</p>
+                    </div>
+                </div>
+
+                <!-- ── Университет таңдау өрісі (Select field) ── -->
+                <div class="flex flex-col gap-1.5 dropdown-container relative">
+                    <span class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase ml-1">Университет</span>
+                    <div class="relative">
+                        <button
+                            type="button"
+                            onclick={() => (showDropdown = !showDropdown)}
+                            class="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-zinc-900 dark:text-white rounded-xl h-11 px-4 transition-all duration-300 flex items-center justify-between text-left select-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                        >
+                            <div class="flex items-center gap-2 max-w-[85%]">
+                                {#if selectedUniver}
+                                    {#if selectedUniver.logo}
+                                        <img src={selectedUniver.logo} alt={selectedUniver.name} class="w-5 h-5 object-contain rounded-md" />
+                                    {/if}
+                                    <span class="text-sm font-medium truncate">{selectedUniver.name}</span>
+                                {:else}
+                                    <div class="w-5 h-5 rounded-md bg-sky-500/10 flex items-center justify-center text-sky-500 text-[10px] font-bold">✨</div>
+                                    <span class="text-sm font-medium">Автоматты анықтау</span>
+                                {/if}
+                            </div>
+                            <svg
+                                class="w-4 h-4 text-zinc-400 transition-transform duration-300 {showDropdown ? 'rotate-180' : ''}"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {#if showDropdown}
+                            <!-- svelte-ignore a11y_click_events_have_key_events -->
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
+                            <div 
+                                class="absolute top-[calc(100%+6px)] left-0 right-0 bg-white dark:bg-[#0c0c12] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.7)] z-50 py-1.5 max-h-[220px] overflow-y-auto backdrop-blur-3xl"
+                            >
+                                <!-- Автоматты таңдау -->
+                                <div
+                                    onclick={() => {
+                                        univer_code = "auto";
+                                        showDropdown = false;
+                                    }}
+                                    class="px-4 py-2.5 text-sm flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors {univer_code === 'auto' ? 'text-sky-500 font-bold bg-sky-500/5 dark:bg-sky-500/10' : 'text-zinc-800 dark:text-white/80'}"
+                                >
+                                    <div class="w-5 h-5 rounded-md bg-sky-500/10 flex items-center justify-center text-sky-500 text-[10px] font-bold">✨</div>
+                                    <span>Автоматты анықтау</span>
+                                </div>
+                                <div class="h-[1px] bg-zinc-100 dark:bg-white/5 my-1"></div>
+                                <!-- Универтер тізімі -->
+                                {#each univers as univer}
+                                    <div
+                                        onclick={() => {
+                                            univer_code = univer.code;
+                                            showDropdown = false;
+                                        }}
+                                        class="px-4 py-2.5 text-sm flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors {univer_code === univer.code ? 'text-sky-500 font-bold bg-sky-500/5 dark:bg-sky-500/10' : 'text-zinc-800 dark:text-white/80'}"
+                                    >
+                                        {#if univer.logo}
+                                            <img src={univer.logo} alt={univer.name} class="w-5 h-5 object-contain rounded-md" />
+                                        {:else}
+                                            <div class="w-5 h-5 rounded-md bg-zinc-200 dark:bg-white/10"></div>
+                                        {/if}
+                                        <span class="truncate">{univer.name}</span>
+                                    </div>
+                                {/each}
+                            </div>
+                        {/if}
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase ml-1">{_("username")}</span>
+                    <span class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase ml-1">{_("username")}</span>
                     <Input
                         type="text"
                         bind:value={username}
                         name="username"
                         placeholder="Логин немесе ЖСН..."
-                        class="w-full bg-zinc-900/60 border border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-white rounded-xl h-11 px-4 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                        class="w-full bg-zinc-55 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-zinc-900 dark:text-white rounded-xl h-11 px-4 transition-all duration-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
                     />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase ml-1">{_("password")}</span>
+                    <span class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase ml-1">{_("password")}</span>
                     <div class="relative">
                         <Input
                             type={showPassword ? "text" : "password"}
                             bind:value={password}
                             name="password"
                             placeholder={showPassword ? api.version.client : "••••••••••••"}
-                            class="w-full bg-zinc-900/60 border border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-white rounded-xl h-11 pl-4 pr-11 transition-all duration-300 placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
+                            class="w-full bg-zinc-55 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 text-zinc-900 dark:text-white rounded-xl h-11 pl-4 pr-11 transition-all duration-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"
                         />
                         <Button variant="ghost" type="button" size="icon"
-                            class="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors duration-300"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-300"
                             onclick={() => (showPassword = !showPassword)}
                         >
                             {#if showPassword}<EyeOff style="width: 20px; height: 20px;" />{:else}<Eye style="width: 20px; height: 20px;" />{/if}
@@ -180,20 +264,20 @@
                 </div>
 
                 <label class="flex items-start gap-3 my-1 cursor-pointer select-none">
-                    <Checkbox id="terms" bind:checked={agree} name="agree" class="mt-0.5 rounded border-zinc-700 bg-zinc-900/60 text-sky-500 focus:ring-sky-500/30" />
-                    <span class="privacy text-xs leading-relaxed text-zinc-400">
+                    <Checkbox id="terms" bind:checked={agree} name="agree" class="mt-0.5 rounded border-zinc-350 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/60 text-sky-500 focus:ring-sky-500/30" />
+                    <span class="privacy text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
                         {@html _("privacy-policy.agree", routes.privacy)}
                     </span>
                 </label>
 
                 {#if error}
-                    <p class="text-xs font-medium text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 rounded-xl text-center">{error}</p>
+                    <p class="text-xs font-medium text-rose-600 bg-rose-50 dark:text-rose-500 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 px-3.5 py-2.5 rounded-xl text-center">{error}</p>
                 {/if}
 
                 <Button {disabled} type="submit"
                     class="w-full rounded-xl h-11 font-semibold tracking-wide text-white transition-all duration-300 active:scale-[0.98] select-none
                            {disabled
-                               ? 'bg-zinc-800 text-zinc-500 border border-zinc-700/50 cursor-not-allowed shadow-none'
+                               ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-700/50 cursor-not-allowed shadow-none'
                                : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 border border-sky-400/20 shadow-[0_8px_24px_rgba(14,165,233,0.15)] hover:shadow-[0_12px_32px_rgba(14,165,233,0.25)]'}"
                 >
                     {#if status === "loading"}
@@ -246,7 +330,7 @@
     {/if}
 
     <div class="flex justify-center pb-4 relative z-10">
-        <p class="text-xs tracking-wider text-zinc-500 select-none">
+        <p class="text-xs tracking-wider text-zinc-400 dark:text-zinc-500 select-none">
             Platonus • Бірыңғай Портал • {api.version.client}
         </p>
     </div>
@@ -254,7 +338,7 @@
 
 <style>
     .privacy :global(a) {
-        @apply text-sky-400 underline hover:no-underline hover:text-sky-300 transition-colors duration-300;
+        @apply text-sky-500 dark:text-sky-400 underline hover:no-underline hover:text-sky-600 dark:hover:text-sky-300 transition-colors duration-300;
     }
 
     /* ── Success screen ── */
@@ -273,9 +357,13 @@
         align-items: center;
         justify-content: center;
         border-radius: 24px;
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.06);
+        animation: logoPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+    }
+    :global(.dark) .logo-ring {
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.12);
-        animation: logoPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
     }
     @keyframes logoPop {
         from { transform: scale(0.5); opacity: 0; }
@@ -285,8 +373,11 @@
         position: absolute;
         inset: 0;
         border-radius: 24px;
-        background: radial-gradient(circle at center, rgba(34,197,94,0.18) 0%, transparent 70%);
+        background: radial-gradient(circle at center, rgba(34,197,94,0.12) 0%, transparent 70%);
         animation: glowPulse 1.4s ease-in-out infinite alternate;
+    }
+    :global(.dark) .logo-glow {
+        background: radial-gradient(circle at center, rgba(34,197,94,0.18) 0%, transparent 70%);
     }
     @keyframes glowPulse {
         from { opacity: 0.6; }
@@ -300,8 +391,11 @@
         height: 28px;
         border-radius: 50%;
         background: #16a34a;
-        box-shadow: 0 0 12px rgba(22,163,74,0.5);
+        box-shadow: 0 0 12px rgba(22,163,74,0.3);
         animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
+    }
+    :global(.dark) .checkmark {
+        box-shadow: 0 0 12px rgba(22,163,74,0.5);
     }
     @keyframes checkPop {
         from { transform: scale(0); opacity: 0; }
@@ -340,10 +434,16 @@
     }
     .ticker-fade-left {
         left: 0;
+        background: linear-gradient(to right, #fafafa 0%, transparent 100%);
+    }
+    :global(.dark) .ticker-fade-left {
         background: linear-gradient(to right, #07070a 0%, transparent 100%);
     }
     .ticker-fade-right {
         right: 0;
+        background: linear-gradient(to left, #fafafa 0%, transparent 100%);
+    }
+    :global(.dark) .ticker-fade-right {
         background: linear-gradient(to left, #07070a 0%, transparent 100%);
     }
 
@@ -351,7 +451,6 @@
         display: flex;
         align-items: center;
         gap: 0;
-        /* 3 блок × 25 универ × 64px (item) = ~4800px */
         width: max-content;
         animation: ticker-scroll 40s linear infinite;
     }
@@ -372,16 +471,24 @@
         height: 52px;
         margin: 0 10px;
         border-radius: 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.05);
         transition: background 0.2s, border-color 0.2s, transform 0.2s;
         flex-shrink: 0;
         text-decoration: none;
     }
+    :global(.dark) .ticker-item {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+    }
     .ticker-item:hover {
+        background: rgba(0, 0, 0, 0.06);
+        border-color: rgba(0, 0, 0, 0.12);
+        transform: scale(1.12);
+    }
+    :global(.dark) .ticker-item:hover {
         background: rgba(255, 255, 255, 0.09);
         border-color: rgba(255, 255, 255, 0.18);
-        transform: scale(1.12);
     }
 
     .ticker-logo {
@@ -389,10 +496,16 @@
         height: 32px;
         object-fit: contain;
         border-radius: 6px;
-        filter: brightness(0.9) saturate(0.85);
+        filter: brightness(0.95) saturate(0.95);
         transition: filter 0.2s;
     }
+    :global(.dark) .ticker-logo {
+        filter: brightness(0.9) saturate(0.85);
+    }
     .ticker-item:hover .ticker-logo {
+        filter: brightness(1.05) saturate(1.05);
+    }
+    :global(.dark) .ticker-item:hover .ticker-logo {
         filter: brightness(1.1) saturate(1.1);
     }
 </style>

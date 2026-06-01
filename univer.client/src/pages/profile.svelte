@@ -33,44 +33,44 @@
                 <Loader />
             {:else if query.data}
                 {@const {fullname, education_program, faculty, education_program_group, level_of_the_qualification} = query.data}
-                <div class="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-4 shadow-xl backdrop-blur-md">
-                    <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+                <div class="bg-card border border-border rounded-3xl p-5 flex flex-col gap-4 shadow-md">
+                    <div class="flex items-center gap-3 border-b border-border pb-3">
                         <div class="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-xl">
                             {fullname ? fullname.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "ST"}
                         </div>
                         <div>
-                            <p class="text-xs text-white/40 font-medium uppercase tracking-wider">{_("transcript.fullname")}</p>
-                            <p class="font-bold text-base text-white">{fullname}</p>
+                            <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider">{_("transcript.fullname")}</p>
+                            <p class="font-bold text-base text-foreground">{fullname}</p>
                         </div>
                     </div>
                     
                     <div class="grid gap-3 text-sm">
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-xs text-white/40">{_("transcript.faculty")}</span>
-                            <span class="font-medium text-white/95">{faculty}</span>
+                            <span class="text-xs text-muted-foreground">{_("transcript.faculty")}</span>
+                            <span class="font-medium text-foreground">{faculty}</span>
                         </div>
                         
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-xs text-white/40">{_("transcript.education-program-group")}</span>
-                            <span class="font-medium text-white/95 text-xs sm:text-sm leading-relaxed">{education_program_group}</span>
+                            <span class="text-xs text-muted-foreground">{_("transcript.education-program-group")}</span>
+                            <span class="font-medium text-foreground text-xs sm:text-sm leading-relaxed">{education_program_group}</span>
                         </div>
                         
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-xs text-white/40">{_("transcript.education-program")}</span>
-                            <span class="font-medium text-white/95 text-xs sm:text-sm leading-relaxed">{education_program}</span>
+                            <span class="text-xs text-muted-foreground">{_("transcript.education-program")}</span>
+                            <span class="font-medium text-foreground text-xs sm:text-sm leading-relaxed">{education_program}</span>
                         </div>
                         
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-xs text-white/40">{_("transcript.level-of-the-qualification")}</span>
-                            <span class="font-medium text-white/90 text-xs leading-relaxed">{level_of_the_qualification}</span>
+                            <span class="text-xs text-muted-foreground">{_("transcript.level-of-the-qualification")}</span>
+                            <span class="font-medium text-foreground text-xs leading-relaxed">{level_of_the_qualification}</span>
                         </div>
                     </div>
                 </div>
             {/if}
 
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
-                <span class="text-sm text-white/60">{_("username")}</span>
-                <span class="font-bold text-white bg-white/10 px-3 py-1 rounded-lg text-sm">{username}</span>
+            <div class="bg-card border border-border rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <span class="text-sm text-muted-foreground">{_("username")}</span>
+                <span class="font-bold text-foreground bg-muted px-3 py-1 rounded-lg text-sm">{username}</span>
             </div>
 
             {#if query.loading}
@@ -78,26 +78,26 @@
             {:else if query.data}
                 {@const {year_of_study, length_of_program, language, graid_point, avarage_point} = query.data}
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-1">
-                        <span class="text-xs text-white/40">{_("transcript.year-of-study")}</span>
-                        <span class="font-bold text-lg text-white">
-                            {year_of_study} <span class="text-sm font-normal text-white/40">/ {length_of_program}</span>
+                    <div class="bg-card border border-border rounded-2xl p-4 flex flex-col gap-1 shadow-sm">
+                        <span class="text-xs text-muted-foreground">{_("transcript.year-of-study")}</span>
+                        <span class="font-bold text-lg text-foreground">
+                            {year_of_study} <span class="text-sm font-normal text-muted-foreground">/ {length_of_program}</span>
                         </span>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-1">
-                        <span class="text-xs text-white/40">{_("transcript.language")}</span>
-                        <span class="font-bold text-base text-white">{language}</span>
+                    <div class="bg-card border border-border rounded-2xl p-4 flex flex-col gap-1 shadow-sm">
+                        <span class="text-xs text-muted-foreground">{_("transcript.language")}</span>
+                        <span class="font-bold text-base text-foreground">{language}</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-1">
-                        <span class="text-xs text-white/40">{_("transcript.graid-point")}</span>
-                        <span class="font-bold text-lg text-white">{graid_point}</span>
+                    <div class="bg-card border border-border rounded-2xl p-4 flex flex-col gap-1 shadow-sm">
+                        <span class="text-xs text-muted-foreground">{_("transcript.graid-point")}</span>
+                        <span class="font-bold text-lg text-foreground">{graid_point}</span>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-1">
-                        <span class="text-xs text-white/40">{_("transcript.avarage-point")}</span>
-                        <span class="font-bold text-lg text-white">{avarage_point}</span>
+                    <div class="bg-card border border-border rounded-2xl p-4 flex flex-col gap-1 shadow-sm">
+                        <span class="text-xs text-muted-foreground">{_("transcript.avarage-point")}</span>
+                        <span class="font-bold text-lg text-foreground">{avarage_point}</span>
                     </div>
                 </div>
             {/if}

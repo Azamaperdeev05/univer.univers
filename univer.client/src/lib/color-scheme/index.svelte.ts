@@ -24,12 +24,9 @@ export class ColorScheme extends StoredValue<"auto" | "dark" | "light"> {
     apply(node: HTMLElement) {
         super.apply()
         $effect(() => {
-            if (this.value === "auto") {
-                node.classList.remove("light", "dark")
-                return
-            }
-            node.classList.remove(this.value === "dark" ? "light" : "dark")
-            node.classList.add(this.value)
+            const active = this.scheme
+            node.classList.remove(active === "dark" ? "light" : "dark")
+            node.classList.add(active)
         })
 
         const update = ({ matches }: Pick<MediaQueryList, "matches">) => {

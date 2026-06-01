@@ -101,11 +101,11 @@
 
             // Local Storage тазалау (тіл мен тема сақталады)
             const lang = localStorage.getItem("lang")
-            const colorSchemeValue = localStorage.getItem("color-scheme")
+            const colorSchemeValue = localStorage.getItem("color-theme")
             localStorage.clear()
             if (lang) localStorage.setItem("lang", lang)
             if (colorSchemeValue)
-                localStorage.setItem("color-scheme", colorSchemeValue)
+                localStorage.setItem("color-theme", colorSchemeValue)
 
             alert(_("cache.cleared"))
 
