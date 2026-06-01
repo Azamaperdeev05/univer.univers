@@ -1,12 +1,184 @@
+import asyncio
 import base64
 import json
 import aiohttp
 from typing import Dict, List, Optional
 
-UNIVERSITIES = {
-    "kstu": "https://platonus.kstu.kz",
-    "buketov": "https://platonus.buketov.edu.kz"
+# Университеттер тізімі — Platonus порталдары бар барлық КЗ жоғары оқу орындары
+# Формат: код → {url, name, logo, website}
+UNIVERSITIES: dict[str, dict] = {
+    # ── Қарағанды ──────────────────────────────────────────────────────────────
+    "kstu": {
+        "url":     "https://platonus.kstu.kz",
+        "name":    "Әбілқас Сағынов атындағы КарТУ",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kstu.kz",
+        "website": "https://kstu.kz",
+    },
+    "buketov": {
+        "url":     "https://platonus.buketov.edu.kz",
+        "name":    "Е.А. Бөкетов атындағы Қарағанды университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=buketov.edu.kz",
+        "website": "https://buketov.edu.kz",
+    },
+    "kiu": {
+        "url":     "https://platonus.tttu.edu.kz",
+        "name":    "Қарағанды индустриялық университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=tttu.edu.kz",
+        "website": "https://tttu.edu.kz",
+    },
+    "keu": {
+        "url":     "https://plt.keu.kz",
+        "name":    "Қарағанды Қазтұтынуодағы университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=keu.kz",
+        "website": "https://keu.kz",
+    },
+
+    # ── Астана / Нұр-Сұлтан ────────────────────────────────────────────────────
+    "enu": {
+        "url":     "https://edu.enu.kz",
+        "name":    "Л.Н. Гумилев атындағы Еуразия ұлттық университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=enu.kz",
+        "website": "https://enu.kz",
+    },
+    "kazatu": {
+        "url":     "https://platonus.kazatu.kz",
+        "name":    "С. Сейфуллин атындағы ҚазАТЗУ",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kazatu.edu.kz",
+        "website": "https://kazatu.edu.kz",
+    },
+    "mnu": {
+        "url":     "https://platonus.mnu.kz",
+        "name":    "Maqsut Narikbayev University",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=mnu.kz",
+        "website": "https://mnu.kz",
+    },
+    "kaznaru": {
+        "url":     "https://platonus.kaznaru.edu.kz",
+        "name":    "Қазақ ұлттық аграрлық зерттеу университеті (KazNARU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kaznaru.edu.kz",
+        "website": "https://kaznaru.edu.kz",
+    },
+
+    # ── Алматы ─────────────────────────────────────────────────────────────────
+    "almau": {
+        "url":     "https://platonus.almau.edu.kz",
+        "name":    "Almaty Management University (AlmaU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=almau.edu.kz",
+        "website": "https://almau.edu.kz",
+    },
+    "narxoz": {
+        "url":     "https://platonus.narxoz.kz",
+        "name":    "Narxoz University",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=narxoz.kz",
+        "website": "https://narxoz.kz",
+    },
+    "alt": {
+        "url":     "https://platonus.alt.edu.kz",
+        "name":    "ALT University",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=alt.edu.kz",
+        "website": "https://alt.edu.kz",
+    },
+    "aues": {
+        "url":     "https://platonus.aues.edu.kz",
+        "name":    "Алматы энергетика және байланыс университеті (AUES)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=aues.edu.kz",
+        "website": "https://aues.edu.kz",
+    },
+    "qyzpu": {
+        "url":     "https://platonus.qyzpu.edu.kz",
+        "name":    "Қазақ ұлттық қыздар педагогикалық университеті (QyzPU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=qyzpu.edu.kz",
+        "website": "https://qyzpu.edu.kz",
+    },
+    "kafu": {
+        "url":     "https://platonus.kafu.edu.kz",
+        "name":    "Қазақстан-Американдық еркін университеті (KAFU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kafu.edu.kz",
+        "website": "https://kafu.edu.kz",
+    },
+    "krmu": {
+        "url":     "https://platonus.medkrmu.kz",
+        "name":    "Қазақстан-Ресей медицина университеті (KRMU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=medkrmu.kz",
+        "website": "https://medkrmu.kz",
+    },
+    "kaztbu": {
+        "url":     "https://platonus.kaztbu.edu.kz",
+        "name":    "Қазақ технология және бизнес университеті (KazUTB)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kaztbu.edu.kz",
+        "website": "https://kaztbu.edu.kz",
+    },
+
+    # ── Түркістан / Оңтүстік ───────────────────────────────────────────────────
+    "ayu": {
+        "url":     "https://platonus.ayu.edu.kz",
+        "name":    "Қ.А. Ясауи атындағы Халықаралық қазақ-түрік университеті (AYU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=ayu.edu.kz",
+        "website": "https://ayu.edu.kz",
+    },
+    "skma": {
+        "url":     "https://platonus.skma.edu.kz",
+        "name":    "Оңтүстік Қазақстан медицина академиясы (SKMA)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=skma.edu.kz",
+        "website": "https://skma.edu.kz",
+    },
+    "caiu": {
+        "url":     "https://platonus.caiu.edu.kz",
+        "name":    "Орталық Азия инновациялық университеті (CAIU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=caiu.edu.kz",
+        "website": "https://caiu.edu.kz",
+    },
+
+    # ── Тараз / Батыс ──────────────────────────────────────────────────────────
+    "tau": {
+        "url":     "https://platonus.tau-edu.kz",
+        "name":    "Тұран-Астана университеті (TAU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=tau-edu.kz",
+        "website": "https://tau-edu.kz",
+    },
+    "wku": {
+        "url":     "https://platonus.wku.edu.kz",
+        "name":    "М. Өтемісов атындағы Батыс Қазақстан университеті (WKU)",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=wku.edu.kz",
+        "website": "https://wku.edu.kz",
+    },
+    "kaznuvhi": {
+        "url":     "https://platonus.kaznuvhi.edu.kz",
+        "name":    "Қазақ ұлттық су шаруашылығы және ирригация университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=kaznuvhi.edu.kz",
+        "website": "https://kaznuvhi.edu.kz",
+    },
+
+    # ── Солтүстік Қазақстан ────────────────────────────────────────────────────
+    "knus": {
+        "url":     "https://platonus.knus.edu.kz",
+        "name":    "Қазақ спорт және туризм академиясы",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=knus.edu.kz",
+        "website": "https://knus.edu.kz",
+    },
+    "mtgu": {
+        "url":     "https://platonus.mtgu.edu.kz",
+        "name":    "Халықаралық көлік-гуманитарлық университеті",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=mtgu.edu.kz",
+        "website": "https://mtgu.edu.kz",
+    },
+
+    # ── Басқа ──────────────────────────────────────────────────────────────────
+    "quniversity": {
+        "url":     "https://platonus.q-university.kz",
+        "name":    "Q University",
+        "logo":    "https://www.google.com/s2/favicons?sz=256&domain=q-university.kz",
+        "website": "https://q-university.kz",
+    },
 }
+
+def _univer_url(code: str, default: str = "https://platonus.kstu.kz") -> str:
+    """Университет кодынан Platonus URL-ін қайтарады."""
+    entry = UNIVERSITIES.get(code)
+    if entry:
+        return entry["url"]
+    return default
+
 PLATONUS_TIMEOUT = aiohttp.ClientTimeout(total=15)
 PLATONUS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -46,37 +218,84 @@ def _pt_headers_and_cookies(pt_cookie: str):
     cookies["plt_sid"] = data.get("s", "")
     return headers, cookies
 
+def _is_iin(value: str) -> bool:
+    """ИИН форматын тексеру: дәл 12 сан."""
+    return value.isdigit() and len(value) == 12
+
+
+async def _try_platonus_login_payload(
+    session: aiohttp.ClientSession,
+    login_url: str,
+    payload: dict,
+    headers: dict,
+    platonus_url: str,
+) -> Optional[str]:
+    """Берілген payload арқылы логин жасап, сәтті болса pt_token қайтарады."""
+    try:
+        async with session.post(login_url, json=payload, headers=headers) as resp:
+            if resp.status != 200:
+                return None
+            data = await resp.json()
+            if data.get("login_status") != "success":
+                return None
+            auth_token = data.get("auth_token")
+            sid = data.get("sid")
+            extra_cookies = {
+                name: morsel.value
+                for name, morsel in resp.cookies.items()
+                if name != "plt_sid"
+            }
+            return _encode_pt(auth_token, sid, extra_cookies, platonus_url)
+    except Exception:
+        return None
+
 
 async def platonus_login(username: str, password: str, univer_code: str = "kstu") -> Optional[str]:
-    platonus_url = UNIVERSITIES.get(univer_code, "https://platonus.kstu.kz")
+    """
+    Platonus жүйесіне логин жасайды.
+    
+    Екі режимді қолдайды:
+    - login режимі: 'login' өрісіне username жіберіледі (username/password)
+    - IIN режимі:   'iin' өрісіне ИИН жіберіледі (ЖСН/пароль)
+    
+    username 12 цифрдан тұрса → екі режимді де параллель тексереді.
+    """
+    platonus_url = _univer_url(univer_code)
     login_url = f"{platonus_url}/rest/api/login"
-    login_data = {
-        "login": username,
+    headers = {**PLATONUS_HEADERS, "language": "2"}  # 2=Russian, 1=Kazakh
+
+    base = {
         "password": password,
-        "iin": None,
         "icNumber": None,
         "authForDeductedStudentsAndGraduates": False,
     }
-    headers = {**PLATONUS_HEADERS, "language": "2"}  # 2=Russian, 1=Kazakh
+
+    # Login режимі payload
+    login_payload = {**base, "login": username, "iin": None}
+
+    # ИИН режимі payload (тек 12 цифрлы болса)
+    iin_payload = {**base, "login": None, "iin": username} if _is_iin(username) else None
 
     try:
         async with aiohttp.ClientSession(timeout=PLATONUS_TIMEOUT) as session:
-            async with session.post(login_url, json=login_data, headers=headers) as resp:
-                if resp.status != 200:
-                    return None
-                data = await resp.json()
-                if data.get("login_status") != "success":
-                    return None
-                auth_token = data.get("auth_token")
-                sid = data.get("sid")
-                extra_cookies = {
-                    name: morsel.value
-                    for name, morsel in resp.cookies.items()
-                    if name != "plt_sid"
-                }
-                return _encode_pt(auth_token, sid, extra_cookies, platonus_url)
+            if iin_payload is not None:
+                # Екі режимді параллель тексер — бірінші сәттісі жеңеді
+                results = await asyncio.gather(
+                    _try_platonus_login_payload(session, login_url, login_payload, headers, platonus_url),
+                    _try_platonus_login_payload(session, login_url, iin_payload, headers, platonus_url),
+                    return_exceptions=True,
+                )
+                for r in results:
+                    if r and not isinstance(r, Exception):
+                        return r
+                return None
+            else:
+                return await _try_platonus_login_payload(
+                    session, login_url, login_payload, headers, platonus_url
+                )
     except Exception:
         return None
+
 
 
 async def platonus_get_person_id(pt_cookie: str) -> Optional[int]:

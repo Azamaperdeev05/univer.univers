@@ -96,6 +96,21 @@ def decode_credentials(encoded: str) -> tuple[str, str] | None:
     return None
 
 
+# Университеттер тізімі — публичный эндпоинт (авторизация қажет емес)
+@routes.get("/api/universities")
+async def get_universities(request):
+    result = [
+        {
+            "code":    code,
+            "name":    info["name"],
+            "logo":    info["logo"],
+            "website": info["website"],
+        }
+        for code, info in UNIVERSITIES.items()
+    ]
+    return web.json_response(result)
+
+
 # Login handler
 @routes.post("/auth/login")
 async def login(request):
@@ -126,8 +141,19 @@ async def login(request):
             if not pt_token:
                 return web.json_response({"error": "Platonus login failed"}, status=401)
 
-        response = web.json_response({"status": "ok"})
-        
+        # Университет мета-деректері — фронтендке жіберіледі
+        univer_info = UNIVERSITIES.get(univer_code, {})
+        response_body = {
+            "status": "ok",
+            "univer": {
+                "code":    univer_code,
+                "name":    univer_info.get("name", ""),
+                "logo":    univer_info.get("logo", ""),
+                "website": univer_info.get("website", ""),
+            },
+        }
+        response = web.json_response(response_body)
+
         # Platonus session cookies
         response.set_cookie("_pt", pt_token, httponly=True, max_age=3600 * 24 * 30)
         pc = base64.b64encode(f"{username}:{password}".encode()).decode()
@@ -163,7 +189,7 @@ async def cors_middleware(app, handler):
 # API middleware - Platonus сессиясын дайындау және токенді автоматты жаңарту
 async def platonus_middleware(app, handler):
     async def middleware_handler(request):
-        public_paths = ["/api/privacy-policy", "/api/version"]
+        public_paths = ["/api/privacy-policy", "/api/version", "/api/universities"]
         if request.path.startswith("/api/") and request.path not in public_paths:
             pt = request.cookies.get("_pt")
             pc = request.cookies.get("_pc")

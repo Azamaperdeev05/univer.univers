@@ -1,3 +1,10 @@
+export type Univer = {
+    code: string
+    name: string
+    logo: string
+    website: string
+}
+
 export type Transcript = {
     fullname: string
     faculty: string

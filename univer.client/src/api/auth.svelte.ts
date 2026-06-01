@@ -3,6 +3,7 @@ import { api } from "./config"
 import { HTTPError, Unauthorized } from "./errors"
 import { secureStorage } from "./secure-storage"
 import { singleFetch } from "./utils"
+import type { Univer } from "./@types"
 
 interface User {
     username: string
@@ -67,30 +68,34 @@ export const refreshToken = async () => {
     const univer_code = localStorage.getItem("univer_code") || "kstu"
 
     if (username && password)
-        return await login({ password, username, univer_code })
+        return (await login({ password, username, univer_code })).status
     return 401
 }
 
-let loginPromise: Promise<number> | null = null
+let loginPromise: Promise<{ status: number; univer?: Univer }> | null = null
 export const login = (user: User) => {
     if (loginPromise) return loginPromise
     loginPromise = new Promise(async (resolve) => {
         await new Promise((r) => setTimeout(r, 1000))
         try {
-            const { status } = await fetch(api("/auth/login"), {
+            const resp = await fetch(api("/auth/login"), {
                 method: "POST",
                 credentials: "include",
                 body: JSON.stringify(user),
             })
-            if (status === 200) {
+            const body = await resp.json().catch(() => ({}))
+            if (resp.status === 200) {
                 const { password, username, univer_code = "kstu" } = user
                 secureStorage.setItem("password", password)
                 localStorage.setItem("username", username)
                 localStorage.setItem("univer_code", univer_code)
+                if (body.univer) {
+                    localStorage.setItem("univer", JSON.stringify(body.univer))
+                }
             }
-            resolve(status)
+            resolve({ status: resp.status, univer: body.univer })
         } catch {
-            resolve(404)
+            resolve({ status: 404 })
         }
     })
     loginPromise.then(() => setTimeout(() => (loginPromise = null), 1000))
