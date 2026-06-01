@@ -1,136 +1,127 @@
 <div align="center">
 
-<img src="univer.client/public/images/logo.svg" alt="Univer Logo" width="120">
+<img src="univer.client/public/images/logo.svg" alt="Univer Platonus logo" width="120">
 
-# 🎓 Univer - Студенттерге арналған бірыңғай портал
+# Univer Platonus
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-1.3-indigo.svg)](#)
-[![Railway](https://img.shields.io/badge/Deploy-Railway-purple.svg)](https://railway.app)
-[![Telegram](https://img.shields.io/badge/Telegram-Channel-blue.svg)](https://t.me/univerkstusite)
+Қазақстан студенттеріне арналған Platonus деректерін ыңғайлы көрсететін PWA.
 
-**Университет өмірін жеңілдететін заманауи және қауіпсіз веб-қосымша**
+[univerkstu.site](https://univerkstu.site) · [Telegram](https://t.me/univerkstusite) · [Issues](../../issues)
 
-[РЕСМИ САЙТ](https://univerkstu.site) · [Telegram Арна](https://t.me/univerkstusite) · [Қате туралы хабарлау](../../issues)
-
-<img src="univer.client/public/images/banner.png" alt="Univer Banner" width="600">
+<img src="univer.client/public/images/banner.png" alt="Univer Platonus banner" width="720">
 
 </div>
 
----
+## Жоба туралы
 
-## 📖 Мазмұны
+Univer Platonus - Platonus жүйесіндегі сабақ кестесін, бағаларды, емтихан ақпаратын, транскриптті және оқу материалдарын бір интерфейсте көрсететін веб-қосымша. Қосымша мобильді экранға бейімделген және PWA ретінде орнатылады.
 
-- [🎓 Univer - Студенттерге арналған бірыңғай портал](#-univer---студенттерге-арналған-бірыңғай-портал)
-  - [📖 Мазмұны](#-мазмұны)
-  - [🎯 Жоба туралы](#-жоба-туралы)
-    - [🎓 Қолдау көрсетілетін университеттер](#-қолдау-көрсетілетін-университеттер)
-  - [✨ Мүмкіндіктері](#-мүмкіндіктері)
-    - [📅 Сабақ кестесі](#-сабақ-кестесі)
-    - [📊 Үлгерім және Бағалар](#-үлгерім-және-бағалар)
-    - [📝 Транскрипт және ПОӘК](#-транскрипт-және-поәк)
-    - [🔔 Хабарламалар (Push Notifications)](#-хабарламалар-push-notifications)
-  - [🛠 Технологиялар](#-технологиялар)
-  - [🚀 Орнату](#-орнату)
-  - [📱 PWA және Хабарламалар](#-pwa-және-хабарламалар)
-  - [👥 Авторлар](#-авторлар)
-  - [📄 Лицензия](#-лицензия)
+Бұл ресми университет жүйесін алмастырмайды. Қосымша студенттің Platonus аккаунты арқылы деректерді оқып, оларды түсінікті интерфейске жинақтайды.
 
----
+## Мүмкіндіктер
 
-## 🎯 Жоба туралы
+- Сабақ кестесін көру.
+- Ағымдағы бағалар мен аттестацияларды көру.
+- ENU сияқты өзгеше бағалау формуласы бар университеттерді өңдеу.
+- Емтихан кестесін және GPA ақпаратын қарау.
+- Транскрипт пен оқу материалдарын ашу.
+- Баға калькуляторын қолдану.
+- Push хабарламаларды қосу.
+- Жарық, қараңғы және жүйелік тақырыпты таңдау.
+- Қазақ, орыс және ағылшын тілдері.
+- Android/iOS браузерлерінде PWA ретінде орнату.
 
-**Univer** — Қазақстан университеттерінің (ҚарТУ, ҚазҰУ) студенттеріне арналған бейресми портал. Ол ресми жүйелердің мәліметтерін ыңғайлы, жылдам және заманауи интерфейсте көрсетеді. Басты мақсат — студенттердің ақпаратқа қол жетімділігін арттыру.
+## Қолдау көрсетілетін университеттер
 
-### 🎓 Қолдау көрсетілетін университеттер
+Қосымша Platonus порталдары бар бірнеше университетпен жұмыс істеуге арналған. Қазіргі конфигурацияда ҚарТУ, Buketov University, ENU, KazATU, MNU, AlmaU, Narxoz, AUES және басқа Platonus порталдары бар оқу орындары көрсетілген.
 
-- **ҚарТУ** (Қарағанды техникалық университеті) - ✅ Толық қолдау
-  - Тақ/Жұп апта жүйесі: ✅ БАР
-- **ҚазҰУ** (Әл-Фараби атындағы ҚазҰУ) - ✅ Толық қолдау
-  - Тақ/Жұп апта жүйесі: ✅ Динамикалық (автоматты анықталады)
+Логин бетінде "Автоматты анықтау" режимі бар. Егер автоматты режим сәйкес университетті таппаса, университетті қолмен таңдауға болады.
 
----
+## Технологиялар
 
-## ✨ Мүмкіндіктері
+- Backend: Python 3.11, aiohttp.
+- Frontend: Svelte 5, TypeScript, Vite.
+- UI: Tailwind CSS, bits-ui, lucide-svelte.
+- PWA: vite-plugin-pwa, service worker, web manifest.
+- Deploy: Docker, Railway-compatible startup.
 
-### 📅 Сабақ кестесі
-- Ақылды кесте: Ағымдағы күн мен апта түрін (тақ/жұп) анықтау.
-- Кабинеттер мен оқытушылар туралы толық мәлімет.
+## Жоба құрылымы
 
-### 📊 Үлгерім және Бағалар
-- Ағымдағы бағаларды нақты уақытта бақылау.
-- Межелік бақылау (РК1, РК2) нәтижелері мен GPA есептеу.
-- **Интерактивті калькулятор**: Стипендия немесе "А" алу үшін қандай баға керек екенін есептеу.
-
-### 📝 Транскрипт және ПОӘК
-- Барлық семестрлердің тарихын көру.
-- Оқу материалдарын (ПОӘК) тікелей қосымшадан жүктеу.
-
-### 🔔 Хабарламалар (Push Notifications)
-- Жаңа баға қойылғанда келетін хабарламалар.
-- Сабаққа 5-10 минут қалғандағы ескертулер.
-
----
-
-## 🛠 Технологиялар
-
-- **Backend:** Python 3.11, aiohttp (Асинхронды сервер).
-- **Frontend:** Svelte, TypeScript, TailwindCSS (Indigo Premium Design).
-- **PWA:** Service Workers, Web Manifest (Мобильді қолданба ретінде орнату).
-- **Database:** SQLite / In-memory caching.
-
----
-
-## 🚀 Орнату
-
-```bash
-# Репозиторийді клондау
-git clone https://github.com/Azamaperdeev05/univer.univers.git
-cd univer.univers
-
-# Backend орнату (Python 3.11+)
-pip install -r requirements.txt
-python server.py
-
-# Порт логикасы:
-# - PORT берілсе -> тек сол портқа strict bind (fallback жоқ)
-# - PORT берілмесе -> 7435, бос болмаса 7436–7499 auto-fallback
-
-# Frontend орнату (univer.client ішінде)
-cd univer.client
-npm install
-npm run dev
+```text
+.
+├── core/                 # Platonus интеграциясы және backend helper-лері
+├── static/               # Production frontend build және public файлдар
+├── univer.client/        # Svelte/Vite frontend
+├── server.py             # aiohttp backend және static file serving
+├── requirements.txt      # Python тәуелділіктері
+├── Dockerfile            # Production image
+└── railway.toml          # Railway deploy конфигурациясы
 ```
 
----
+## Жергілікті іске қосу
 
-## 📱 PWA және Хабарламалар
+Backend:
 
-Бұл бағдарлама **Progressive Web App** стандарты бойынша жасалған. Оны Android және iOS құрылғыларына "Басты экранға қосу" арқылы нағыз қолданба ретінде орнатуға болады.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python server.py
+```
 
-**Push-хабарламаларды қосу үшін:**
-1. Баптаулар (Settings) бөліміне өтіңіз.
-2. "Хабарламаларды қосу" батырмасын басыңыз.
-3. Браузер рұқсатын растаңыз.
+Frontend:
 
----
+```bash
+cd univer.client
+pnpm install
+pnpm dev
+```
 
-## 👥 Авторлар
+Әдеткі порттар:
 
-- **[Vladislav Atakhanov](https://github.com/vladislav-atakhanov)** — Жобаның негізгі логикасы мен бастапқы кодын жазған авторы.
-- **[Азамат Пердеев](https://github.com/Azamaperdeev05)** — Жобаны дамытушы, дизайнды жаңартушы және жаңа функцияларды енгізуші (v1.01+).
+- Backend: `7435`, бос болмаса `7436..7499`.
+- Frontend dev server: `5173`.
 
----
+Егер `PORT` environment variable берілсе, backend сол портқа ғана bind жасайды.
 
-## 📄 Лицензия
+## Build
 
-Бұл жоба [MIT](LICENSE) лицензиясымен таратылады.
+Frontend production build:
 
-<div align="center">
+```bash
+cd univer.client
+pnpm build
+```
 
-**Азамат Пердеев студенттер үшін ❤️ жасап, дамытқан**
-**Бастапқы идея мен код: Vladislav Atakhanov**
+Vite build нәтижесі root ішіндегі `static/` папкасына жазылады. Backend production режимінде осы папканы serve етеді.
 
-⭐ Жоба ұнаса, жұлдызша қойыңыз!
+Docker build:
 
-</div>
+```bash
+docker build -t univer-platonus .
+docker run -p 7435:7435 univer-platonus
+```
+
+## SEO және Google verification
+
+Жоба root-та Google Search Console verification файлын, `robots.txt`, `sitemap.xml`, canonical meta, Open Graph meta және JSON-LD structured data қолданады.
+
+Deploy жасағаннан кейін Search Console ішінде:
+
+1. `https://univerkstu.site/google6b11bbffd33748dd.html` арқылы сайтты растау.
+2. `https://univerkstu.site/sitemap.xml` sitemap ретінде жіберу.
+3. Негізгі URL үшін indexing request жасау.
+
+Google-да бірінші орынға шығуға кепілдік жоқ. Бірақ техникалық SEO, жылдамдық, пайдалы контент және сыртқы сілтемелер ranking-ті жақсартады.
+
+## Қауіпсіздік
+
+Құпия сөздер backend дерекқорында сақталмайды. Session үшін Platonus token және refresh логикасы cookie арқылы өңделеді. Қауіпсіздік мәселесін тапсаңыз, public Issue ашпай, [SECURITY.md](SECURITY.md) нұсқаулығын қолданыңыз.
+
+## Қатысу
+
+Жобаға үлес қосу тәртібі [CONTRIBUTING.md](CONTRIBUTING.md) ішінде жазылған. Мінез-құлық ережелері [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) файлында.
+
+## Лицензия
+
+Бұл жоба [MIT License](LICENSE) бойынша таратылады.

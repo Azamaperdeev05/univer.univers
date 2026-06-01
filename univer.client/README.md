@@ -1,47 +1,139 @@
-[![Univer - расписание, оценки, УМКД](public/images/banner.png)](https://univer.eloh1m.com)
+# Univer Platonus Frontend
 
-# Univer
+Бұл папкада Univer Platonus қосымшасының Svelte/Vite frontend бөлігі орналасқан.
 
-Веб-приложение для просмотра оценок, расписания занятий и экзаменов, и другой  информации о студенте.
+## Stack
 
-Приложение доступно по ссылке — [univer.eloh1m.com](https://univer.eloh1m.com)
+- Svelte 5.
+- TypeScript.
+- Vite.
+- Tailwind CSS.
+- bits-ui.
+- lucide-svelte.
+- vite-plugin-pwa.
 
-## Возможности
+## Іске қосу
 
-- 📅 Расписание
-- ✅ Расписание экзаменов
-- 📕 Оценки
-- 🔢 Калькулятор оценок
-- 📄 УМКД
-- 👤 Транскрипт
+```bash
+pnpm install
+pnpm dev
+```
 
-## Особенности
+Dev server әдетте `http://localhost:5173` ашады. API dev режимінде `http://localhost:7435` backend-іне сұрау жібереді.
 
-- 🌗 Светлая и тёмная темы
-- 🌐 Многоязычность
-- 📱 Прогрессивное веб-приложение
+Backend root папкадан іске қосылады:
 
-## Скриншоты
+```bash
+cd ..
+python server.py
+```
 
-![Светлая тема](https://eloh1m.com/assets/univer/mobile-light.png)
+## Build
 
-![Успеваемость](public/images/screens/desktop/attendance.jpg)
+```bash
+pnpm build
+```
 
-![Тёмная тема](https://eloh1m.com/assets/univer/mobile-dark.png)
+Build нәтижесі root ішіндегі `static/` папкасына жазылады. Бұл Vite config ішіндегі `outDir: "../static"` арқылы жасалады.
 
-## Библиотеки и фреймворки
+Preview:
 
-Фронтенд
+```bash
+pnpm preview
+```
 
-- [Svelte](https://svelte.dev/)
+## Check
 
-Бекенд
+```bash
+pnpm check
+```
 
-- [Aiohttp](https://docs.aiohttp.org/)
-- [Aiofiles](https://github.com/Tinche/aiofiles)
-- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
-- [markdown](https://python-markdown.github.io/)
+Бұл команда `svelte-check` және TypeScript config тексерісін жүргізеді.
 
-## Обратная связь
+## Құрылым
 
-Телеграм-канал — [@code_improper](https://t.me/code_improper)
+```text
+src/
+├── api/              # Backend API wrapper және auth/session helper-лері
+├── lib/              # UI компоненттер, router, i18n, theme
+├── pages/            # App беттері
+├── app.svelte        # Root app shell
+├── app.css           # Tailwind және theme tokens
+├── main.ts           # Entry point
+└── manifest.js       # PWA manifest source
+```
+
+## Негізгі беттер
+
+- `login.svelte` - авторизация және университет таңдау.
+- `schedule.svelte` - сабақ кестесі.
+- `attestation.svelte` - бағалар және калькуляторға өту.
+- `exams.svelte` - емтихан/транскрипт summary.
+- `profile.svelte` - студент профилі.
+- `settings.svelte` - тақырып, тіл, хабарлама және кэш баптаулары.
+- `files/` - оқу материалдары.
+
+## Тақырып жүйесі
+
+Theme state `src/lib/color-scheme` ішінде сақталады. Негізгі storage key:
+
+```text
+color-theme
+```
+
+Tailwind semantic color token-дарын қолдану керек:
+
+- `bg-background`
+- `bg-card`
+- `text-foreground`
+- `text-muted-foreground`
+- `border-border`
+- `text-primary`
+
+Hardcoded `text-white`, `border-white`, `bg-white/..` кластарын app беттерінде тек нақты дизайн қажет болғанда ғана қолданыңыз.
+
+## Mobile layout
+
+Қосымша mobile-first. Fixed/floating bottom navigation бар беттерде:
+
+- content соңында жеткілікті bottom padding болуы керек;
+- `env(safe-area-inset-bottom)` ескерілуі керек;
+- соңғы card navigation астына кірмеуі керек;
+- 390x844 және 430x932 сияқты viewport-тарда тексеру ұсынылады.
+
+## PWA public файлдары
+
+`public/` ішіндегі файлдар build кезінде `static/` root-ына көшіріледі:
+
+- `favicon.svg`
+- `404.html`
+- `robots.txt`
+- `sitemap.xml`
+- Google verification HTML
+- `images/`
+
+SEO немесе verification файлын өзгертсеңіз, source `public/` және build output `static/` күйін тексеріңіз.
+
+## API
+
+Dev режимінде API base:
+
+```text
+http://localhost:7435
+```
+
+Production режимінде same-origin қолданылады.
+
+API base logic: `src/api/config.ts`.
+
+## UI өзгерісін тексеру
+
+1. `pnpm build`.
+2. Қажет болса local backend іске қосу.
+3. Mobile viewport-та негізгі flow тексеру.
+4. Dark және light theme тексеру.
+5. Console error жоқ екенін қарау.
+
+## Қауіпсіздік ескертпесі
+
+Frontend ішінде password, token немесе cookie log жазбаңыз. Auth/session logic өзгерсе, root [SECURITY.md](../SECURITY.md) файлын қараңыз.
