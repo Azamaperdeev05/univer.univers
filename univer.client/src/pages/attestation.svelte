@@ -139,7 +139,7 @@
         </AppBar>
     {/snippet}
 
-    <div class="grid mx-auto p-2 gap-2 max-w-md h-full">
+    <div class="grid mx-auto p-2 gap-2 max-w-md min-h-full pb-36">
         {#if query}
             {#if nullish(query.data)}
                 {#each { length: 7 } as __}
