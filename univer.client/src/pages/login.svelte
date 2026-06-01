@@ -116,7 +116,37 @@
         </AppBar>
     {/snippet}
 
-    <div class="flex-1 flex items-center justify-center px-4 relative z-10 py-10">
+    <!-- ── Университеттер логотип тасмасы ── -->
+    {#if univers.length > 0}
+        <div class="ticker-wrapper relative z-10 mt-3 overflow-hidden">
+            <div class="ticker-fade ticker-fade-left"></div>
+            <div class="ticker-fade ticker-fade-right"></div>
+
+            <div class="ticker-track">
+                {#each [0, 1, 2] as _}
+                    {#each univers as univer}
+                        <a
+                            href={univer.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="ticker-item"
+                            title={univer.name}
+                        >
+                            <img
+                                src={univer.logo}
+                                alt={univer.name}
+                                class="ticker-logo"
+                                loading="lazy"
+                                onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                            />
+                        </a>
+                    {/each}
+                {/each}
+            </div>
+        </div>
+    {/if}
+
+    <div class="flex-1 flex items-center justify-center px-4 relative z-10 py-6">
 
         <!-- ── Сәтті кіру анимациясы ── -->
         {#if status === "success"}
@@ -296,39 +326,6 @@
         {/if}
     </div>
 
-    <!-- ── Университеттер логотип тасмасы ── -->
-    {#if univers.length > 0}
-        <div class="ticker-wrapper relative z-10 mb-4 overflow-hidden">
-            <!-- Сол жақ fade -->
-            <div class="ticker-fade ticker-fade-left"></div>
-            <!-- Оң жақ fade -->
-            <div class="ticker-fade ticker-fade-right"></div>
-
-            <div class="ticker-track">
-                <!-- 3× қайталаймыз — шексіз айналым үшін -->
-                {#each [0, 1, 2] as _}
-                    {#each univers as univer}
-                        <a
-                            href={univer.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="ticker-item"
-                            title={univer.name}
-                        >
-                            <img
-                                src={univer.logo}
-                                alt={univer.name}
-                                class="ticker-logo"
-                                loading="lazy"
-                                onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                            />
-                        </a>
-                    {/each}
-                {/each}
-            </div>
-        </div>
-    {/if}
-
     <div class="flex justify-center pb-4 relative z-10">
         <p class="text-xs tracking-wider text-zinc-400 dark:text-zinc-500 select-none">
             Platonus • Бірыңғай Портал • {api.version.client}
@@ -421,7 +418,7 @@
     /* ── Логотип тасмасы (ticker) ── */
     .ticker-wrapper {
         width: 100%;
-        height: 52px;
+        height: 44px;
     }
 
     .ticker-fade {
@@ -467,10 +464,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
-        margin: 0 10px;
-        border-radius: 14px;
+        width: 44px;
+        height: 44px;
+        margin: 0 8px;
+        border-radius: 12px;
         background: rgba(0, 0, 0, 0.03);
         border: 1px solid rgba(0, 0, 0, 0.05);
         transition: background 0.2s, border-color 0.2s, transform 0.2s;
@@ -492,8 +489,8 @@
     }
 
     .ticker-logo {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         object-fit: contain;
         border-radius: 6px;
         filter: brightness(0.95) saturate(0.95);
